@@ -1,0 +1,523 @@
+@model CaotinhoAuMiau.Models.ViewModels.Usuario.PetViewModel
+
+@{
+    ViewData["Title"] = "Explorar Pets para Adoção - CaotinhoAuMiau";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    
+    var usuarioNome = User.ObterValorClaim(System.Security.Claims.ClaimTypes.Name);
+    var usuarioId = User.ObterIdUsuario();
+    var usuarioTipo = User.ObterValorClaim(System.Security.Claims.ClaimTypes.Role);
+    var usuarioCPF = User.ObterValorClaim("CPF");
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/usuario/usuario-explorar-pets.css" asp-append-version="true" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+}
+
+<input type="hidden" id="usuarioId" value="@usuarioId" />
+<input type="hidden" id="usuarioCPF" value="@usuarioCPF" />
+
+<div id="alertaContainer" class="alerts-container"></div>
+
+<main class="main-content explore-pets-main">
+    <div id="carouselPets" class="carousel slide" data-bs-ride="carousel">
+        <div class="carousel-indicators">
+            <button type="button" data-bs-target="#carouselPets" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Slide 1"></button>
+            <button type="button" data-bs-target="#carouselPets" data-bs-slide-to="1" aria-label="Slide 2"></button>
+            <button type="button" data-bs-target="#carouselPets" data-bs-slide-to="2" aria-label="Slide 3"></button>
+        </div>
+        
+        <div class="carousel-inner">
+            <div class="carousel-item active">
+                <img src="~/imagens/Imagens CaotinhoAuMiau/carrossel1.jpg" class="d-block w-100" alt="Pets para adoção">
+                <div class="carousel-caption">
+                    <h1>Encontre seu Companheiro</h1>
+                    <p style="white-space: nowrap;">Dê uma nova chance de amor a um pet que precisa de um lar.</p>
+                </div>
+                <div class="carousel-progress-bar"></div>
+            </div>
+            <div class="carousel-item">
+                <img src="~/imagens/Imagens CaotinhoAuMiau/carrossel2.jpg" class="d-block w-100" alt="Pets felizes" style="object-position: center 20%;">
+                <div class="carousel-caption-right">
+                    <h1>Faça a Diferença</h1>
+                    <p>Adotar é um ato de amor que transforma vidas.</p>
+                </div>
+                <div class="carousel-progress-bar"></div>
+            </div>
+            <div class="carousel-item">
+                <img src="~/imagens/Imagens CaotinhoAuMiau/carrossel3.jpg" class="d-block w-100" alt="Adoção responsável">
+                <div class="carousel-caption">
+                    <h1>Adoção Responsável</h1>
+                    <p>Cada pet merece um lar cheio de carinho e cuidados.</p>
+                </div>
+                <div class="carousel-progress-bar"></div>
+            </div>
+        </div>
+        
+        <button class="carousel-control-prev" type="button" data-bs-target="#carouselPets" data-bs-slide="prev">
+            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Anterior</span>
+        </button>
+        <button class="carousel-control-next" type="button" data-bs-target="#carouselPets" data-bs-slide="next">
+            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Próximo</span>
+        </button>
+    </div>
+
+    <div class="filters-full-width">
+        <form method="get" class="filters-container" id="formFiltros" action="@Url.Action("ExplorarPets", "Pet", new { area = "Usuario" })">
+            <div class="filter-group">
+                <div class="form-group">
+                    <label for="filtroNome">Nome</label>
+                    <input type="text" id="filtroNome" name="filtroNome" class="form-control" placeholder="Buscar pet..." value="@Model.FiltroNome">
+                </div>
+                <div class="form-group">
+                    <label for="filtroEspecie">Espécie</label>
+                    <select id="filtroEspecie" name="filtroEspecie" class="form-control">
+                        <option value="">Todas</option>
+                        @foreach (var especie in Model.Especies)
+                        {
+                            <option value="@especie.Value" selected="@(especie.Value == Model.FiltroEspecie)">@especie.Text</option>
+                        }
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="filtroSexo">Sexo</label>
+                    <select id="filtroSexo" name="filtroSexo" class="form-control">
+                        <option value="">Todos</option>
+                        @foreach (var sexo in Model.Sexos)
+                        {
+                            <option value="@sexo.Value" selected="@(sexo.Value == Model.FiltroSexo)">@sexo.Text</option>
+                        }
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="filtroPorte">Porte</label>
+                    <select id="filtroPorte" name="filtroPorte" class="form-control">
+                        <option value="">Todos</option>
+                        @foreach (var porte in Model.Portes)
+                        {
+                            <option value="@porte.Value" selected="@(porte.Value == Model.FiltroPorte)">@porte.Text</option>
+                        }
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="filtroIdade">Idade</label>
+                    <select id="filtroIdade" name="filtroIdade" class="form-control">
+                        <option value="">Todas</option>
+                        @foreach (var idade in Model.FaixasEtarias)
+                        {
+                            <option value="@idade.Value" selected="@(idade.Value == Model.FiltroIdade)">@idade.Text</option>
+                        }
+                    </select>
+                </div>
+                
+                @if (false) 
+                {
+                    <div class="form-group">
+                        <label for="filtroRaca">Raça</label>
+                        <select id="filtroRaca" name="filtroRaca" class="form-control">
+                            <option value="">Todas</option>
+                        </select>
+                    </div>
+                }
+            </div>
+            
+            <div class="ordenacao-group">
+                <div class="form-group">
+                    <label for="filtroOrdem">Ordenar</label>
+                    <select id="filtroOrdem" name="filtroOrdem" class="form-control">
+                        <option value="recentes" selected="@(Model.FiltroOrdem == "recentes")">Mais recentes</option>
+                        <option value="antigos" selected="@(Model.FiltroOrdem == "antigos")">Mais antigos</option>
+                        <option value="nome" selected="@(Model.FiltroOrdem == "nome")">Nome (A-Z)</option>
+                        <option value="nome_desc" selected="@(Model.FiltroOrdem == "nome_desc")">Nome (Z-A)</option>
+                    </select>
+                </div>
+                
+                <input type="hidden" id="itensPorPagina" name="itensPorPagina" value="12">
+                <input type="hidden" name="pagina" value="1">
+                <input type="hidden" name="fromForm" value="true">
+                
+                <div class="filter-actions">
+                    <button type="submit" class="filter-button"><i class="fas fa-filter"></i>Aplicar Filtros</button>
+                    <a href="javascript:void(0);" class="clear-button" id="btnLimparFiltros"><i class="fas fa-times-circle"></i>Limpar Filtros</a>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <section class="pets-container">
+        <div class="main-pets-container">
+            <div class="pets-grid">
+                @if (Model.Pets.Any())
+                {
+                    foreach (var pet in Model.Pets)
+                    {
+                        <div class="pet-card" 
+                             data-id="@pet.Id" 
+                             data-especie="@(pet.Especie?.ToLower() ?? "outro")" 
+                             data-sexo="@(pet.Sexo?.ToLower() ?? "desconhecido")">
+                            <div class="image-container">
+                                <img src="@(string.IsNullOrEmpty(pet.NomeArquivoImagem) ? "/imagens/pets/pet-placeholder.jpg" : $"/imagens/pets/{pet.NomeArquivoImagem}")" 
+                                     alt="@pet.Nome" 
+                                     onerror="this.src='/imagens/pets/pet-placeholder.jpg'">
+                                
+                                <div class="etiqueta-pet @(pet.Especie?.ToLower() == "cachorro" ? "dog" : (pet.Especie?.ToLower() == "gato" ? "cat" : "other"))">
+                                    <i class="fas @(pet.Especie?.ToLower() == "cachorro" ? "fa-dog" : (pet.Especie?.ToLower() == "gato" ? "fa-cat" : "fa-paw")) me-1"></i>
+                                    @(pet.Especie ?? "Pet")
+                                </div>
+                                
+                                <div class="overlay">
+                                    <div class="overlay-content">
+                                        <a href="/usuario/adocao/formulario/@pet.Id" class="btn adopt-button">
+                                            <i class="fas fa-heart-circle-plus"></i>Adotar agora
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="pet-info">
+                                <h3 class="pet-name text-center">@pet.Nome</h3>
+                                
+                                <div class="pet-characteristics">
+                                    <div class="pet-item">
+                                        <i class="fas @(pet.Sexo == "Macho" || pet.Sexo == "M" ? "fa-mars" : "fa-venus")"></i>
+                                        <span class="item-label">Sexo</span>
+                                        <span>@(pet.Sexo ?? "Não informado")</span>
+                                    </div>
+                                    
+                                    <div class="pet-item">
+                                        <i class="fas fa-dog"></i>
+                                        <span class="item-label">Porte</span>
+                                        <span>@(pet.Porte ?? "Não informado")</span>
+                                    </div>
+                                    
+                                    <div class="pet-item">
+                                        <i class="fas fa-birthday-cake"></i>
+                                        <span class="item-label">Idade</span>
+                                        <span class="pet-age">
+                                            @{
+                                                int anos = pet.Anos;
+                                                int meses = pet.Meses;
+                                                
+                                                if (anos > 0)
+                                                {
+                                                    @($"{anos} {(anos == 1 ? "ano" : "anos")}")
+                                                    
+                                                    if (meses > 0)
+                                                    {
+                                                        <br/>
+                                                        @($"{meses} {(meses == 1 ? "mês" : "meses")}")
+                                                    }
+                                                }
+                                                else if (meses > 0)
+                                                {
+                                                    @($"{meses} {(meses == 1 ? "mês" : "meses")}")
+                                                }
+                                                else
+                                                {
+                                                    @("Recém-nascido")
+                                                }
+                                            }
+                                        </span>
+                                    </div>
+                                    
+                                    <div class="pet-item">
+                                        <i class="fas fa-paw"></i>
+                                        <span class="item-label">Raça</span>
+                                        <span class="pet-race">@(string.IsNullOrEmpty(pet.Raca) ? "SRD" : pet.Raca)</span>
+                                    </div>
+                                </div>
+                                
+                                @if (!string.IsNullOrWhiteSpace(pet.Descricao) && pet.Descricao.Length > 5)
+                                {
+                                    <div class="pet-description">
+                                        <i class="fas fa-comment-dots description-icon"></i>
+                                        <p>@(pet.Descricao.Length > 100 ? pet.Descricao.Substring(0, 100) + "..." : pet.Descricao)</p>
+                                    </div>
+                                }
+                                
+                                @if (!pet.CadastroCompleto)
+                                {
+                                    <div class="pet-status">
+                                        <span class="status-badge">
+                                            <i class="fas fa-exclamation-triangle"></i>
+                                            Cadastro incompleto
+                                        </span>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div class="no-pets-message">
+                    </div>
+                }
+            </div>
+        </div>
+    </section>
+
+    @if (Model.TotalPaginas > 1)
+    {
+        <div class="paginacao">
+            <div class="container">
+                <div class="row g-2 align-items-center justify-content-center">
+                    <div class="col-12 text-center mb-3">
+                        <div class="info-paginacao">
+                            <span class="badge contador-pets">
+                                <span class="icone-container">
+                                    <i class="fas fa-paw" aria-hidden="true"></i>
+                                </span>
+                                <span class="contador-texto">
+                                    <span>Exibindo</span>
+                                    <strong>@Model.Pets.Count()</strong>
+                                    <span>de</span>
+                                    <strong>@Model.TotalItens</strong>
+                                    <span>pets</span>
+                                </span>
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <div class="col-12">
+                        <nav aria-label="Navegação de páginas">
+                            <ul class="pagination justify-content-center flex-wrap">
+                                @if (Model.PaginaAtual > 1)
+                                {
+                                    <li class="page-item">
+                                        <a class="page-link" href="@Url.Action("Explorar", "Pets", new { area = "", pagina = Model.PaginaAtual - 1, itensPorPagina = Model.ItensPorPaginaSelecionado })">
+                                            <i class="fas fa-chevron-left"></i>
+                                        </a>
+                                    </li>
+                                }
+                                else
+                                {
+                                    <li class="page-item disabled">
+                                        <span class="page-link"><i class="fas fa-chevron-left"></i></span>
+                                    </li>
+                                }
+
+                                @{int inicio = Math.Max(1, Model.PaginaAtual - 2);
+                                  int fim = Math.Min(Model.TotalPaginas, Model.PaginaAtual + 2);
+                                  if (fim - inicio + 1 < 5 && Model.TotalPaginas >= 5)
+                                  {
+                                      if (Model.PaginaAtual <= 3)
+                                      {
+                                          fim = Math.Min(5, Model.TotalPaginas);
+                                      }
+                                      else
+                                      {
+                                          inicio = Math.Max(1, Model.TotalPaginas - 4);
+                                      }
+                                  }}
+                                @for (int i = inicio; i <= fim; i++)
+                                {
+                                    <li class="page-item @(i == Model.PaginaAtual ? "active" : "")">
+                                        <a class="page-link" href="@Url.Action("Explorar", "Pets", new { area = "", pagina = i, itensPorPagina = Model.ItensPorPaginaSelecionado })">@i</a>
+                                    </li>
+                                }
+
+                                @if (Model.PaginaAtual < Model.TotalPaginas)
+                                {
+                                    <li class="page-item">
+                                        <a class="page-link" href="@Url.Action("Explorar", "Pets", new { area = "", pagina = Model.PaginaAtual + 1, itensPorPagina = Model.ItensPorPaginaSelecionado })">
+                                            <i class="fas fa-chevron-right"></i>
+                                        </a>
+                                    </li>
+                                }
+                                else
+                                {
+                                    <li class="page-item disabled">
+                                        <span class="page-link"><i class="fas fa-chevron-right"></i></span>
+                                    </li>
+                                }
+                            </ul>
+                        </nav>
+                    </div>
+                    
+                    <div class="col-12 mt-3">
+                        <div class="paginacao-info d-flex justify-content-center align-items-center">
+                            <div class="itens-por-pagina">
+                                <label for="selectItensPorPagina">Itens por página:</label>
+                                <select id="selectItensPorPagina" class="form-select form-select-sm">
+                                    @if (Model.ItensPorPaginaSelecionado == 12)
+                                    {
+                                        <option value="12" selected>12</option>
+                                    }
+                                    else
+                                    {
+                                        <option value="12">12</option>
+                                    }
+                                    
+                                    @if (Model.ItensPorPaginaSelecionado == 24)
+                                    {
+                                        <option value="24" selected>24</option>
+                                    }
+                                    else
+                                    {
+                                        <option value="24">24</option>
+                                    }
+                                    
+                                    @if (Model.ItensPorPaginaSelecionado == 48)
+                                    {
+                                        <option value="48" selected>48</option>
+                                    }
+                                    else
+                                    {
+                                        <option value="48">48</option>
+                                    }
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <form id="formNavegacao" method="get" action="@Url.Action("ExplorarPets", "Pet", new { area = "Usuario" })">
+            <input type="hidden" name="filtroNome" id="filtroNomeNav" value="@Model.FiltroNome" />
+            <input type="hidden" name="filtroEspecie" id="filtroEspecieNav" value="@Model.FiltroEspecie" />
+            <input type="hidden" name="filtroSexo" id="filtroSexoNav" value="@Model.FiltroSexo" />
+            <input type="hidden" name="filtroPorte" id="filtroPorteNav" value="@Model.FiltroPorte" />
+            <input type="hidden" name="filtroIdade" id="filtroIdadeNav" value="@Model.FiltroIdade" />
+            <input type="hidden" name="filtroOrdem" id="filtroOrdemNav" value="@Model.FiltroOrdem" />
+            <input type="hidden" name="itensPorPagina" id="itensPorPaginaNav" value="12" />
+            <input type="hidden" name="pagina" id="paginaAtual" value="@Model.PaginaAtual" />
+            <input type="hidden" name="fromForm" value="true" />
+        </form>
+    }
+
+    <div class="sidebar-overlay"></div>
+</main>
+
+
+
+<div class="modal" id="modalCamposFaltantes">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 class="modal-title">Complete seu perfil</h3>
+            <button class="modal-close" onclick="fecharModal('modalCamposFaltantes')">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="modal-body">
+            <p>Para prosseguir com a adoção, você precisa completar algumas informações em seu perfil:</p>
+            <ul id="listaCamposFaltantes">
+            </ul>
+        </div>
+        <div class="modal-footer">
+            <button class="modal-button modal-button-secondary" onclick="fecharModal('modalCamposFaltantes')">Depois</button>
+            <a href="/Usuario/Perfil?returnUrl=/usuario/pets/explorar" class="modal-button modal-button-primary">Completar agora</a>
+        </div>
+    </div>
+</div>
+
+<div class="modal" id="modalAdminPrincipal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 class="modal-title">Acesso Administrativo</h3>
+            <button class="modal-close" onclick="fecharModal('modalAdminPrincipal')">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="modal-body">
+            <p>Como administrador principal, você não pode adotar um pet diretamente. Esta funcionalidade existe apenas para usuários regulares.</p>
+            <p>Você pode:</p>
+            <ul>
+                <li>Visualizar o funcionamento da plataforma</li>
+                <li>Gerenciar pets e adoções pelo painel administrativo</li>
+                <li>Criar uma conta de usuário regular para testar o processo completo</li>
+            </ul>
+        </div>
+        <div class="modal-footer">
+            <button class="modal-button modal-button-primary" onclick="fecharModal('modalAdminPrincipal')">Entendi</button>
+        </div>
+    </div>
+</div>
+
+<div class="modal" id="modalLoginCadastro">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 class="modal-title">Acesso necessário</h3>
+            <button class="modal-close" onclick="fecharModal('modalLoginCadastro')">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="modal-body">
+            <div class="text-center mb-4">
+                <i class="fas fa-paw fa-3x text-primary"></i>
+            </div>
+            <p>Para prosseguir com a adoção deste pet, você precisa estar logado no sistema.</p>
+            <p>Isso é necessário para que possamos:</p>
+            <ul>
+                <li>Registrar sua solicitação de adoção</li>
+                <li>Comunicar sobre o andamento do processo</li>
+                <li>Verificar informações básicas para adoção responsável</li>
+            </ul>
+            <p class="mt-3">Você pode fazer login se já possui uma conta ou criar uma nova conta se ainda não é cadastrado.</p>
+            <input type="hidden" id="petIdAutenticacao" value="" />
+        </div>
+        <div class="modal-footer">
+            <button class="modal-button modal-button-secondary" onclick="redirecionarCadastro()">
+                <i class="fas fa-user-plus mr-2"></i> Criar uma conta
+            </button>
+            <button class="modal-button modal-button-primary" onclick="redirecionarLogin()">
+                <i class="fas fa-sign-in-alt mr-2"></i> Fazer login
+            </button>
+        </div>
+    </div>
+</div>
+
+<div class="modal" id="modalAdocaoPendente">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 class="modal-title">Processo de Adoção em Andamento</h3>
+            <button class="modal-close" onclick="fecharModal('modalAdocaoPendente')">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="modal-body">
+            <div class="text-center mb-4">
+                <i class="fas fa-exclamation-circle fa-3x text-warning"></i>
+            </div>
+            <p>Notamos que você já possui um processo de adoção em andamento.</p>
+            <p>Para garantir que cada adoção receba a atenção necessária e seja conduzida da melhor forma possível, é preciso aguardar a conclusão do processo atual antes de iniciar uma nova adoção.</p>
+            <p>Você pode:</p>
+            <ul>
+                <li>Acompanhar o status da sua adoção atual na página "Minhas Adoções"</li>
+                <li>Aguardar a conclusão do processo atual</li>
+                <li>Entrar em contato conosco se precisar de mais informações</li>
+            </ul>
+        </div>
+        <div class="modal-footer">
+            <a href="/usuario/adocoes" class="modal-button modal-button-primary">
+                <i class="fas fa-list-alt me-2"></i> Ver Minhas Adoções
+            </a>
+            <button class="modal-button modal-button-secondary" onclick="fecharModal('modalAdocaoPendente')">Fechar</button>
+        </div>
+    </div>
+</div>
+
+<div id="dados-usuario" 
+     data-usuario-logado="@User.Identity.IsAuthenticated.ToString().ToLower()" 
+     data-usuario-id="@usuarioId" 
+     data-usuario-nome="@usuarioNome" 
+     data-usuario-tipo="@usuarioTipo" 
+     style="display:none"></div>
+
+@section Scripts {
+    <script src="~/js/usuario/explorar-pets.js" asp-append-version="true"></script>
+    
+    @if (TempData["Erro"] != null || TempData["Sucesso"] != null)
+    {
+        <script>
+            window.temMensagensTempData = true;
+            window.mensagemErro = '@TempData["Erro"]';
+            window.mensagemSucesso = '@TempData["Sucesso"]';
+        </script>
+    }
+} 

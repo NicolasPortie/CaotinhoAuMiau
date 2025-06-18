@@ -1,0 +1,184 @@
+@{
+    Layout = null;
+}
+
+@model CaotinhoAuMiau.Models.ViewModels.Admin.DashboardViewModel
+@using CaotinhoAuMiau.Models.ViewModels
+@using System.Linq
+
+@{
+    ViewData["Title"] = "Painel de Controle";
+    
+}
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Cãotinho AuMiau</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="~/css/admin/admin-dashboard.css" asp-append-version="true" />
+    <style>
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+        }
+        
+        .cartao-status .numero {
+            font-family: 'Poppins', sans-serif;
+            font-weight: 700;
+        }
+        
+        .cartao-status .rotulo {
+            font-family: 'Poppins', sans-serif;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body class="d-flex">
+    
+    @await Html.PartialAsync("~/Views/Shared/_SlidebarAdmin.cshtml")
+    
+    <div class="conteudo-principal">
+        <div class="cabecalho-painel">
+            <h1 class="titulo-pagina">Painel de Controle</h1>
+        </div>
+
+        
+        <div class="cartoes-status">
+            <div class="cartao-status cachorros">
+                <div class="conteudo-cartao-status">
+                    <div class="icone">
+                        <i class="fas fa-dog"></i>
+                    </div>
+                    <div class="d-flex flex-column align-items-start">
+                        <span class="rotulo">Cachorros Disponíveis</span>
+                        <span class="numero" id="total-cachorros">@Model.Estatisticas.TotalCachorros</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="cartao-status gatos">
+                <div class="conteudo-cartao-status">
+                    <div class="icone">
+                        <i class="fas fa-cat"></i>
+                    </div>
+                    <div class="d-flex flex-column align-items-start">
+                        <span class="rotulo">Gatos Disponíveis</span>
+                        <span class="numero" id="total-gatos">@Model.Estatisticas.TotalGatos</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="cartao-status aprovados">
+                <div class="conteudo-cartao-status">
+                    <div class="icone">
+                        <i class="fas fa-clipboard-check"></i>
+                    </div>
+                    <div class="d-flex flex-column align-items-start">
+                        <span class="rotulo">Formulários Aprovados</span>
+                        <span class="numero" id="formularios-aprovados">@Model.Estatisticas.FormulariosAprovados</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="cartao-status pendentes">
+                <div class="conteudo-cartao-status">
+                    <div class="icone">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="d-flex flex-column align-items-start">
+                        <span class="rotulo">Formulários Pendentes</span>
+                        <span class="numero" id="formularios-pendentes">@Model.Estatisticas.FormulariosPendentes</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        
+        <div class="container-graficos">
+            <div class="cartao-grafico">
+                <div class="titulo-grafico">
+                    <div class="texto-titulo-grafico">
+                        <i class="fas fa-chart-line"></i>
+                        Adoções por Mês
+                    </div>
+                    <div class="filtros-grafico">
+                        <div class="filtro-grafico ativo">Anual</div>
+                        <div class="filtro-grafico">Semestral</div>
+                        <div class="filtro-grafico">Trimestral</div>
+                    </div>
+                </div>
+                <div class="area-grafico">
+                    <canvas id="graficoAdocoesMes"></canvas>
+                </div>
+            </div>
+
+            <div class="cartao-grafico">
+                <div class="titulo-grafico">
+                    <div class="texto-titulo-grafico">
+                        <i class="fas fa-chart-pie"></i>
+                        Pets por Espécie
+                    </div>
+                </div>
+                <div class="area-grafico">
+                    <canvas id="graficoPetsEspecie"></canvas>
+                </div>
+            </div>
+        </div>
+
+        
+        <div class="container-graficos mt-4">
+            <div class="cartao-grafico">
+                <div class="titulo-grafico">
+                    <div class="texto-titulo-grafico">
+                        <i class="fas fa-user-plus"></i>
+                        Novos Cadastros por Mês
+                    </div>
+                    <div class="filtros-grafico">
+                        <div class="filtro-grafico-usuarios ativo" data-periodo="Anual">Anual</div>
+                        <div class="filtro-grafico-usuarios" data-periodo="Semestral">Semestral</div>
+                        <div class="filtro-grafico-usuarios" data-periodo="Trimestral">Trimestral</div>
+                    </div>
+                </div>
+                <div class="area-grafico">
+                    <canvas id="graficoUsuariosMes"></canvas>
+                </div>
+            </div>
+
+            <div class="cartao-grafico">
+                <div class="titulo-grafico">
+                    <div class="texto-titulo-grafico">
+                        <i class="fas fa-tasks"></i>
+                        Status dos Formulários
+                    </div>
+                </div>
+                <div class="area-grafico">
+                    <canvas id="graficoStatusFormularios"></canvas>
+                </div>
+            </div>
+        </div>
+
+        
+        <div class="atividades-recentes">
+            <div class="titulo-atividade">
+                <i class="fas fa-history"></i>
+                Atividades Recentes
+            </div>
+            <div class="lista-atividade">
+                
+            </div>
+        </div>
+    </div>
+
+    
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/shared/slidebar.js"></script>
+    <script src="~/js/admin/dashboard.js"></script>
+</body>
+</html> 

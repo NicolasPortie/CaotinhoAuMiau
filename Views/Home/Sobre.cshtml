@@ -1,0 +1,611 @@
+@{
+    ViewData["Title"] = "Sobre Nós";
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - CaotinhoAuMiau</title>
+    
+    
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/home/sobre.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/shared/notificacoes.css" asp-append-version="true" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        
+        .usuario-dropdown {
+            position: relative;
+        }
+        
+        .usuario-menu-toggle {
+            cursor: pointer;
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+        
+        #dropdownUsuario {
+            transition: all 0.3s ease;
+            transform-origin: top right;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            display: none;
+            position: absolute;
+            z-index: 2000;
+            top: 45px;
+            right: 0;
+            width: 220px;
+            background: linear-gradient(145deg, #333333, #444444);
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 12px;
+            overflow: hidden;
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+        }
+        
+        #dropdownUsuario.visivel,
+        body.dropdown-aberto #dropdownUsuario {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+        
+        #dropdownUsuario a {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 15px;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            margin-bottom: 4px;
+            background-color: transparent;
+            transition: all 0.2s ease;
+        }
+        
+        #dropdownUsuario a:hover {
+            background-color: rgba(255, 255, 255, 0.1) !important;
+            transform: translateX(3px);
+        }
+        
+        #dropdownUsuario i {
+            font-size: 1.1rem;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 6px;
+        }
+        
+        #dropdownUsuario .fa-user {
+            background-color: rgba(255, 87, 34, 0.2);
+            color: #FF5722;
+        }
+        
+        #dropdownUsuario .fa-paw {
+            background-color: rgba(0, 176, 255, 0.2);
+            color: #00B0FF;
+        }
+        
+        #dropdownUsuario .fa-heart {
+            background-color: rgba(255, 64, 129, 0.2);
+            color: #FF4081;
+        }
+        
+        #dropdownUsuario .fa-sign-out-alt {
+            background-color: rgba(255, 193, 7, 0.2);
+            color: #FFC107;
+        }
+        
+        #dropdownUsuario .separador {
+            height: 1px;
+            background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.1), transparent);
+            margin: 8px 0;
+        }
+    </style>
+</head>
+
+<body>
+    
+    <input type="hidden" id="usuarioId" value="@User.ObterIdUsuario()" />
+    <input type="hidden" id="usuarioCPF" value="@User.ObterValorClaim("CPF")" />
+    
+    
+    <nav class="navbar">
+        <div class="navbar-container">
+            
+            <a href="@Url.Action("Index", "Home")" class="navbar-brand">
+                CaotinhoAuMiau
+            </a>
+            
+            
+            <div class="navbar-links">
+                @if (!User.Identity.IsAuthenticated)
+                {
+                    <a href="@Url.Action("Login", "Usuario")" class="navbar-link">Login</a>
+                    <a href="@Url.Action("Cadastro", "Usuario")" class="navbar-link">Cadastro</a>
+                }
+                else
+                {
+                    
+                    <div class="container-notificacoes">
+                        <div class="icone-notificacao" id="notificacoes-icone">
+                            <i class="fas fa-bell"></i>
+                            @if (ViewBag.NotificacoesNaoLidas != null && ViewBag.NotificacoesNaoLidas > 0)
+                            {
+                                <div class="contador-notificacoes" id="notificacoes-contador">@ViewBag.NotificacoesNaoLidas</div>
+                            }
+                        </div>
+                        
+                    
+                    @await Html.PartialAsync("_Notificacoes")
+                </div>
+                    
+                    
+                    <div class="usuario-dropdown">
+                        <a href="#" class="usuario-menu-toggle">
+                            @{
+                                string nome = User.ObterValorClaim(System.Security.Claims.ClaimTypes.Name) ?? "Usuário";
+                                char inicial = nome.Length > 0 ? nome[0] : 'U';
+                                
+                                var usuarioId = User.ObterIdUsuario();
+                                var temFotoPerfil = false;
+                                var fotoPerfil = string.Empty;
+                                
+                                if (User.Identity.IsAuthenticated && !string.IsNullOrEmpty(usuarioId))
+                                {
+                                    var contexto = Context.RequestServices.GetService(typeof(CaotinhoAuMiau.Data.ApplicationDbContext)) as CaotinhoAuMiau.Data.ApplicationDbContext;
+                                    if (contexto != null)
+                                    {
+                                        var usuario = contexto.Usuarios.FirstOrDefault(u => u.Id.ToString() == usuarioId);
+                                        if (usuario != null && !string.IsNullOrEmpty(usuario.FotoPerfil))
+                                        {
+                                            temFotoPerfil = true;
+                                            fotoPerfil = usuario.FotoPerfil;
+                                        }
+                                    }
+                                }
+                            }
+                            
+                            @if(temFotoPerfil)
+                            {
+                                <div style="width: 40px; height: 40px; border-radius: 50%; overflow: hidden;">
+                                    <img src="~/imagens/perfil/@fotoPerfil" alt="@nome" style="width: 100%; height: 100%; object-fit: cover;" />
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="avatar-inicial-sobre">
+                                    @inicial
+                                </div>
+                                
+                                <style>
+                                    .avatar-inicial-sobre {
+                                        width: 40px;
+                                        height: 40px;
+                                        border-radius: 50%;
+                                        background-color: #FF6B00 !important;
+                                        color: white;
+                                        display: flex;
+                                        align-items: center;
+                                        justify-content: center;
+                                        font-weight: bold;
+                                        font-size: 1.2rem;
+                                    }
+                                </style>
+                            }
+                        </a>
+                        
+                        
+                        <div id="dropdownUsuario">
+                            
+                            <a href="@Url.Action("Perfil", "Usuario")">
+                                <i class="fas fa-user"></i> 
+                                <span>Meu Perfil</span>
+                            </a>
+                            
+                            
+                            <a href="/usuario/pets/explorar">
+                                <i class="fas fa-paw"></i> 
+                                <span>Explorar Pets</span>
+                            </a>
+                            
+                            
+                            <a href="@Url.Action("Adocoes", "Usuario")">
+                                <i class="fas fa-heart"></i> 
+                                <span>Minhas Adoções</span>
+                            </a>
+                            
+                            
+                            <div class="separador"></div>
+                            
+                            
+                            <a href="@Url.Action("Logout", "Usuario")">
+                                <i class="fas fa-sign-out-alt"></i> 
+                                <span>Sair</span>
+                            </a>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </nav>
+
+    
+    <section class="banner container-fluid p-0">
+        <div class="conteudo-banner">
+            <h1 class="titulo-banner">Sobre o <span class="destaque-texto">CaotinhoAuMiau</span></h1>
+            <p class="subtitulo-banner">Conheça nossa história, missão e as pessoas que fazem a diferença na vida dos pets todos os dias.</p>
+            <a href="#nossa-historia" class="botao-banner scroll-btn">
+                <i class="fas fa-paw"></i>
+                Conheça Nossa História
+            </a>
+        </div>
+        
+        <div class="banner-overlay">
+            <div class="pata pata-1"><i class="fas fa-paw"></i></div>
+            <div class="pata pata-2"><i class="fas fa-paw"></i></div>
+            <div class="pata pata-3"><i class="fas fa-paw"></i></div>
+            <div class="pata pata-4"><i class="fas fa-paw"></i></div>
+            <div class="pata pata-5"><i class="fas fa-paw"></i></div>
+        </div>
+    </section>
+
+    
+    <section id="nossa-historia" class="section bg-transparent-force">
+        <div class="container bg-transparent-force">
+            <h2 class="section-title">Nossa História</h2>
+            
+            <div class="row align-items-center bg-transparent-force">
+                <div class="col-lg-6 mb-4 mb-lg-0 bg-transparent-force">
+                    <div class="sobre-imagem-container bg-transparent-force">
+                        <img src="~/imagens/Imagens CaotinhoAuMiau/banner-sobre.jpg" alt="Nossa história" class="sobre-imagem">
+                        <div class="ano-badge">
+                            <span>Desde</span>
+                            <span class="ano-destaque">2020</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-lg-6 bg-transparent-force">
+                    <div class="sobre-texto bg-transparent-force">
+                        <p>O CaotinhoAuMiau nasceu em 2020 a partir do sonho de quatro amigos apaixonados por animais. Tudo começou como um pequeno abrigo que resgatava animais abandonados nas ruas de São Paulo.</p>
+                        <p>Com o tempo, percebemos que nossa principal missão ia além do resgate: precisávamos encontrar lares permanentes e amorosos para esses animais. Foi então que criamos nossa plataforma online de adoção.</p>
+                        <p>Hoje, o CaotinhoAuMiau já ajudou mais de 500 animais a encontrarem suas famílias para sempre, e continuamos trabalhando para que cada vez mais pets abandonados tenham uma segunda chance.</p>
+                        
+                        <div class="sobre-citacao">
+                            <i class="fas fa-quote-left"></i>
+                            <p>Acreditamos que todo animal merece um lar amoroso e cuidados responsáveis.</p>
+                            <span class="sobre-citacao-autor">— Equipe CaotinhoAuMiau</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    
+    <section class="section">
+        <div class="container">
+            <h2 class="section-title">Missão, Visão e Valores</h2>
+            
+            <div class="row">
+                
+                <div class="col-lg-4 mb-4">
+                    <div class="mvv-card">
+                        <div class="mvv-icon">
+                            <i class="fas fa-bullseye"></i>
+                        </div>
+                        <h3>Missão</h3>
+                        <p>Promover a adoção responsável de animais abandonados, conectando-os a famílias amorosas e conscientes, contribuindo para reduzir o abandono e maus-tratos a animais.</p>
+                    </div>
+                </div>
+                
+                
+                <div class="col-lg-4 mb-4">
+                    <div class="mvv-card">
+                        <div class="mvv-icon">
+                            <i class="fas fa-eye"></i>
+                        </div>
+                        <h3>Visão</h3>
+                        <p>Ser referência nacional em adoção responsável, construindo uma sociedade onde nenhum animal seja abandonado e todos tenham um lar seguro e amoroso.</p>
+                    </div>
+                </div>
+                
+                
+                <div class="col-lg-4 mb-4">
+                    <div class="mvv-card">
+                        <div class="mvv-icon">
+                            <i class="fas fa-heart"></i>
+                        </div>
+                        <h3>Valores</h3>
+                        <ul class="valores-lista">
+                            <li><i class="fas fa-check-circle"></i> Respeito à vida animal</li>
+                            <li><i class="fas fa-check-circle"></i> Responsabilidade</li>
+                            <li><i class="fas fa-check-circle"></i> Transparência</li>
+                            <li><i class="fas fa-check-circle"></i> Comprometimento</li>
+                            <li><i class="fas fa-check-circle"></i> Empatia</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    
+    <section class="section">
+        <div class="container">
+            <h2 class="section-title">Nossas Conquistas</h2>
+            
+            <div class="row text-center">
+                
+                <div class="col-6 col-md-3 mb-4">
+                    <div class="contador-card">
+                        <div class="contador-icon">
+                            <i class="fas fa-paw"></i>
+                        </div>
+                        <div class="contador-numero" data-contador="500">0</div>
+                        <div class="contador-texto">Pets Adotados</div>
+                    </div>
+                </div>
+                
+                
+                <div class="col-6 col-md-3 mb-4">
+                    <div class="contador-card">
+                        <div class="contador-icon">
+                            <i class="fas fa-home"></i>
+                        </div>
+                        <div class="contador-numero" data-contador="350">0</div>
+                        <div class="contador-texto">Famílias Felizes</div>
+                    </div>
+                </div>
+                
+                
+                <div class="col-6 col-md-3 mb-4">
+                    <div class="contador-card">
+                        <div class="contador-icon">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <div class="contador-numero" data-contador="50">0</div>
+                        <div class="contador-texto">Voluntários</div>
+                    </div>
+                </div>
+                
+                
+                <div class="col-6 col-md-3 mb-4">
+                    <div class="contador-card">
+                        <div class="contador-icon">
+                            <i class="fas fa-calendar-alt"></i>
+                        </div>
+                        <div class="contador-numero" data-contador="5">0</div>
+                        <div class="contador-texto">Anos de Dedicação</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    
+    <section class="section">
+        <div class="container">
+            <h2 class="section-title">Nossa Equipe</h2>
+            
+            <div class="row">
+                
+                <div class="col-md-6 col-lg-3 mb-4">
+                    <div class="equipe-card">
+                        <div class="equipe-imagem">
+                            <img src="~/imagens/Imagens%20CaotinhoAuMiau/perfil1.jpg" alt="Maria Silva">
+                            <div class="equipe-overlay">
+                                <div class="equipe-social">
+                                    <a href="#" class="social-icon"><i class="fab fa-instagram"></i></a>
+                                    <a href="#" class="social-icon"><i class="fab fa-linkedin"></i></a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="equipe-info">
+                            <h4>Maria Silva</h4>
+                            <p class="equipe-cargo">Fundadora e Diretora</p>
+                            <p class="equipe-bio">Veterinária apaixonada por animais desde criança, dedica sua vida a cuidar e proteger pets abandonados.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                
+                <div class="col-md-6 col-lg-3 mb-4">
+                    <div class="equipe-card">
+                        <div class="equipe-imagem">
+                            <img src="~/imagens/Imagens%20CaotinhoAuMiau/perfil2.jpg" alt="João Oliveira">
+                            <div class="equipe-overlay">
+                                <div class="equipe-social">
+                                    <a href="#" class="social-icon"><i class="fab fa-instagram"></i></a>
+                                    <a href="#" class="social-icon"><i class="fab fa-linkedin"></i></a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="equipe-info">
+                            <h4>João Oliveira</h4>
+                            <p class="equipe-cargo">Coordenador de Adoções</p>
+                            <p class="equipe-bio">Especialista em comportamento animal, trabalha para garantir que cada adoção seja um sucesso duradouro.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                
+                <div class="col-md-6 col-lg-3 mb-4">
+                    <div class="equipe-card">
+                        <div class="equipe-imagem">
+                            <img src="~/imagens/Imagens%20CaotinhoAuMiau/perfil3.jpg" alt="Ana Santos">
+                            <div class="equipe-overlay">
+                                <div class="equipe-social">
+                                    <a href="#" class="social-icon"><i class="fab fa-instagram"></i></a>
+                                    <a href="#" class="social-icon"><i class="fab fa-linkedin"></i></a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="equipe-info">
+                            <h4>Ana Santos</h4>
+                            <p class="equipe-cargo">Coordenadora de Resgate</p>
+                            <p class="equipe-bio">Organiza e lidera as operações de resgate de animais em situação de risco ou abandono.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                
+                <div class="col-md-6 col-lg-3 mb-4">
+                    <div class="equipe-card">
+                        <div class="equipe-imagem">
+                            <img src="~/imagens/Imagens%20CaotinhoAuMiau/perfil4.jpg" alt="Carlos Mendes">
+                            <div class="equipe-overlay">
+                                <div class="equipe-social">
+                                    <a href="#" class="social-icon"><i class="fab fa-instagram"></i></a>
+                                    <a href="#" class="social-icon"><i class="fab fa-linkedin"></i></a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="equipe-info">
+                            <h4>Carlos Mendes</h4>
+                            <p class="equipe-cargo">Veterinário</p>
+                            <p class="equipe-bio">Responsável pela saúde e bem-estar de todos os animais que passam pelo CaotinhoAuMiau.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    
+    <section class="section cta-section bg-transparent-force">
+        <div class="container bg-transparent-force">
+            <div class="row justify-content-center bg-transparent-force">
+                <div class="col-lg-8 text-center bg-transparent-force">
+                    <h2 class="cta-title">Faça Parte Dessa História</h2>
+                    <p class="cta-text">Existem muitas formas de ajudar o CaotinhoAuMiau a continuar transformando vidas. Seja adotando, voluntariando ou doando, cada gesto faz a diferença para nossos animais.</p>
+                    <div class="cta-buttons bg-transparent-force">
+                        <a href="/usuario/pets/explorar" class="botao-primario">
+                            <i class="fas fa-paw"></i> Adote um Amigo
+                        </a>
+                        <a href="@Url.Action("Sobre", "Home")" class="botao-secundario">
+                            <i class="fas fa-hands-helping"></i> Seja Voluntário
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    
+    <footer class="footer">
+        <div class="container">
+            
+            <div class="row">
+                
+                <div class="col-lg-4 col-md-6">
+                    <h3 class="footer-title">Sobre Nós</h3>
+                    <p class="footer-text">O Cãotinho AuMiau é uma organização dedicada a encontrar lares amorosos para pets abandonados, promovendo a adoção responsável e o bem-estar animal.</p>
+                    <div class="social-links">
+                        <a href="#" class="social-link" title="Facebook"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#" class="social-link" title="Instagram"><i class="fab fa-instagram"></i></a>
+                        <a href="#" class="social-link" title="Twitter"><i class="fab fa-twitter"></i></a>
+                        <a href="#" class="social-link" title="YouTube"><i class="fab fa-youtube"></i></a>
+                    </div>
+                </div>
+                
+                
+                <div class="col-lg-4 col-md-6">
+                    <h3 class="footer-title">Links Úteis</h3>
+                    <ul class="footer-links">
+                        <li><a href="/usuario/pets/explorar"><i class="fas fa-paw"></i> Pets Disponíveis</a></li>
+                        <li><a href="@Url.Action("Sobre", "Home")"><i class="fas fa-hands-helping"></i> Programa de Voluntariado</a></li>
+                        <li><a href="@Url.Action("Sobre", "Home")"><i class="fas fa-gift"></i> Faça uma Doação</a></li>
+                        <li><a href="@Url.Action("Sobre", "Home")"><i class="fas fa-newspaper"></i> Blog e Notícias</a></li>
+                    </ul>
+                </div>
+                
+                
+                <div class="col-lg-4 col-md-12">
+                    <h3 class="footer-title">Contato</h3>
+                    <ul class="footer-contato">
+                        <li>
+                            <i class="fas fa-phone"></i>
+                            <span>(11) 99999-9999</span>
+                        </li>
+                        <li>
+                            <i class="fas fa-envelope"></i>
+                            <span>contato@caotinhoaumiau.com</span>
+                        </li>
+                        <li>
+                            <i class="fas fa-map-marker-alt"></i>
+                            <span>São Paulo, SP - Brasil</span>
+                        </li>
+                        <li>
+                            <i class="fas fa-clock"></i>
+                            <span>Seg - Sáb: 9h às 18h</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            
+            
+            <div class="text-center mt-4 pt-3 border-top border-secondary">
+                <p class="text-muted mb-0">&copy; @DateTime.Now.Year - Caotinho AuMiau - Todos os direitos reservados</p>
+            </div>
+        </div>
+    </footer>
+
+    
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const imagensPerfil = [
+                '/imagens/Imagens%20CaotinhoAuMiau/perfil1.jpg',
+                '/imagens/Imagens%20CaotinhoAuMiau/perfil2.jpg',
+                '/imagens/Imagens%20CaotinhoAuMiau/perfil3.jpg',
+                '/imagens/Imagens%20CaotinhoAuMiau/perfil4.jpg'
+            ];
+            
+            imagensPerfil.forEach(src => {
+                const img = new Image();
+                img.src = src;
+                img.onload = function() {
+                };
+                img.onerror = function() {
+                    console.error('Erro ao pré-carregar imagem:', src);
+                };
+            });
+            
+            document.querySelectorAll('.equipe-imagem img').forEach((img, index) => {
+                img.onerror = function() {
+                    console.error('Erro ao carregar imagem:', this.src);
+                    this.src = '/imagens/paw-icon.png'; 
+                    this.style.objectFit = 'contain';
+                    this.style.padding = '50px';
+                    this.style.backgroundColor = '#f8f9fa';
+                };
+                
+                if (img.complete && img.naturalHeight === 0) {
+                    img.src = imagensPerfil[index];
+                }
+            });
+        });
+    </script>
+    <script src="~/js/shared/notificacoes.js"></script>
+    <script src="~/js/home/sobre.js" asp-append-version="true"></script>
+</body>
+</html> 

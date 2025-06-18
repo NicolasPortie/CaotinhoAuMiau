@@ -1,0 +1,189 @@
+@using CaotinhoAuMiau.Data
+@using Microsoft.EntityFrameworkCore
+@inject ApplicationDbContext DbContext
+
+@{
+    var usuarioNome = User.ObterValorClaim(System.Security.Claims.ClaimTypes.Name);
+    var usuarioEmail = User.ObterValorClaim(System.Security.Claims.ClaimTypes.Email);
+    var usuarioId = User.ObterIdUsuario();
+    var paginaAtual = ViewContext.RouteData.Values["action"]?.ToString();
+    var controllerAtual = ViewContext.RouteData.Values["controller"]?.ToString();
+    
+    var inicial = !string.IsNullOrEmpty(usuarioNome) ? usuarioNome.Substring(0, 1).ToUpper() : "?";
+    
+    var temFotoPerfil = false;
+    var fotoPerfil = string.Empty;
+    
+    if (User.Identity.IsAuthenticated && !string.IsNullOrEmpty(usuarioId))
+    {
+        var usuario = DbContext.Usuarios.FirstOrDefault(u => u.Id.ToString() == usuarioId);
+        if (usuario != null && !string.IsNullOrEmpty(usuario.FotoPerfil))
+        {
+            temFotoPerfil = true;
+            fotoPerfil = usuario.FotoPerfil;
+        }
+    }
+}
+
+
+<div class="menu-lateral" id="menu-lateral">
+    
+    <div class="cabecalho-sidebar">
+     
+    </div>
+    
+    
+    <div class="avatar-container">
+        <div class="avatar-wrapper">
+            @if (User.Identity.IsAuthenticated)
+            {
+                @if (temFotoPerfil)
+                {
+                    
+                    <div class="avatar">
+                        <div class="avatar-foto">
+                            <img src="~/imagens/perfil/@fotoPerfil" alt="@usuarioNome" />
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    
+                    <div class="avatar">
+                        <div class="avatar-inicial">
+                            <span>@inicial</span>
+                        </div>
+                    </div>
+                }
+            }
+            else
+            {
+                
+                <div class="avatar">
+                    <i class="fa-solid fa-user"></i>
+                </div>
+            }
+        </div>
+
+        <div class="usuario-detalhes">
+            @if (User.Identity.IsAuthenticated)
+            {
+                <div class="usuario-info-grupo">
+                    <div class="usuario-nome" title="@usuarioNome">@usuarioNome</div>
+                    <div class="usuario-email" title="@usuarioEmail">@usuarioEmail</div>
+                    <div class="usuario-status online">
+                        <span class="status-dot"></span>
+                        <span class="status-text">Online</span>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="usuario-info-grupo">
+                    <div class="usuario-nome">Visitante</div>
+                    <div class="usuario-status offline">
+                        <span class="status-dot"></span>
+                        <span class="status-text">Offline</span>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+
+    <div class="menu-conteudo">
+        <div class="menu-secao">
+            <div class="menu-secao-titulo">
+                <span class="icon-circle">
+                    <i class="fa-solid fa-compass"></i>
+                </span>
+                Principal
+                <div class="menu-secao-linha"></div>
+            </div>
+            <a href="@Url.Action("ExplorarPets", "Pet", new { fromForm = true, area = "Usuario" })" class="nav-link @(controllerAtual == "Pet" || Context.Request.Path.StartsWithSegments("/usuario/pets") ? "ativo" : "")">
+                <span class="icon-circle">
+                    <i class="fa-solid fa-paw"></i>
+                </span>
+                <span>Explorar</span>
+            </a>
+            @if (User?.Identity?.IsAuthenticated == true)
+            {
+                <a href="/usuario/adocoes" class="nav-link @(controllerAtual == "Adocao" || Context.Request.Path.StartsWithSegments("/usuario/adocoes") ? "ativo" : "")">
+                    <span class="icon-circle">
+                        <i class="fa-solid fa-heart"></i>
+                    </span>
+                    <span>Minhas Adoções</span>
+                </a>
+            }
+        </div>
+
+        @if (User.Identity.IsAuthenticated)
+        {
+            <div class="menu-secao">
+                <div class="menu-secao-titulo">
+                    <span class="icon-circle">
+                        <i class="fa-solid fa-user-circle"></i>
+                    </span>
+                    Minha Conta
+                    <div class="menu-secao-linha"></div>
+                </div>
+                <a href="/usuario/perfil" class="nav-link @(controllerAtual == "Perfil" || Context.Request.Path.StartsWithSegments("/usuario/perfil") ? "ativo" : "")">
+                    <span class="icon-circle">
+                        <i class="fa-solid fa-user"></i>
+                    </span>
+                    <span>Meu Perfil</span>
+                </a>
+            </div>
+        }
+        
+        
+        <div class="menu-secao">
+            <div class="menu-secao-titulo">
+                <span class="icon-circle">
+                    <i class="fa-solid fa-circle-question"></i>
+                </span>
+                Informações
+                <div class="menu-secao-linha"></div>
+            </div>
+            <a href="@Url.Action("Sobre", "Home")" class="nav-link @(controllerAtual == "Home" && paginaAtual == "Sobre" ? "ativo" : "")">
+                <span class="icon-circle">
+                    <i class="fa-solid fa-circle-info"></i>
+                </span>
+                <span>Sobre</span>
+            </a>
+        </div>
+    </div>
+
+    <div class="menu-rodape">
+        <div class="menu-secao-titulo rodape-titulo">
+            <span class="icon-circle">
+                <i class="fa-solid fa-gear"></i>
+            </span>
+            Acesso
+            <div class="menu-secao-linha"></div>
+        </div>
+        @if (User.Identity.IsAuthenticated)
+        {
+            <a href="/usuario/logout" class="nav-link nav-link-logout">
+                <span class="icon-circle">
+                    <i class="fa-solid fa-right-from-bracket"></i>
+                </span>
+                <span>Sair</span>
+            </a>
+        }
+        else
+        {
+            <a href="/usuario/login" class="nav-link nav-link-login">
+                <span class="icon-circle">
+                    <i class="fa-solid fa-right-to-bracket"></i>
+                </span>
+                <span>Entrar</span>
+            </a>
+            <a href="/usuario/cadastro" class="nav-link">
+                <span class="icon-circle">
+                    <i class="fa-solid fa-user-plus"></i>
+                </span>
+                <span>Cadastrar</span>
+            </a>
+        }
+    </div>
+</div>

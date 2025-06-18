@@ -1,0 +1,124 @@
+﻿@model CaotinhoAuMiau.Models.ViewModels.Comuns.AutenticacaoLoginViewModel
+
+@{
+    Layout = null;
+    ViewData["Title"] = "Login - CaotinhoAuMiau";
+}
+
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"]</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/autenticacao/usuario-login.css" asp-append-version="true">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    
+    <nav class="navbar">
+        <div class="navbar-container">
+            <a href="@Url.Action("Index", "Home")" class="navbar-brand">
+                <i class="fas fa-paw"></i> CaotinhoAuMiau
+            </a>
+            <div class="navbar-links">
+                <a href="/usuario/login" class="navbar-link active">
+                    <i class="fas fa-sign-in-alt"></i> Login
+                </a>
+                <a href="/usuario/cadastro" class="navbar-link">
+                    <i class="fas fa-user-plus"></i> Cadastro
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="login-wrapper">
+        <div class="login-container">
+            <div class="cabecalho-login">
+                <i class="fas fa-paw icone-pata"></i>
+                <h2 class="login-titulo">Bem-vindo de volta!</h2>
+                <p class="subtitulo-login">Faça login para continuar ajudando nossos amiguinhos</p>
+            </div>
+
+            @if (TempData["Sucesso"] != null)
+            {
+                <div class="alerta alerta-sucesso">
+                    <i class="fas fa-check-circle icone-alerta"></i>
+                    <div class="conteudo-alerta">
+                        @TempData["Sucesso"]
+                    </div>
+                </div>
+            }
+
+            @if (TempData["Erro"] != null)
+            {
+                <div class="alerta alerta-erro">
+                    <i class="fas fa-exclamation-circle icone-alerta"></i>
+                    <div class="conteudo-alerta">
+                        @TempData["Erro"]
+                    </div>
+                </div>
+            }
+
+            <form class="login-form" asp-controller="Autenticacao" asp-action="ProcessarLogin" asp-route-ReturnUrl="@ViewData["ReturnUrl"]" method="post">
+                @Html.AntiForgeryToken()
+                <div class="linha-form">
+                    <div class="form-grupo">
+                        <label class="form-rotulo" asp-for="Email">
+                            <i class="fas fa-envelope"></i> E-mail
+                        </label>
+                        <input class="form-campo" type="email" asp-for="Email" placeholder="seu@email.com" required>
+                        <span class="mensagem-erro" asp-validation-for="Email"></span>
+                    </div>
+                </div>
+
+                <div class="linha-form">
+                    <div class="form-grupo">
+                        <label class="form-rotulo" for="Senha">
+                            <i class="fas fa-lock"></i> Senha
+                        </label>
+                        <div class="input-group">
+                            <input class="form-campo" type="password" id="Senha" name="Senha" placeholder="Sua senha" required>
+                            <button type="button" class="botao-senha" title="Mostrar/Ocultar senha">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                        <span class="mensagem-erro" asp-validation-for="Senha"></span>
+                    </div>
+                </div>
+
+                <div class="linha-form opcoes-login">
+                    <div class="form-check">
+                        <input type="checkbox" class="form-check-input" asp-for="ContinuarConectado" id="ContinuarConectado">
+                        <label class="form-check-label" asp-for="ContinuarConectado">Continuar conectado</label>
+                    </div>
+                    <a href="#" class="link-esqueci-senha">Esqueci minha senha</a>
+                </div>
+
+                <button type="submit" class="botao-login">
+                    <i class="fas fa-sign-in-alt"></i> Entrar
+                </button>
+
+                <div class="separador">
+                    <span>ou</span>
+                </div>
+
+                <div class="link-cadastro">
+                    Não tem uma conta? <a href="/usuario/cadastro">Cadastre-se agora</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/autenticacao/login.js" asp-append-version="true"></script>
+</body>
+</html>

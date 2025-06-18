@@ -1,0 +1,218 @@
+
+<style>
+    
+    .hamburger-icon {
+        width: 24px;
+        height: 20px;
+        position: relative;
+        margin: auto;
+        transform: rotate(0deg);
+        transition: .5s ease-in-out;
+        cursor: pointer;
+    }
+
+    .hamburger-icon span {
+        display: block;
+        position: absolute;
+        height: 3px;
+        width: 100%;
+        background: white;
+        border-radius: 3px;
+        opacity: 1;
+        left: 0;
+        transform: rotate(0deg);
+        transition: .25s ease-in-out;
+    }
+
+    .hamburger-icon span:nth-child(1) {
+        top: 0px;
+        transform-origin: left center;
+    }
+
+    .hamburger-icon span:nth-child(2) {
+        top: 8px;
+        transform-origin: left center;
+    }
+
+    .hamburger-icon span:nth-child(3) {
+        top: 16px;
+        transform-origin: left center;
+    }
+
+    .menu-hamburguer.ativo .hamburger-icon span:nth-child(1) {
+        transform: rotate(45deg);
+        top: 0px;
+        left: 5px;
+    }
+
+    .menu-hamburguer.ativo .hamburger-icon span:nth-child(2) {
+        width: 0%;
+        opacity: 0;
+    }
+
+    .menu-hamburguer.ativo .hamburger-icon span:nth-child(3) {
+        transform: rotate(-45deg);
+        top: 16px;
+        left: 5px;
+    }
+    
+    
+    .cabecalho {
+        padding: 0 20px;
+        height: 70px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+    
+    
+    .menu-hamburguer {
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+    }
+    
+    
+    .logo-link {
+        text-decoration: none;
+        color: inherit;
+        display: flex;
+        align-items: center;
+        transition: opacity 0.2s ease-in-out;
+    }
+    
+    .logo-link:hover {
+        opacity: 0.9;
+    }
+    
+    
+    .logo-icon {
+        width: 36px;
+        height: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 10px;
+        font-size: 1.8rem;
+    }
+    
+    
+    .icone-notificacao {
+        cursor: pointer;
+        width: 45px;
+        height: 45px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        position: relative;
+        margin-right: 0;
+        transition: all 0.3s ease;
+        background-color: rgba(255, 255, 255, 0.1);
+    }
+    
+    .icone-notificacao:hover {
+        background-color: rgba(255, 255, 255, 0.3);
+        transform: scale(1.1);
+    }
+    
+    .icone-notificacao:active {
+        transform: scale(0.95);
+    }
+    
+    .icone-notificacao i {
+        font-size: 1.4rem;
+        color: white;
+    }
+    
+    
+    
+    .contador-notificacoes {
+        position: absolute;
+        top: 0;
+        right: 0;
+        background-color: #FF4136;
+        color: white;
+        border-radius: 50%;
+        min-width: 20px;
+        height: 20px;
+        padding: 0 4px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.75rem;
+        font-weight: bold;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+        transform-origin: center;
+        border: 2px solid white;
+    }
+</style>
+
+
+<header class="cabecalho">
+    <a href="@Url.Action("Index", "Home")" class="logo-link">
+        <div class="logo-container">
+            <div class="logo-icon">
+                <i class="fa-solid fa-paw"></i>
+            </div>
+            <div class="logo-titulo">
+                <div class="logo-principal">CãotinhoAuMiau</div>
+                <div class="logo-subtitulo">Adoção Responsável</div>
+            </div>
+        </div>
+    </a>
+    <div class="acoes-cabecalho">
+        @if (User?.Identity?.IsAuthenticated == true)
+        {
+            <div style="display: flex; align-items: center; gap: 5px;">
+                <div class="container-notificacoes">
+                    <div class="icone-notificacao" id="notificacoes-icone">
+                        <i class="fas fa-bell"></i>
+                        @if (ViewBag.NotificacoesNaoLidas != null && ViewBag.NotificacoesNaoLidas > 0)
+                        {
+                            <div class="contador-notificacoes" id="notificacoes-contador">@ViewBag.NotificacoesNaoLidas</div>
+                        }
+                    </div>
+                </div>
+                
+                <div class="menu-hamburguer" id="btnMenuHamburguer">
+                    <div class="hamburger-icon">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </div>
+                </div>
+            </div>
+        }
+        <div class="acoes-usuario">
+            @if (User.Identity.IsAuthenticated)
+            {
+                
+                
+            }
+            else
+            {
+                
+                <a href="@Url.Action("Login", "Autenticacao")" class="btn-login">
+                    <i class="fa-solid fa-right-to-bracket"></i> Entrar
+                </a>
+                <a href="@Url.Action("Cadastro", "Autenticacao")" class="btn-cadastro">
+                    <i class="fa-solid fa-user-plus"></i> Cadastrar
+                </a>
+            }
+        </div>
+        
+    </div>
+</header>
+
+<div class="menu-sobreposicao"></div>
+
+
+@if (User.Identity.IsAuthenticated)
+{
+    @await Html.PartialAsync("_Slidebar")
+}
+

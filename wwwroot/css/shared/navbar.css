@@ -1,0 +1,284 @@
+
+.cabecalho {
+    background: transparent !important;
+    color: white;
+    padding: 0 20px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1001;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: none;
+    height: 70px;
+}
+
+
+body[data-logged="true"] .cabecalho {
+    background: #E67E22 !important;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+}
+
+.cabecalho h1 {
+    margin: 0;
+    font-size: 1.8rem;
+    font-weight: bold;
+    color: white;
+    font-family: 'Baloo 2', cursive;
+}
+
+.acoes-cabecalho {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+
+.logo-container {
+    display: flex;
+    align-items: center;
+}
+
+.logo-link {
+    text-decoration: none;
+    color: white;
+    display: flex;
+    align-items: center;
+    transition: opacity 0.3s ease;
+}
+
+.logo-link:hover {
+    opacity: 0.9;
+}
+
+.logo-icon {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 10px;
+}
+
+
+.fa, .fas, .far, .fab, .fa-solid, .fa-regular, .fa-brands {
+    display: inline-block !important;
+    font-style: normal !important;
+    font-variant: normal !important;
+    text-rendering: auto !important;
+    -webkit-font-smoothing: antialiased !important;
+}
+
+.fa, .fas, .fa-solid {
+    font-weight: 900 !important;
+    font-family: "Font Awesome 6 Free" !important;
+}
+
+.far, .fa-regular {
+    font-weight: 400 !important;
+    font-family: "Font Awesome 6 Free" !important;
+}
+
+.fab, .fa-brands {
+    font-weight: 400 !important;
+    font-family: "Font Awesome 6 Brands" !important;
+}
+
+.logo-icon i {
+    font-size: 24px !important;
+    color: white !important;
+    filter: drop-shadow(0px 1px 2px rgba(0, 0, 0, 0.3));
+    transition: transform 0.3s ease;
+}
+
+.logo-link:hover .logo-icon i {
+    transform: scale(1.1);
+}
+
+.logo-titulo {
+    display: flex;
+    flex-direction: column;
+}
+
+.logo-principal {
+    font-weight: 700;
+    font-size: 1.4rem;
+    line-height: 1.2;
+    letter-spacing: 0.5px;
+    font-family: 'Baloo 2', cursive;
+}
+
+.logo-subtitulo {
+    font-size: 0.8rem;
+    opacity: 0.9;
+    letter-spacing: 0.5px;
+    font-family: 'Poppins', sans-serif;
+}
+
+
+.icone-notificacao {
+    position: relative;
+    cursor: pointer;
+    margin-right: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.2s ease;
+}
+
+.icone-notificacao:hover {
+    transform: scale(1.1);
+}
+
+.icone-notificacao i {
+    font-size: 24px !important;
+    color: white !important;
+    filter: drop-shadow(0px 1px 2px rgba(0, 0, 0, 0.3));
+}
+
+
+.animacao-sino {
+    animation: bell-shake 2s infinite;
+}
+
+@keyframes bell-shake {
+    0% { transform: rotate(0); }
+    5% { transform: rotate(15deg); }
+    10% { transform: rotate(-15deg); }
+    15% { transform: rotate(15deg); }
+    20% { transform: rotate(-15deg); }
+    25% { transform: rotate(0); }
+    100% { transform: rotate(0); }
+}
+
+.contador-notificacoes {
+    position: absolute;
+    top: -5px;
+    right: -7px;
+    background-color: #ff4444;
+    color: white;
+    border-radius: 50%;
+    min-width: 18px;
+    height: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: bold;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+
+.ponto-pulsante {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 8px;
+    height: 8px;
+    background-color: #4CAF50;
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.7); }
+    70% { transform: scale(1); box-shadow: 0 0 0 5px rgba(76, 175, 80, 0); }
+    100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(76, 175, 80, 0); }
+}
+
+
+.menu-hamburguer {
+    cursor: pointer;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 200;
+    position: relative;
+    border-radius: 50%;
+    transition: background-color 0.3s ease, transform 0.3s ease;
+}
+
+.menu-hamburguer:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+    transform: scale(1.1);
+}
+
+.menu-hamburguer i {
+    font-size: 24px !important;
+    color: white !important;
+    transition: transform 0.3s ease;
+}
+
+.menu-hamburguer:hover i {
+    animation: rotate-spin 0.5s ease-in-out;
+}
+
+.menu-hamburguer.ativo i {
+    transform: rotate(90deg);
+}
+
+@keyframes rotate-spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+body {
+    overflow-x: hidden;
+}
+
+
+body {
+    padding-top: 70px;
+}
+
+
+.contedor-navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+    height: 100%;
+}
+
+.marca-navbar {
+    font-family: 'Baloo 2', cursive;
+    font-size: 1.8rem;
+    font-weight: 600;
+    color: #fff;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+}
+
+.marca-navbar:hover {
+    color: #fff;
+    opacity: 0.9;
+}
+
+.links-navbar {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.link-navbar {
+    color: #fff;
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 1rem;
+    padding: 8px 15px;
+    border-radius: 5px;
+    transition: all 0.3s ease;
+}
+
+.link-navbar:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: #fff;
+} 

@@ -1,0 +1,369 @@
+﻿@model CaotinhoAuMiau.Models.ViewModels.Usuario.UsuarioViewModel
+
+@{
+    Layout = null;
+    ViewData["Title"] = "Cadastro - CaotinhoAuMiau";
+}
+
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewData["Title"]</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/home/home.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/autenticacao/usuario-cadastro.css" asp-append-version="true" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        span[data-valmsg-for="CEP"],
+        span[data-valmsg-for="CPF"] {
+            display: none !important;
+        }
+        
+        
+        .validation-summary-errors ul li:contains("CPF deve ter 11 dígitos"),
+        .validation-summary-errors ul li:contains("CEP must be a string with a maximum length of 8") {
+            display: none !important;
+        }
+        
+        
+        jQuery.expr[':'].contains = function(a, i, m) {
+            return jQuery(a).text().toUpperCase().indexOf(m[3].toUpperCase()) >= 0;
+        };
+    </style>
+</head>
+<body>
+    
+    <nav class="navbar">
+        <div class="navbar-container">
+            <a href="@Url.Action("Index", "Home")" class="navbar-brand">
+                <i class="fas fa-paw"></i> CaotinhoAuMiau
+            </a>
+            <div class="navbar-links">
+                @if (Context.Session.GetString("UsuarioEmail") == null)
+                {
+                    <a href="/usuario/login" class="navbar-link">
+                        <i class="fas fa-sign-in-alt"></i> Login
+                    </a>
+                    <a href="/usuario/cadastro" class="navbar-link active">
+                        <i class="fas fa-user-plus"></i> Cadastro
+                    </a>
+                }
+                else
+                {
+                    <div class="navbar-user">
+                        <a href="@Url.Action("ExplorarPets", "Usuario")" class="navbar-link">
+                            <i class="fas fa-paw"></i> Explorar Pets
+                        </a>
+                        <a href="@Url.Action("Adocoes", "Usuario")" class="navbar-link">
+                            <i class="fas fa-heart"></i> Minhas Adoções
+                        </a>
+                    </div>
+                }
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-cadastro">
+        <div class="envolucro-login">
+            <div class="contedor-login">
+                <h1 class="titulo-login">Cadastre-se</h1>
+
+                
+                <div class="passos-progresso" data-etapa="1">
+                    <div class="passo ativo" data-passo="1">
+                        <div class="passo-numero">1</div>
+                        <div class="passo-texto">Dados Pessoais</div>
+                    </div>
+                    <div class="passo" data-passo="2">
+                        <div class="passo-numero">2</div>
+                        <div class="passo-texto">Endereço</div>
+                    </div>
+                    <div class="passo" data-passo="3">
+                        <div class="passo-numero">3</div>
+                        <div class="passo-texto">Segurança</div>
+                    </div>
+                </div>
+
+                
+                <div id="alerta-erro" class="alerta alerta-erro" style="display: none;">
+                    <i class="fas fa-exclamation-circle alerta-icone"></i>
+                    <div class="alerta-conteudo">
+                        <span id="mensagem-erro">Por favor, preencha todos os campos obrigatórios.</span>
+                    </div>
+                </div>
+
+                @if (!ViewData.ModelState.IsValid)
+                {
+                    <div class="alerta alerta-erro">
+                        <i class="fas fa-exclamation-circle alerta-icone"></i>
+                        <div class="alerta-conteudo">
+                            <ul>
+                                @foreach (var modelError in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                                {
+                                    <li>@modelError.ErrorMessage</li>
+                                }
+                            </ul>
+                        </div>
+                    </div>
+                }
+
+                <form class="formulario-cadastro" asp-controller="Autenticacao" asp-action="ProcessarCadastro" asp-route-area="" method="post" id="formCadastro">
+                    @Html.AntiForgeryToken()
+
+                    
+                    <div class="etapa ativo" data-etapa="1">
+                        <h2 class="etapa-titulo"><i class="fas fa-user-circle secao-icone"></i> Dados Pessoais</h2>
+                        <div class="grupo-formulario">
+                            <div class="grupo-form">
+                                <label class="rotulo-form" asp-for="Nome">Nome</label>
+                                <div class="envolucro-icone-entrada">
+                                    <i class="fas fa-user icone-entrada"></i>
+                                    <input class="campo-form" type="text" asp-for="Nome" id="nome" required 
+                                        placeholder="Seu nome completo">
+                                </div>
+                                <span class="mensagem-erro" asp-validation-for="Nome"></span>
+                                <div class="feedback-validacao" id="nome-feedback"></div>
+                            </div>
+
+                            <div class="grupo-form">
+                                <label class="rotulo-form" asp-for="Email">E-mail</label>
+                                <div class="envolucro-icone-entrada">
+                                    <i class="fas fa-envelope icone-entrada"></i>
+                                    <input class="campo-form" type="email" asp-for="Email" id="email" required 
+                                        placeholder="seu@email.com" onblur="verificarEmail(this.value)">
+                                </div>
+                                <span class="mensagem-erro" asp-validation-for="Email"></span>
+                                <div class="feedback-validacao" id="email-feedback"></div>
+                            </div>
+
+                            <div class="grupo-form">
+                                <label class="rotulo-form" asp-for="CPF">CPF</label>
+                                <div class="envolucro-icone-entrada">
+                                    <i class="fas fa-id-card icone-entrada"></i>
+                                    <input class="campo-form" type="text" asp-for="CPF" id="cpf" required maxlength="14" 
+                                        placeholder="000.000.000-00" onblur="verificarCPF(this.value)" onload="verificarCPF(this.value)" oninput="verificarCPF(this.value)">
+                                </div>
+                                <span class="mensagem-erro" asp-validation-for="CPF"></span>
+                                <div class="feedback-validacao" id="cpf-feedback"></div>
+                            </div>
+
+                            <div class="grupo-form">
+                                <label class="rotulo-form" asp-for="Telefone">Telefone</label>
+                                <div class="envolucro-icone-entrada">
+                                    <i class="fas fa-phone icone-entrada"></i>
+                                    <input class="campo-form" type="tel" asp-for="Telefone" id="telefone" required maxlength="15" 
+                                        placeholder="(00) 00000-0000">
+                                </div>
+                                <span class="mensagem-erro" asp-validation-for="Telefone"></span>
+                                <div class="feedback-validacao" id="telefone-feedback"></div>
+                            </div>
+
+                            <div class="grupo-form">
+                                <label class="rotulo-form" asp-for="DataNascimento">Data de Nascimento</label>
+                                <div class="envolucro-icone-entrada">
+                                    <i class="fas fa-calendar-alt icone-entrada"></i>
+                                    <input class="campo-form" type="date" asp-for="DataNascimento" id="dataNascimento" required>
+                                </div>
+                                <span class="mensagem-erro" asp-validation-for="DataNascimento"></span>
+                                <div class="feedback-validacao" id="dataNascimento-feedback"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    
+                    <div class="etapa" data-etapa="2">
+                        <h2 class="etapa-titulo"><i class="fas fa-map-marker-alt secao-icone"></i> Endereço</h2>
+                        <div class="grupo-formulario grupo-formulario-grid">
+                            <div class="grupo-form">
+                                <label class="rotulo-form" asp-for="CEP">CEP</label>
+                                <div class="envolucro-icone-entrada">
+                                    <i class="fas fa-map-pin icone-entrada"></i>
+                                    <input class="campo-form" type="text" asp-for="CEP" id="cep" required maxlength="9" 
+                                        placeholder="00000-000" onblur="formatarCEP(this, this.value)">
+                                    <div class="feedback-validacao" id="cep-feedback"></div>
+                                </div>
+                            </div>
+
+                            <div class="grupo-form">
+                                <label class="rotulo-form" asp-for="Logradouro">Logradouro</label>
+                                <div class="envolucro-icone-entrada">
+                                    <i class="fas fa-road icone-entrada"></i>
+                                    <input class="campo-form" type="text" asp-for="Logradouro" id="logradouro" required 
+                                        placeholder="Rua, Avenida, etc">
+                                </div>
+                                <span class="mensagem-erro" asp-validation-for="Logradouro"></span>
+                                <div class="feedback-validacao" id="logradouro-feedback"></div>
+                            </div>
+
+                            <div class="grupo-form">
+                                <label class="rotulo-form" asp-for="Numero">Número</label>
+                                <div class="envolucro-icone-entrada">
+                                    <i class="fas fa-hashtag icone-entrada"></i>
+                                    <input class="campo-form" type="text" asp-for="Numero" id="numero" required 
+                                        placeholder="Número">
+                                </div>
+                                <span class="mensagem-erro" asp-validation-for="Numero"></span>
+                                <div class="feedback-validacao" id="numero-feedback"></div>
+                            </div>
+                            
+                            <div class="grupo-form">
+                                <label class="rotulo-form" asp-for="Complemento">Complemento</label>
+                                <div class="envolucro-icone-entrada">
+                                    <i class="fas fa-info-circle icone-entrada"></i>
+                                    <input class="campo-form" type="text" asp-for="Complemento" id="complemento" 
+                                        placeholder="Apto, Bloco, etc">
+                                </div>
+                                <span class="mensagem-erro" asp-validation-for="Complemento"></span>
+                            </div>
+
+                            <div class="grupo-form">
+                                <label class="rotulo-form" asp-for="Bairro">Bairro</label>
+                                <div class="envolucro-icone-entrada">
+                                    <i class="fas fa-building icone-entrada"></i>
+                                    <input class="campo-form" type="text" asp-for="Bairro" id="bairro" required 
+                                        placeholder="Seu bairro">
+                                </div>
+                                <span class="mensagem-erro" asp-validation-for="Bairro"></span>
+                                <div class="feedback-validacao" id="bairro-feedback"></div>
+                            </div>
+
+                            <div class="grupo-form">
+                                <label class="rotulo-form" asp-for="Cidade">Cidade</label>
+                                <div class="envolucro-icone-entrada">
+                                    <i class="fas fa-city icone-entrada"></i>
+                                    <input class="campo-form" type="text" asp-for="Cidade" id="cidade" required 
+                                        placeholder="Sua cidade">
+                                </div>
+                                <span class="mensagem-erro" asp-validation-for="Cidade"></span>
+                                <div class="feedback-validacao" id="cidade-feedback"></div>
+                            </div>
+                            
+                            <div class="grupo-form">
+                                <label class="rotulo-form" asp-for="Estado">Estado</label>
+                                <div class="envolucro-icone-entrada">
+                                    <i class="fas fa-map icone-entrada"></i>
+                                    <input class="campo-form" type="text" asp-for="Estado" id="estado" required maxlength="2" 
+                                        placeholder="UF">
+                                </div>
+                                <span class="mensagem-erro" asp-validation-for="Estado"></span>
+                                <div class="feedback-validacao" id="estado-feedback"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    
+                    <div class="etapa" data-etapa="3">
+                        <h2 class="etapa-titulo"><i class="fas fa-shield-alt secao-icone"></i> Segurança</h2>
+                        <div class="grupo-formulario">
+                            <div class="linha-form">
+                                <div class="grupo-form grupo-senha">
+                                    <label class="rotulo-form" asp-for="Senha">Senha</label>
+                                    <div class="container-campo-senha">
+                                        <i class="fas fa-lock icone-entrada"></i>
+                                        <input class="campo-form" type="password" asp-for="Senha" id="Senha" required 
+                                            placeholder="Sua senha">
+                                        <button type="button" class="botao-visibilidade-senha" onclick="alternarVisibilidadeSenha('Senha')">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                    </div>
+                                    <span class="mensagem-erro" asp-validation-for="Senha"></span>
+                                    <div class="feedback-validacao" id="senha-feedback"></div>
+                                    
+                                    
+                                    <div class="password-requirements">
+                                        <p>Sua senha deve conter:</p>
+                                        <ul>
+                                            <li data-requirement="length">
+                                                <i class="fas fa-times"></i> Mínimo 8 caracteres
+                                            </li>
+                                            <li data-requirement="upper">
+                                                <i class="fas fa-times"></i> Uma letra maiúscula
+                                            </li>
+                                            <li data-requirement="lower">
+                                                <i class="fas fa-times"></i> Uma letra minúscula
+                                            </li>
+                                            <li data-requirement="number">
+                                                <i class="fas fa-times"></i> Um número
+                                            </li>
+                                            <li data-requirement="special">
+                                                <i class="fas fa-times"></i> Um caractere especial
+                                            </li>
+                                        </ul>
+                                    </div>
+
+                                    <div class="password-strength">
+                                        <div class="strength-bar">
+                                            <div class="strength-level"></div>
+                                        </div>
+                                        <span class="strength-text">Força da senha: <strong>Digite uma senha</strong></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="linha-form">
+                                <div class="grupo-form grupo-senha">
+                                    <label class="rotulo-form" asp-for="ConfirmarSenha">Confirmar Senha</label>
+                                    <div class="container-campo-senha">
+                                        <i class="fas fa-lock icone-entrada"></i>
+                                        <input class="campo-form" type="password" asp-for="ConfirmarSenha" id="ConfirmarSenha" required 
+                                            placeholder="Confirme sua senha">
+                                        <button type="button" class="botao-visibilidade-senha" onclick="alternarVisibilidadeSenha('ConfirmarSenha')">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                    </div>
+                                    <span class="mensagem-erro" asp-validation-for="ConfirmarSenha"></span>
+                                    <div class="feedback-validacao" id="confirmarSenha-feedback"></div>
+                                </div>
+                            </div>
+
+                            <div class="container-termos">
+                                <div class="checkbox-termos">
+                                    <input type="checkbox" id="aceitarTermos" name="AceitarTermos" value="true" required>
+                                    <label for="aceitarTermos" class="texto-termos">
+                                        Ao se cadastrar, você concorda com nossos <a href="#" class="link-termos">Termos de Uso</a> e <a href="#" class="link-termos">Política de Privacidade</a>.
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    
+                    <div class="botoes-navegacao" data-etapa-atual="1">
+                        <button type="button" id="botaoVoltar" class="botao-secundario" onclick="anteriorEtapa()">
+                            <i class="fas fa-arrow-left me-2"></i>
+                            Voltar
+                        </button>
+                        <button type="button" id="botaoProximo" class="botao-primario" onclick="proximaEtapa()">
+                            Próximo
+                            <i class="fas fa-arrow-right ms-2"></i>
+                        </button>
+                        <button type="button" id="botaoEnviar" class="botao-primario oculto" onclick="enviarFormulario()">
+                            <i class="fas fa-check me-2"></i>
+                            Concluir Cadastro
+                        </button>
+                    </div>
+                    
+                    <div class="link-login">
+                        Já tem uma conta? <a href="/usuario/login">Faça login</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    
+    <script src="~/lib/vanilla-masker/vanilla-masker.js"></script>
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
+    <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
+    <script src="~/js/autenticacao/cadastro.js" asp-append-version="true"></script>
+</body>
+</html>

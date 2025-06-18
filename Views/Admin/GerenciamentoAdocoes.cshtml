@@ -1,0 +1,908 @@
+@using CaotinhoAuMiau.Models
+@using System.Linq
+@model IEnumerable<CaotinhoAuMiau.Models.Adocao>
+
+@{
+    ViewData["Title"] = "Gerenciamento de Adoções";
+    
+    var total = Model.Count();
+    var emProcesso = Model.Count(a => a.Status == "Em Processo");
+    var finalizadas = Model.Count(a => a.Status == "Finalizada");
+    var aguardandoBusca = Model.Count(a => a.Status == "Aguardando buscar");
+    
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Cãotinho AuMiau</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" />
+    <link rel="stylesheet" href="~/css/admin/admin-gerenciamento-adocoes.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/shared/paginacao.css" asp-append-version="true" />
+</head>
+<body class="d-flex">
+    
+    @await Html.PartialAsync("~/Views/Shared/_SlidebarAdmin.cshtml")
+    
+    <div class="conteudo-principal">
+        <div class="cabecalho-painel">
+            <h1 class="titulo-pagina">Gerenciamento de Adoções</h1>
+        </div>
+
+        @Html.AntiForgeryToken()
+
+        
+        <div class="cartoes-status">
+            <div class="cartao-status total">
+                <div class="conteudo-cartao-status">
+                    <div class="icone">
+                        <i class="fas fa-heart"></i>
+                    </div>
+                    <div>
+                        <div class="rotulo">Total de Adoções</div>
+                        <div class="numero">@total</div>
+                    </div>
+                </div>
+            </div>
+            <div class="cartao-status em-processo">
+                <div class="conteudo-cartao-status">
+                    <div class="icone">
+                        <i class="fas fa-spinner"></i>
+                    </div>
+                    <div>
+                        <div class="rotulo">Em Processo</div>
+                        <div class="numero">@emProcesso</div>
+                    </div>
+                </div>
+            </div>
+            <div class="cartao-status aguardando-buscar">
+                <div class="conteudo-cartao-status">
+                    <div class="icone">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div>
+                        <div class="rotulo">Aguardando buscar</div>
+                        <div class="numero">@aguardandoBusca</div>
+                    </div>
+                </div>
+            </div>
+            <div class="cartao-status finalizadas">
+                <div class="conteudo-cartao-status">
+                    <div class="icone">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <div>
+                        <div class="rotulo">Finalizadas</div>
+                        <div class="numero">@finalizadas</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        
+        <div class="secao-filtros">
+            <div class="caixa-pesquisa">
+                <i class="fas fa-search"></i>
+                <input type="text" id="pesquisaAdocao" class="form-control input-pesquisa" placeholder="Buscar por adotante, pet ou status...">
+            </div>
+            
+            <select id="filtroStatus" class="form-select select-filtro">
+                <option value="Todos">Todos os status</option>
+                <option value="Pendente">Pendente</option>
+                <option value="Em Processo">Em Processo</option>
+                <option value="Aprovado">Aprovado</option>
+                <option value="Aguardando buscar">Aguardando buscar</option>
+                <option value="Finalizada">Finalizada</option>
+                <option value="Cancelada">Cancelada</option>
+                <option value="Rejeitada">Rejeitada</option>
+            </select>
+            
+            <select id="filtroData" class="form-select select-filtro">
+                <option value="">Todas as datas</option>
+                <option value="hoje">Hoje</option>
+                <option value="7dias">Últimos 7 dias</option>
+                <option value="30dias">Últimos 30 dias</option>
+            </select>
+            
+            <button id="btnLimparFiltros" class="botao-secundario">
+                <i class="fas fa-undo me-1"></i> Limpar
+            </button>
+        </div>
+
+        
+        <div class="container-adocoes">
+            @if (Model.Any())
+            {
+                <div class="tabela-container">
+                    <table class="tabela tabela-adocoes" id="tabelaAdocoes">
+                        <thead class="cabecalho-tabela">
+                            <tr class="linha-cabecalho">
+                                <th class="coluna-cabecalho">Pet</th>
+                                <th class="coluna-cabecalho">Adotante</th>
+                                <th class="coluna-cabecalho">Data de Envio</th>
+                                <th class="coluna-cabecalho">Data de Resposta</th>
+                                <th class="coluna-cabecalho">Status</th>
+                                <th class="coluna-cabecalho">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody class="corpo-tabela">
+                            @foreach (var adocao in Model)
+                            {
+                                var diasRestantes = adocao.DataResposta.HasValue 
+                                    ? adocao.DataResposta.Value.AddDays(10) - DateTime.Now 
+                                    : TimeSpan.FromDays(10);
+                                var diasText = diasRestantes.Days > 0 
+                                    ? $"Restam {diasRestantes.Days} dias" 
+                                    : "Prazo expirado";
+                                var classeAlerta = diasRestantes.Days <= 2 ? "texto-perigo" : 
+                                                diasRestantes.Days <= 5 ? "texto-alerta" : "texto-sucesso";
+                                
+                                <tr class="linha-adocao" data-id="@adocao.Id" data-status="@adocao.Status.ToLower().Replace(" ", "-")" data-pet-id="@adocao.PetId">
+                                    <td class="coluna-dados">
+                                        <div class="coluna-pet">
+                                            <div class="imagem-container">
+                                                @if (adocao.Pet != null && !string.IsNullOrEmpty(adocao.Pet.NomeArquivoImagem))
+                                                {
+                                                    <img src="/imagens/pets/@adocao.Pet.NomeArquivoImagem" 
+                                                        alt="@adocao.Pet.Nome" class="miniatura-imagem-pet">
+                                                }
+                                                else
+                                                {
+                                                    <div class="sem-imagem"><i class="fas fa-paw"></i></div>
+                                                }
+                                            </div>
+                                            <div class="info-pet">
+                                                <span class="nome">@(adocao.Pet?.Nome ?? "Nome não disponível")</span>
+                                                <span class="detalhes">@(adocao.Pet?.Especie ?? "") @(adocao.Pet?.Raca ?? "")</span>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="coluna-dados">
+                                        <div class="coluna-adotante">
+                                            <div class="avatar-container">
+                                                @if (adocao.Usuario != null && !string.IsNullOrEmpty(adocao.Usuario.FotoPerfil))
+                                                {
+                                                    <img src="/imagens/perfil/@adocao.Usuario.FotoPerfil" 
+                                                        alt="@adocao.Usuario.Nome" class="avatar-usuario">
+                                                }
+                                                else
+                                                {
+                                                    <div class="avatar-sem-foto">
+                                                        @(adocao.Usuario?.Nome?.Length > 0 ? adocao.Usuario.Nome.Substring(0, 1).ToUpper() : "?")
+                                                    </div>
+                                                }
+                                            </div>
+                                            <div class="info-usuario">
+                                                <span class="nome">@adocao.Usuario?.Nome</span>
+                                                <span class="email">@adocao.Usuario?.Email</span>
+                                                <button class="botao-ver-perfil" data-usuario-id="@adocao.Usuario?.Id">
+                                                    <i class="fas fa-user-circle"></i>Ver Perfil
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="coluna-dados">
+                                        <div class="coluna-data">
+                                            <span class="data">@adocao.DataEnvio.ToString("dd/MM/yyyy")</span>
+                                            <span class="hora">@adocao.DataEnvio.ToString("HH:mm")</span>
+                                        </div>
+                                    </td>
+                                    <td class="coluna-dados">
+                                        <div class="coluna-data">
+                                            @if (adocao.DataResposta.HasValue)
+                                            {
+                                                <span class="data">@adocao.DataResposta.Value.ToString("dd/MM/yyyy")</span>
+                                                <span class="hora">@adocao.DataResposta.Value.ToString("HH:mm")</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="pendente">Pendente</span>
+                                            }
+                                        </div>
+                                    </td>
+                                    <td class="coluna-dados">
+                                        <div class="coluna-status">
+                                            <span class="status @adocao.Status.ToLower().Replace(" ", "-")">@adocao.Status</span>
+                                            @if (adocao.Status == "Aguardando buscar" && adocao.DataResposta.HasValue)
+                                            {
+                                                <span class="alerta-prazo @classeAlerta">@diasText</span>
+                                            }
+                                        </div>
+                                    </td>
+                                    <td class="coluna-dados">
+                                        <div class="coluna-acoes">
+                                            <button class="botao-acao visualizar" onclick="verDetalhes(@adocao.Id)" title="Ver detalhes">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                            
+                                            @if (adocao.Status == "Pendente")
+                                            {
+                                                <button class="botao-acao aprovar" onclick="mostrarModalAcao(@adocao.Id, 'aprovar')" title="Aprovar adoção">
+                                                    <i class="fas fa-check"></i>
+                                                </button>
+                                                <button class="botao-acao rejeitar" onclick="mostrarModalAcao(@adocao.Id, 'rejeitar')" title="Rejeitar adoção">
+                                                    <i class="fas fa-times"></i>
+                                                </button>
+                                            }
+                                            
+                                            @if (adocao.Status == "Em Processo" || adocao.Status == "Aprovado")
+                                            {
+                                                <button class="botao-acao aguardar" onclick="mostrarModalAcao(@adocao.Id, 'aguardandoBuscar')" title="Confirmar que pet está pronto para busca">
+                                                    <i class="fas fa-truck-pickup"></i>
+                                                </button>
+                                                <button class="botao-acao cancelar" onclick="mostrarModalAcao(@adocao.Id, 'cancelar')" title="Cancelar processo de adoção">
+                                                    <i class="fas fa-ban"></i>
+                                                </button>
+                                            }
+                                            
+                                            @if (adocao.Status == "Aguardando buscar")
+                                            {
+                                                <button class="botao-acao finalizar" onclick="mostrarModalAcao(@adocao.Id, 'finalizar')" title="Finalizar processo de adoção">
+                                                    <i class="fas fa-check-circle"></i>
+                                                </button>
+                                                <button class="botao-acao cancelar" onclick="mostrarModalAcao(@adocao.Id, 'cancelar')" title="Cancelar processo de adoção">
+                                                    <i class="fas fa-ban"></i>
+                                                </button>
+                                            }
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+                
+                @if (ViewBag.TotalPaginas > 0)
+                {
+                    <div class="paginacao-container w-100">
+                        <div class="paginacao mt-4">
+                            <nav aria-label="Navegação de páginas">
+                                <ul class="pagination justify-content-center flex-wrap">
+                                    @if (ViewBag.PaginaAtual > 1)
+                                    {
+                                        <li class="page-item">
+                                            <a class="page-link" href="@Url.Action("Listar", "GerenciamentoAdocao", new { pagina = ViewBag.PaginaAtual - 1, itensPorPagina = ViewBag.ItensPorPagina })">
+                                                <i class="fas fa-chevron-left"></i>
+                                            </a>
+                                        </li>
+                                    }
+                                    else
+                                    {
+                                        <li class="page-item disabled">
+                                            <span class="page-link"><i class="fas fa-chevron-left"></i></span>
+                                        </li>
+                                    }
+
+                                    @{int inicio = Math.Max(1, ViewBag.PaginaAtual - 2);
+                                      int fim = Math.Min(ViewBag.TotalPaginas, ViewBag.PaginaAtual + 2);
+                                      if (fim - inicio + 1 < 5 && ViewBag.TotalPaginas >= 5)
+                                      {
+                                          if (ViewBag.PaginaAtual <= 3)
+                                          {
+                                              fim = Math.Min(5, ViewBag.TotalPaginas);
+                                          }
+                                          else
+                                          {
+                                              inicio = Math.Max(1, ViewBag.TotalPaginas - 4);
+                                          }
+                                      }}
+                                    @for (int i = inicio; i <= fim; i++)
+                                    {
+                                        <li class="page-item @(i == ViewBag.PaginaAtual ? "active" : "")">
+                                            <a class="page-link" href="@Url.Action("Listar", "GerenciamentoAdocao", new { pagina = i, itensPorPagina = ViewBag.ItensPorPagina })">@i</a>
+                                        </li>
+                                    }
+
+                                    @if (ViewBag.PaginaAtual < ViewBag.TotalPaginas)
+                                    {
+                                        <li class="page-item">
+                                            <a class="page-link" href="@Url.Action("Listar", "GerenciamentoAdocao", new { pagina = ViewBag.PaginaAtual + 1, itensPorPagina = ViewBag.ItensPorPagina })">
+                                                <i class="fas fa-chevron-right"></i>
+                                            </a>
+                                        </li>
+                                    }
+                                    else
+                                    {
+                                        <li class="page-item disabled">
+                                            <span class="page-link"><i class="fas fa-chevron-right"></i></span>
+                                        </li>
+                                    }
+                                </ul>
+                            </nav>
+                        </div>
+                        
+                        <div class="paginacao-info mt-3 d-flex justify-content-between align-items-center">
+                            <div class="info-paginacao">
+                                Exibindo <span>@Model.Count()</span> de <span>@ViewBag.TotalItens</span> adoções
+                            </div>
+                            <div class="itens-por-pagina">
+                                <label for="selectItensPorPagina">Itens por página:</label>
+                                <select id="selectItensPorPagina" class="form-select form-select-sm">
+                                    @foreach (var opcao in new[] { 10, 20, 50 })
+                                    {
+                                        if (ViewBag.ItensPorPagina == opcao)
+                                        {
+                                            <option value="@opcao" selected>@opcao</option>
+                                        }
+                                        else
+                                        {
+                                            <option value="@opcao">@opcao</option>
+                                        }
+                                    }
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="estado-vazio">
+                    <div class="icone-vazio">
+                        <i class="fas fa-file-alt"></i>
+                    </div>
+                    <h3 class="titulo-sem-adocoes">Não há adoções em andamento no momento.</h3>
+                    <p class="texto-sem-adocoes">Quando houver adoções em andamento, elas aparecerão aqui.</p>
+                </div>
+            }
+        </div>
+    </div>
+
+    
+    <div class="modal fade" id="modalAcaoAdocao" tabindex="-1" aria-labelledby="modalAcaoAdocaoLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header" id="modalAcaoHeader">
+                    <h5 class="modal-title" id="tituloModalAcaoAdocao">Confirmar Ação</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="idAdocaoAcao" value="">
+                    <input type="hidden" id="tipoAcao" value="">
+                    
+                    <p id="textoConfirmacaoAcao">Você está prestes a realizar uma ação. Deseja continuar?</p>
+                    
+                    <div class="mb-3" id="campoObservacao">
+                        <label for="observacaoAcao" class="form-label">Motivo / Observações:</label>
+                        <textarea class="form-control" id="observacaoAcao" rows="3" placeholder="Informe o motivo ou observações adicionais..."></textarea>
+                        <div id="erroObservacao" class="texto-erro" style="display: none;">Este campo é obrigatório.</div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="botao-cancelar" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="botao-confirmar" id="botaoConfirmarAcao" onclick="executarAcao()">Confirmar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    
+    <div class="modal fade" id="modalDetalhesAdocao" tabindex="-1" aria-labelledby="modalDetalhesAdocaoLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalDetalhesAdocaoLabel">
+                        <i class="fas fa-paw me-2"></i>Detalhes da Adoção
+                    </h5>
+                    <div class="detalhes-tags">
+                        <div class="detalhes-status-tag" id="detalhesStatusAdocao">Aguardando buscar</div>
+                        <div class="detalhes-dias-tag" id="detalhesPrazoBusca">10 dias</div>
+                    </div>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                </div>
+                <div class="modal-body" id="modalDetalhesAdocaoBody">
+                    
+                    <div class="carregando-detalhes">
+                        <div class="spinner-border texto-primario" role="status">
+                            <span class="visually-hidden">Carregando...</span>
+                        </div>
+                        <p>Carregando detalhes da adoção...</p>
+                    </div>
+                    
+                    
+                    <div class="detalhes-adocao-container" style="display: none;">
+                        
+                        <div class="detalhes-navegacao">
+                            <ul class="detalhes-abas">
+                                <li class="detalhes-aba ativa" data-painel="painel-informacoes">
+                                    <i class="fas fa-info-circle"></i> Informações Básicas
+                                </li>
+                                <li class="detalhes-aba" data-painel="painel-processo">
+                                    <i class="fas fa-clipboard-list"></i> Processo de Adoção
+                                </li>
+                            </ul>
+                        </div>
+                        
+                        
+                        <div class="detalhes-conteudo">
+                            
+                            <div class="detalhes-painel ativo" id="painel-informacoes">
+                                <div class="detalhes-grid">
+                                    
+                                    <div class="detalhes-card">
+                                        <div class="detalhes-card-header">
+                                            <h6 class="detalhes-card-titulo">
+                                                <i class="fas fa-paw"></i> Informações do Pet
+                                            </h6>
+                                        </div>
+                                        <div class="detalhes-card-body">
+                                            <div class="detalhes-pet-imagem" id="detalhesPetImagem">
+                                                <i class="fas fa-paw"></i>
+                                            </div>
+                                            <div class="detalhes-info-lista">
+                                                <div class="detalhes-info-linha">
+                                                    <span class="detalhes-info-label">Nome</span>
+                                                    <span class="detalhes-info-valor destaque" id="detalhesNomePet"></span>
+                                                </div>
+                                                <div class="detalhes-info-linha">
+                                                    <span class="detalhes-info-label">Espécie</span>
+                                                    <span class="detalhes-info-valor" id="detalhesEspeciePet"></span>
+                                                </div>
+                                                <div class="detalhes-info-linha">
+                                                    <span class="detalhes-info-label">Raça</span>
+                                                    <span class="detalhes-info-valor" id="detalhesRacaPet"></span>
+                                                </div>
+                                                <div class="detalhes-info-linha">
+                                                    <span class="detalhes-info-label">Idade</span>
+                                                    <span class="detalhes-info-valor" id="detalhesIdadePet"></span>
+                                                </div>
+                                                <div class="detalhes-info-linha">
+                                                    <span class="detalhes-info-label">Sexo</span>
+                                                    <span class="detalhes-info-valor" id="detalhesSexoPet"></span>
+                                                </div>
+                                                <div class="detalhes-info-linha">
+                                                    <span class="detalhes-info-label">Porte</span>
+                                                    <span class="detalhes-info-valor" id="detalhesPortePet"></span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    
+                                    <div class="detalhes-card">
+                                        <div class="detalhes-card-header">
+                                            <h6 class="detalhes-card-titulo">
+                                                <i class="fas fa-user"></i> Informações do Adotante
+                                            </h6>
+                                        </div>
+                                        <div class="detalhes-card-body">
+                                            <div class="detalhes-adotante-avatar" id="detalhesAdotanteAvatar">
+                                                <i class="fas fa-user"></i>
+                                            </div>
+                                            <div class="detalhes-info-lista">
+                                                <div class="detalhes-info-linha">
+                                                    <span class="detalhes-info-label">Nome</span>
+                                                    <span class="detalhes-info-valor destaque" id="detalhesNomeAdotante"></span>
+                                                </div>
+                                                <div class="detalhes-info-linha">
+                                                    <span class="detalhes-info-label">Email</span>
+                                                    <span class="detalhes-info-valor" id="detalhesEmailAdotante"></span>
+                                                </div>
+                                                <div class="detalhes-info-linha">
+                                                    <span class="detalhes-info-label">Telefone</span>
+                                                    <span class="detalhes-info-valor" id="detalhesTelefoneAdotante"></span>
+                                                </div>
+                                                <div class="detalhes-info-linha">
+                                                    <span class="detalhes-info-label">CPF</span>
+                                                    <span class="detalhes-info-valor" id="detalhesCpfAdotante"></span>
+                                                </div>
+                                                <div class="detalhes-info-linha mt-3">
+                                                    <button class="botao-ver-perfil-completo" id="botaoVerPerfilCompleto">
+                                                        <i class="fas fa-user-circle me-1"></i>Ver perfil completo
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                
+                                <div class="detalhes-card mt-4">
+                                    <div class="detalhes-card-header">
+                                        <h6 class="detalhes-card-titulo">
+                                            <i class="fas fa-comment-alt"></i> Observações
+                                        </h6>
+                                    </div>
+                                    <div class="detalhes-card-body">
+                                        <div class="detalhes-observacoes" id="detalhesObservacoes">
+                                            
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            
+                            <div class="detalhes-painel" id="painel-processo">
+                                
+                                <div class="detalhes-card">
+                                    <div class="detalhes-card-header">
+                                        <h6 class="detalhes-card-titulo">
+                                            <i class="fas fa-tasks"></i> Progresso da Adoção
+                                        </h6>
+                                    </div>
+                                    <div class="detalhes-card-body">
+                                        <div class="detalhes-timeline-visual">
+                                            <div class="timeline-progresso">
+                                                <div class="timeline-progresso-item" id="timelineSolicitacao">
+                                                    <div class="timeline-progresso-icone">
+                                                        <i class="fas fa-file-alt"></i>
+                                                    </div>
+                                                    <div class="timeline-progresso-info">
+                                                        <div class="timeline-progresso-texto">Solicitação</div>
+                                                        <div class="timeline-progresso-data" id="timelineDataSolicitacao"></div>
+                                                    </div>
+                                                </div>
+                                                
+                                                <div class="timeline-progresso-linha"></div>
+                                                
+                                                <div class="timeline-progresso-item" id="timelineAprovacao">
+                                                    <div class="timeline-progresso-icone">
+                                                        <i class="fas fa-check"></i>
+                                                    </div>
+                                                    <div class="timeline-progresso-info">
+                                                        <div class="timeline-progresso-texto">Aprovação</div>
+                                                        <div class="timeline-progresso-data" id="timelineDataAprovacao"></div>
+                                                    </div>
+                                                </div>
+                                                
+                                                <div class="timeline-progresso-linha"></div>
+                                                
+                                                <div class="timeline-progresso-item" id="timelineBusca">
+                                                    <div class="timeline-progresso-icone">
+                                                        <i class="fas fa-truck-pickup"></i>
+                                                    </div>
+                                                    <div class="timeline-progresso-info">
+                                                        <div class="timeline-progresso-texto">Retirada</div>
+                                                        <div class="timeline-progresso-data" id="timelineDataBusca"></div>
+                                                    </div>
+                                                </div>
+                                                
+                                                <div class="timeline-progresso-linha"></div>
+                                                
+                                                <div class="timeline-progresso-item" id="timelineFinalizacao">
+                                                    <div class="timeline-progresso-icone">
+                                                        <i class="fas fa-home"></i>
+                                                    </div>
+                                                    <div class="timeline-progresso-info">
+                                                        <div class="timeline-progresso-texto">Finalização</div>
+                                                        <div class="timeline-progresso-data" id="timelineDataFinalizacao"></div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                
+                                <div class="detalhes-card mt-4">
+                                    <div class="detalhes-card-header">
+                                        <h6 class="detalhes-card-titulo">
+                                            <i class="fas fa-calendar-alt"></i> Datas Importantes
+                                        </h6>
+                                    </div>
+                                    <div class="detalhes-card-body">
+                                        <div class="detalhes-datas-grid">
+                                            <div class="detalhes-data-item">
+                                                <div class="detalhes-data-icon">
+                                                    <i class="fas fa-paper-plane"></i>
+                                                </div>
+                                                <div class="detalhes-data-info">
+                                                    <div class="detalhes-data-label">Solicitação enviada</div>
+                                                    <div class="detalhes-data-valor" id="detalhesDataEnvio"></div>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="detalhes-data-item">
+                                                <div class="detalhes-data-icon">
+                                                    <i class="fas fa-reply"></i>
+                                                </div>
+                                                <div class="detalhes-data-info">
+                                                    <div class="detalhes-data-label">Resposta</div>
+                                                    <div class="detalhes-data-valor" id="detalhesDataResposta"></div>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="detalhes-data-item" id="detalhesDataBuscaContainer">
+                                                <div class="detalhes-data-icon">
+                                                    <i class="fas fa-truck-pickup"></i>
+                                                </div>
+                                                <div class="detalhes-data-info">
+                                                    <div class="detalhes-data-label">Pronto para busca</div>
+                                                    <div class="detalhes-data-valor" id="detalhesDataBusca"></div>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="detalhes-data-item" id="detalhesDataFinalizacaoContainer">
+                                                <div class="detalhes-data-icon">
+                                                    <i class="fas fa-home"></i>
+                                                </div>
+                                                <div class="detalhes-data-info">
+                                                    <div class="detalhes-data-label">Finalização</div>
+                                                    <div class="detalhes-data-valor" id="detalhesDataFinalizacao"></div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                
+                                <div class="detalhes-card mt-4">
+                                    <div class="detalhes-card-header">
+                                        <h6 class="detalhes-card-titulo">
+                                            <i class="fas fa-comment-alt"></i> Observações
+                                        </h6>
+                                    </div>
+                                    <div class="detalhes-card-body">
+                                        <div class="detalhes-observacoes" id="detalhesObservacoesProcesso">
+                                            
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="botao-fechar" data-bs-dismiss="modal">
+                        <i class="fas fa-times me-2"></i>Fechar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    
+    <div class="modal fade" id="perfilUsuarioModal" tabindex="-1" aria-labelledby="perfilUsuarioModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header modal-header-primary">
+                    <div class="perfil-header">
+                        <div class="perfil-foto-container">
+                            <div class="perfil-inicial" id="perfilUsuarioInicial">U</div>
+                            
+                        </div>
+                        <div class="perfil-info">
+                            <h5 class="perfil-nome" id="perfilUsuarioNome">-</h5>
+                            <p class="perfil-email" id="perfilUsuarioEmail">-</p>
+                        </div>
+                    </div>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="spinnerPerfilUsuario" class="carregando">
+                        <div class="spinner-border texto-primario" role="status">
+                            <span class="visually-hidden">Carregando...</span>
+                        </div>
+                        <p>Carregando perfil do usuário...</p>
+                    </div>
+                    
+                    <div id="conteudoPerfilUsuario" style="display: none;">
+                        <div class="estatisticas-container">
+                            <h5><i class="fas fa-chart-bar me-2 texto-primario"></i>Estatísticas de Adoção</h5>
+                            <div class="estatisticas-items">
+                                <div class="estatistica total">
+                                    <div class="estatistica-valor" id="estatisticaTotal">0</div>
+                                    <div class="estatistica-label">Total</div>
+                                </div>
+                                <div class="estatistica aprovadas">
+                                    <div class="estatistica-valor" id="estatisticaAprovadas">0</div>
+                                    <div class="estatistica-label">Aprovadas</div>
+                                </div>
+                                <div class="estatistica rejeitadas">
+                                    <div class="estatistica-valor" id="estatisticaRejeitadas">0</div>
+                                    <div class="estatistica-label">Rejeitadas</div>
+                                </div>
+                                <div class="estatistica canceladas">
+                                    <div class="estatistica-valor" id="estatisticaCanceladas">0</div>
+                                    <div class="estatistica-label">Canceladas</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="perfil-container">
+                            <div class="perfil-secao">
+                                <div class="perfil-card dados-pessoais">
+                                    <h5><i class="fas fa-id-card me-2 texto-primario"></i>Dados Pessoais</h5>
+                                    <div class="perfil-grid">
+                                        <div class="perfil-campo">
+                                            <span class="campo-label">Nome Completo</span>
+                                            <p class="campo-valor" id="nomeCompletoUsuario">-</p>
+                                        </div>
+                                        <div class="perfil-campo">
+                                            <span class="campo-label">E-mail</span>
+                                            <p class="campo-valor" id="emailUsuario">-</p>
+                                        </div>
+                                        <div class="perfil-campo">
+                                            <span class="campo-label">CPF</span>
+                                            <p class="campo-valor" id="cpfUsuario">-</p>
+                                        </div>
+                                        <div class="perfil-campo">
+                                            <span class="campo-label">Telefone</span>
+                                            <p class="campo-valor" id="telefoneUsuario">-</p>
+                                        </div>
+                                        <div class="perfil-campo">
+                                            <span class="campo-label">Data de Nascimento</span>
+                                            <p class="campo-valor" id="dataNascimentoUsuario">-</p>
+                                        </div>
+                                        <div class="perfil-campo">
+                                            <span class="campo-label">Idade</span>
+                                            <p class="campo-valor" id="idadeUsuario">-</p>
+                                        </div>
+                                        <div class="perfil-campo">
+                                            <span class="campo-label">Data de Cadastro</span>
+                                            <p class="campo-valor" id="dataCadastroUsuario">-</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="perfil-card endereco">
+                                    <h5><i class="fas fa-map-marker-alt me-2 texto-primario"></i>Endereço</h5>
+                                    <div class="perfil-grid">
+                                        <div class="perfil-campo">
+                                            <span class="campo-label">Logradouro</span>
+                                            <p class="campo-valor" id="logradouroUsuario">-</p>
+                                        </div>
+                                        <div class="perfil-campo">
+                                            <span class="campo-label">Número</span>
+                                            <p class="campo-valor" id="numeroUsuario">-</p>
+                                        </div>
+                                        <div class="perfil-campo">
+                                            <span class="campo-label">Bairro</span>
+                                            <p class="campo-valor" id="bairroUsuario">-</p>
+                                        </div>
+                                        <div class="perfil-campo">
+                                            <span class="campo-label">Complemento</span>
+                                            <p class="campo-valor" id="complementoUsuario">-</p>
+                                        </div>
+                                        <div class="perfil-campo">
+                                            <span class="campo-label">CEP</span>
+                                            <p class="campo-valor" id="cepUsuario">-</p>
+                                        </div>
+                                        <div class="perfil-campo">
+                                            <span class="campo-label">Cidade</span>
+                                            <p class="campo-valor" id="cidadeUsuario">-</p>
+                                        </div>
+                                        <div class="perfil-campo">
+                                            <span class="campo-label">Estado</span>
+                                            <p class="campo-valor" id="estadoUsuario">-</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="historico-container">
+                            <h5><i class="fas fa-history me-2 texto-primario"></i>Histórico de Adoções</h5>
+                            <div id="historicoAdocoesUsuarioContainer" class="historico-adocoes">
+                                <div class="carregando">
+                                    <div class="spinner-border texto-primario" role="status">
+                                        <span class="visually-hidden">Carregando...</span>
+                                    </div>
+                                    <p>Carregando histórico de adoções...</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="modal-footer">
+                    <button type="button" class="botao-fechar" data-bs-dismiss="modal">Fechar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+    <script src="~/js/shared/slidebar.js" asp-append-version="true"></script>
+    <script src="~/js/admin/admin-gerenciamento-adocoes.js" asp-append-version="true"></script>
+    <script>
+        $(document).ready(function() {
+            
+            function getUrlWithFilters(pagina, itensPorPagina) {
+                var filtroStatus = $('#filtroStatus').val();
+                var filtroData = $('#filtroData').val();
+                var pesquisa = $('#pesquisaAdocao').val();
+                
+                var url = '@Url.Action("Listar", "GerenciamentoAdocao")' + '?pagina=' + pagina + '&itensPorPagina=' + itensPorPagina;
+                
+                if (filtroStatus) {
+                    url += '&filtroStatus=' + encodeURIComponent(filtroStatus);
+                }
+                
+                if (filtroData) {
+                    url += '&filtroData=' + encodeURIComponent(filtroData);
+                }
+                
+                if (pesquisa) {
+                    url += '&pesquisa=' + encodeURIComponent(pesquisa);
+                }
+                
+                return url;
+            }
+            
+            if ('@ViewBag.FiltroStatus' !== '') {
+                $('#filtroStatus').val('@ViewBag.FiltroStatus');
+            }
+            
+            if ('@ViewBag.FiltroData' !== '') {
+                $('#filtroData').val('@ViewBag.FiltroData');
+            }
+            
+            if ('@ViewBag.Pesquisa' !== '') {
+                $('#pesquisaAdocao').val('@ViewBag.Pesquisa');
+            }
+            
+            function aplicarFiltros() {
+                var filtroStatus = $('#filtroStatus').val();
+                var filtroData = $('#filtroData').val();
+                var pesquisa = $('#pesquisaAdocao').val();
+                
+                var url = '@Url.Action("Listar", "GerenciamentoAdocao")' + '?pagina=1&itensPorPagina=' + @ViewBag.ItensPorPagina;
+                
+                if (filtroStatus) {
+                    url += '&filtroStatus=' + encodeURIComponent(filtroStatus);
+                }
+                
+                if (filtroData) {
+                    url += '&filtroData=' + encodeURIComponent(filtroData);
+                }
+                
+                if (pesquisa) {
+                    url += '&pesquisa=' + encodeURIComponent(pesquisa);
+                }
+                
+                window.location.href = url;
+            }
+            
+            $('#pesquisaAdocao').keypress(function(e) {
+                if (e.which === 13) {
+                    aplicarFiltros();
+                    return false;
+                }
+            });
+            
+            $('#filtroStatus, #filtroData').change(function() {
+                aplicarFiltros();
+            });
+            
+            $('#btnLimparFiltros').click(function() {
+                window.location.href = '@Url.Action("Listar", "GerenciamentoAdocao")';
+            });
+            
+            // Manipulador para o seletor de itens por página
+            $('#selectItensPorPagina').change(function() {
+                var itensPorPagina = $(this).val();
+                var filtroStatus = $('#filtroStatus').val() || '';
+                var filtroData = $('#filtroData').val() || '';
+                var pesquisa = $('#pesquisaAdocao').val() || '';
+                
+                var url = '@Url.Action("Listar", "GerenciamentoAdocao")' + 
+                    '?pagina=1&itensPorPagina=' + itensPorPagina;
+                
+                if (filtroStatus && filtroStatus !== 'Todos') {
+                    url += '&filtroStatus=' + encodeURIComponent(filtroStatus);
+                }
+                
+                if (filtroData) {
+                    url += '&filtroData=' + encodeURIComponent(filtroData);
+                }
+                
+                if (pesquisa) {
+                    url += '&pesquisa=' + encodeURIComponent(pesquisa);
+                }
+                
+                window.location.href = url;
+            });
+        });
+    </script>
+</body>
+</html> 

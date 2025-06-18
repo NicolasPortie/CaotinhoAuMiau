@@ -1,0 +1,583 @@
+@model IEnumerable<CaotinhoAuMiau.Models.FormularioAdocao>
+@{
+    Layout = null;
+    ViewData["Title"] = "Gerenciamento de Formulários";
+    
+    var totalFormularios = ViewBag.TotalItens;
+    var pendentes = Model.Where(f => f.Status == "Pendente").Count();
+    var aprovados = Model.Where(f => f.Status == "Aprovado").Count();
+    var rejeitados = Model.Where(f => f.Status == "Rejeitada").Count();
+    var cancelados = Model.Where(f => f.Status == "Cancelada").Count();
+    
+
+    string GetStatusClass(string status)
+    {
+        return status.ToLower() switch
+        {
+            "pendente" => "pendente",
+            "aprovado" => "aprovado",
+            "aguardando buscar" => "aguardando-buscar",
+            "cancelada" => "cancelado",
+            "cancelado pelo usuario" => "cancelado",
+            "cancelado pelo admin" => "cancelado",
+            "rejeitada" => "rejeitado",
+            _ => "pendente"
+        };
+    }
+
+    string GetStatusText(string status)
+    {
+        return status.ToLower() switch
+        {
+            "pendente" => "Pendente",
+            "aprovado" => "Aprovado",
+            "aguardando buscar" => "Aguardando buscar",
+            "cancelada" => "Cancelada",
+            "cancelado pelo usuario" => "Cancelado pelo Usuário", 
+            "cancelado pelo admin" => "Cancelado pelo Admin",
+            "rejeitada" => "Rejeitada",
+            _ => status
+        };
+    }
+
+    string GetStatusIcon(string status)
+    {
+        return status.ToLower() switch
+        {
+            "pendente" => "fas fa-hourglass-half",
+            "aprovado" => "fas fa-check-circle",
+            "aguardando buscar" => "fas fa-paw",
+            "cancelada" => "fas fa-times-circle",
+            "cancelado pelo usuario" => "fas fa-times-circle",
+            "cancelado pelo admin" => "fas fa-times-circle",
+            "rejeitada" => "fas fa-times-circle",
+            _ => "fas fa-question-circle"
+        };
+    }
+}
+
+
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Cãotinho AuMiau</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" />
+    <link rel="stylesheet" href="~/css/admin/admin-gerenciamento-formularios.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/shared/paginacao.css" asp-append-version="true" />
+    <style>
+        
+        .modal {
+            z-index: 1050 !important;
+        }
+        .modal-backdrop {
+            z-index: 1040 !important;
+        }
+        .barra-lateral {
+            z-index: 100 !important;
+        }
+        .modal-open {
+            overflow: auto !important;
+            padding-right: 0 !important;
+        }
+        body.modal-open .conteudo-principal {
+            filter: none !important;
+        }
+        
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+        }
+        
+        .cartao-status .numero {
+            font-family: 'Poppins', sans-serif;
+            font-weight: 700;
+        }
+        
+        .cartao-status .rotulo {
+            font-family: 'Poppins', sans-serif;
+            font-weight: 500;
+        }
+        
+        
+    </style>
+</head>
+<body class="d-flex">
+    
+    @await Html.PartialAsync("~/Views/Shared/_SlidebarAdmin.cshtml")
+
+    <div class="conteudo-principal">
+        <div class="cabecalho-painel">
+            <h1 class="titulo-pagina">Gerenciamento de Formulários</h1>
+        </div>
+
+        <div class="row mb-4">
+            <div class="col-xl-3 col-md-6 mb-4">
+                <div class="cartao-status total">
+                    <div class="conteudo-cartao-status">
+                        <div class="icone">
+                            <i class="fas fa-clipboard-list"></i>
+                        </div>
+                        <div class="d-flex flex-column">
+                            <span class="rotulo">Total de Formulários</span>
+                            <span class="numero">@totalFormularios</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xl-3 col-md-6 mb-4">
+                <div class="cartao-status pendentes">
+                    <div class="conteudo-cartao-status">
+                        <div class="icone">
+                            <i class="fas fa-hourglass-half"></i>
+                        </div>
+                        <div class="d-flex flex-column">
+                            <span class="rotulo">Pendentes</span>
+                            <span class="numero">@pendentes</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xl-3 col-md-6 mb-4">
+                <div class="cartao-status aprovados">
+                    <div class="conteudo-cartao-status">
+                        <div class="icone">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                        <div class="d-flex flex-column">
+                            <span class="rotulo">Aprovados</span>
+                            <span class="numero">@aprovados</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xl-3 col-md-6 mb-4">
+                <div class="cartao-status rejeitados">
+                    <div class="conteudo-cartao-status">
+                        <div class="icone">
+                            <i class="fas fa-times-circle"></i>
+                        </div>
+                        <div class="d-flex flex-column">
+                            <span class="rotulo">Rejeitados/Cancelados</span>
+                            <span class="numero">@(rejeitados + cancelados)</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="secao-filtros">
+            <div class="row align-items-center">
+                <div class="col-md-5 mb-2 mb-md-0">
+                    <div class="caixa-pesquisa">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="campoPesquisaForm" class="form-control" placeholder="Pesquisar por nome, email ou endereço..." style="height: 40px; padding-left: 35px;">
+                    </div>
+                </div>
+                <div class="col-md-3 mb-2 mb-md-0">
+                    <select id="filtroStatus" class="form-select" style="height: 40px; padding: 0.375rem 0.75rem; text-align: left;">
+                        <option value="">Todos os Status</option>
+                        <option value="pendente">Pendente</option>
+                        <option value="aprovado">Aprovado</option>
+                        <option value="aguardando buscar">Aguardando buscar</option>
+                        <option value="rejeitada">Rejeitado</option>
+                        <option value="cancelada">Cancelado</option>
+                        <option value="cancelado pelo usuario">Cancelado pelo Usuário</option>
+                        <option value="cancelado pelo admin">Cancelado pelo Admin</option>
+                    </select>
+                </div>
+                <div class="col-md-4 d-flex align-items-center">
+                    <div class="flex-grow-1 me-2">
+                        <select id="filtroData" class="form-select" style="height: 40px; padding: 0.375rem 0.75rem; text-align: left;">
+                            <option value="">Qualquer data</option>
+                            <option value="hoje">Hoje</option>
+                            <option value="7dias">Últimos 7 dias</option>
+                            <option value="30dias">Últimos 30 dias</option>
+                        </select>
+                    </div>
+                    <button id="btnLimparFiltros" class="botao-secundario">
+                        <i class="fas fa-undo me-1"></i> Limpar Filtros
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="tabela-responsiva">
+            @if (Model.Any())
+            {
+                <table class="tabela tabela-formularios">
+                    <thead>
+                        <tr>
+                            <th>Usuário</th>
+                            <th>Data</th>
+                            <th>Status</th>
+                            <th>Pet de Interesse</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var form in Model)
+                        {
+                            var statusClass = GetStatusClass(form.Status);
+                            var statusText = GetStatusText(form.Status);
+                            var statusIcon = GetStatusIcon(form.Status);
+
+                            <tr data-id="@form.Id" data-status="@form.Status">
+                                <td data-label="Usuário">
+                                    <div class="container-info-usuario">
+                                        <div class="container-foto-usuario @(string.IsNullOrEmpty(form.Usuario?.FotoPerfil) ? "sem-foto" : "")">
+                                            @if (string.IsNullOrEmpty(form.Usuario?.FotoPerfil))
+                                            {
+                                                <span>@(form.Usuario?.Nome?.Length > 0 ? form.Usuario.Nome.Substring(0, 1).ToUpper() : "?")</span>
+                                            }
+                                            else
+                                            {
+                                                <img src="~/imagens/perfil/@form.Usuario.FotoPerfil" alt="@form.Usuario.Nome">
+                                            }
+                                        </div>
+                                        <div class="detalhes-usuario">
+                                            <span class="nome-cliente">@form.Usuario?.Nome</span>
+                                            <div class="lista-contatos">
+                                                <small class="item-contato"><i class="fas fa-envelope"></i> @form.Usuario?.Email</small>
+                                                <small class="item-contato"><i class="fas fa-phone"></i> @form.Usuario?.Telefone</small>
+                                                <small class="item-contato"><i class="fas fa-map-marker-alt"></i> @form.Usuario?.Cidade - @form.Usuario?.Estado</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td data-label="Data" class="data">
+                                    @form.DataEnvio.ToString("dd/MM/yyyy HH:mm")
+                                </td>
+                                <td data-label="Status">
+                                    <span class="indicador-status @statusClass">
+                                        <i class="@statusIcon me-2"></i>@statusText
+                                    </span>
+                                </td>
+                                <td data-label="Pet">
+                                    <div class="container-info-pet">
+                                        <div class="miniatura-pet">
+                                            <img src="~/imagens/pets/@(string.IsNullOrEmpty(form.Pet?.NomeArquivoImagem) ? "pet-placeholder.jpg" : form.Pet.NomeArquivoImagem)" 
+                                                 alt="@form.Pet?.Nome" class="miniatura-imagem-pet">
+                                        </div>
+                                        <div class="detalhes-pet ms-2">
+                                            <span class="nome-pet">@form.Pet?.Nome</span>
+                                            <small>
+                                                <i class="@(form.Pet?.Especie == "Cachorro" ? "fas fa-dog" : "fas fa-cat")"></i>
+                                                @form.Pet?.Especie, @form.Pet?.Porte
+                                            </small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td data-label="Ações">
+                                    <div class="botoes-acao">
+                                        <button type="button" class="botao-acao @(form.Status == "Pendente" ? "botao-visualizar" : "botao-contorno-primario")" 
+                                                onclick="visualizarFormulario(@form.Id)" 
+                                                data-status="@form.Status">
+                                            @if (form.Status == "Pendente")
+                                            {
+                                                <i class="fas fa-clipboard-check me-1"></i> @("Avaliar")
+                                            }
+                                            else
+                                            {
+                                                <i class="fas fa-eye me-1"></i> @("Ver Formulário")
+                                            }
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+                
+                @if (ViewBag.TotalPaginas > 0)
+                {
+                    <div class="paginacao-container w-100">
+                        <div class="paginacao mt-4">
+                            <nav aria-label="Navegação de páginas">
+                                <ul class="pagination justify-content-center flex-wrap">
+                                    @if (ViewBag.PaginaAtual > 1)
+                                    {
+                                        <li class="page-item">
+                                            <a class="page-link" href="@Url.Action("Listar", "GerenciamentoFormularioAdocao", new { pagina = ViewBag.PaginaAtual - 1, itensPorPagina = ViewBag.ItensPorPagina })">
+                                                <i class="fas fa-chevron-left"></i>
+                                            </a>
+                                        </li>
+                                    }
+                                    else
+                                    {
+                                        <li class="page-item disabled">
+                                            <span class="page-link"><i class="fas fa-chevron-left"></i></span>
+                                        </li>
+                                    }
+
+                                    @{int inicio = Math.Max(1, ViewBag.PaginaAtual - 2);
+                                      int fim = Math.Min(ViewBag.TotalPaginas, ViewBag.PaginaAtual + 2);
+                                      if (fim - inicio + 1 < 5 && ViewBag.TotalPaginas >= 5)
+                                      {
+                                          if (ViewBag.PaginaAtual <= 3)
+                                          {
+                                              fim = Math.Min(5, ViewBag.TotalPaginas);
+                                          }
+                                          else
+                                          {
+                                              inicio = Math.Max(1, ViewBag.TotalPaginas - 4);
+                                          }
+                                      }}
+                                    @for (int i = inicio; i <= fim; i++)
+                                    {
+                                        <li class="page-item @(i == ViewBag.PaginaAtual ? "active" : "")">
+                                            <a class="page-link" href="@Url.Action("Listar", "GerenciamentoFormularioAdocao", new { pagina = i, itensPorPagina = ViewBag.ItensPorPagina })">@i</a>
+                                        </li>
+                                    }
+
+                                    @if (ViewBag.PaginaAtual < ViewBag.TotalPaginas)
+                                    {
+                                        <li class="page-item">
+                                            <a class="page-link" href="@Url.Action("Listar", "GerenciamentoFormularioAdocao", new { pagina = ViewBag.PaginaAtual + 1, itensPorPagina = ViewBag.ItensPorPagina })">
+                                                <i class="fas fa-chevron-right"></i>
+                                            </a>
+                                        </li>
+                                    }
+                                    else
+                                    {
+                                        <li class="page-item disabled">
+                                            <span class="page-link"><i class="fas fa-chevron-right"></i></span>
+                                        </li>
+                                    }
+                                </ul>
+                            </nav>
+                        </div>
+                        
+                        <div class="paginacao-info mt-3 d-flex justify-content-between align-items-center">
+                            <div class="info-paginacao">
+                                Exibindo <span>@Model.Count()</span> de <span>@ViewBag.TotalItens</span> formulários
+                            </div>
+                            <div class="itens-por-pagina">
+                                <label for="selectItensPorPagina">Itens por página:</label>
+                                <select id="selectItensPorPagina" class="form-select form-select-sm">
+                                    @foreach (var opcao in new[] { 10, 20, 50 })
+                                    {
+                                        if (ViewBag.ItensPorPagina == opcao)
+                                        {
+                                            <option value="@opcao" selected>@opcao</option>
+                                        }
+                                        else
+                                        {
+                                            <option value="@opcao">@opcao</option>
+                                        }
+                                    }
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="estado-vazio">
+                    <div class="icone-vazio">
+                        <i class="fas fa-file-alt"></i>
+                    </div>
+                    <h3>Não há formulários de adoção no momento.</h3>
+                    <p>Quando houver formulários de adoção, eles aparecerão aqui.</p>
+                </div>
+            }
+        </div>
+    </div>
+
+    
+    <div class="modal fade" id="modalDetalhesFormulario" tabindex="-1" aria-labelledby="tituloModalDetalhesFormulario" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title titulo-modal" id="tituloModalDetalhesFormulario">
+                        <i class="fas fa-file-alt me-2"></i>Detalhes do Formulário
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                </div>
+                <div class="corpo-modal modal-body">
+                    
+                    <div id="conteudoDetalhesFormulario">
+                        
+                    </div>
+                    
+                    <input type="hidden" id="formularioIdAtual" value="" />
+                    
+                    <div class="grupo-formulario mt-3">
+                        <label for="observacaoAdmin" class="rotulo-formulario fw-bold">Observações do Administrador</label>
+                        <textarea id="observacaoAdmin" class="controle-formulario" rows="3" placeholder="Adicione observações sobre este formulário..."></textarea>
+                        <small class="texto-auxiliar">Estas observações serão visíveis para o usuário na página de "Minhas Adoções".</small>
+                    </div>
+                    
+                    
+                    <div id="areaBotoesAcao">
+                        
+                        <div id="botoesAcaoPrimarios" class="d-flex justify-content-end gap-2 mt-4">
+                            <button type="button" class="botao-contorno-secundario" data-bs-dismiss="modal">
+                                <i class="fas fa-times me-2"></i>Fechar
+                            </button>
+                            <button type="button" class="botao-sucesso" id="botaoAprovarNoModal">
+                                <i class="fas fa-check me-2"></i>Aprovar
+                            </button>
+                            <button type="button" class="botao-perigo" id="botaoRejeitarNoModal">
+                                <i class="fas fa-times me-2"></i>Rejeitar
+                            </button>
+                        </div>
+
+                        
+                        <div id="confirmacaoAprovacao" class="d-none">
+                            <div class="alert alert-success mt-4">
+                                <i class="fas fa-check-circle me-2"></i>
+                                <strong>Confirmar Aprovação</strong>
+                                <p class="mb-0 mt-2">Você está prestes a aprovar este formulário de adoção. Esta ação iniciará o processo de adoção.</p>
+                            </div>
+                            <div class="d-flex justify-content-end gap-2">
+                                <button type="button" class="botao-contorno-secundario" id="botaoCancelarAprovacao">
+                                    <i class="fas fa-arrow-left me-2"></i>Voltar
+                                </button>
+                                <button type="button" class="botao-sucesso" id="botaoConfirmarAprovacao">
+                                    <i class="fas fa-check me-2"></i>Confirmar Aprovação
+                                </button>
+                            </div>
+                        </div>
+
+                        
+                        <div id="confirmacaoRejeicao" class="d-none">
+                            <div class="alert alert-danger mt-4">
+                                <i class="fas fa-exclamation-circle me-2"></i>
+                                <strong>Confirmar Rejeição</strong>
+                                <p class="mb-0 mt-2">Você está prestes a rejeitar este formulário de adoção. Esta ação não poderá ser desfeita.</p>
+                            </div>
+                            <div class="d-flex justify-content-end gap-2">
+                                <button type="button" class="botao-contorno-secundario" id="botaoCancelarRejeicao">
+                                    <i class="fas fa-arrow-left me-2"></i>Voltar
+                                </button>
+                                <button type="button" class="botao-perigo" id="botaoConfirmarRejeicao">
+                                    <i class="fas fa-times me-2"></i>Confirmar Rejeição
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @Html.AntiForgeryToken()
+    
+    @await Html.PartialAsync("_ValidationScriptsPartial")
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+    <script src="~/js/admin/gerenciamento-formularios.js?v=1.0.1"></script>
+    <script>
+        $(document).ready(function() {
+            
+
+            
+            function getUrlWithFilters(pagina, itensPorPagina) {
+                var filtroStatus = $('#filtroStatus').val();
+                var filtroData = $('#filtroData').val();
+                var pesquisa = $('#campoPesquisaForm').val();
+                
+                var url = '@Url.Action("Listar")' + '?pagina=' + pagina + '&itensPorPagina=' + itensPorPagina;
+                
+                if (filtroStatus) {
+                    url += '&filtroStatus=' + encodeURIComponent(filtroStatus);
+                }
+                
+                if (filtroData) {
+                    url += '&filtroData=' + encodeURIComponent(filtroData);
+                }
+                
+                if (pesquisa) {
+                    url += '&pesquisa=' + encodeURIComponent(pesquisa);
+                }
+                
+                return url;
+            }
+            
+            $('.pagination .page-link').each(function() {
+                var href = $(this).attr('href');
+                if (href) {
+                    var match = href.match(/pagina=(\d+)&itensPorPagina=(\d+)/);
+                    if (match) {
+                        var pagina = match[1];
+                        var itensPorPagina = match[2];
+                        $(this).attr('href', getUrlWithFilters(pagina, itensPorPagina));
+                    }
+                }
+            });
+            
+            function aplicarFiltros() {
+                var filtroStatus = $('#filtroStatus').val();
+                var filtroData = $('#filtroData').val();
+                var pesquisa = $('#campoPesquisaForm').val();
+                
+                var url = '@Url.Action("Listar")' + '?pagina=1&itensPorPagina=' + @ViewBag.ItensPorPagina;
+                
+                if (filtroStatus) {
+                    url += '&filtroStatus=' + encodeURIComponent(filtroStatus);
+                }
+                
+                if (filtroData) {
+                    url += '&filtroData=' + encodeURIComponent(filtroData);
+                }
+                
+                if (pesquisa) {
+                    url += '&pesquisa=' + encodeURIComponent(pesquisa);
+                }
+                
+                window.location.href = url;
+            }
+            
+            $('#campoPesquisaForm').keypress(function(e) {
+                if (e.which === 13) {
+                    aplicarFiltros();
+                    return false;
+                }
+            });
+            
+            $('#filtroStatus, #filtroData').change(function() {
+                aplicarFiltros();
+            });
+            
+            $('#btnLimparFiltros').click(function() {
+                window.location.href = '@Url.Action("Listar")';
+            });
+
+            // Adicionar manipulador para itens por página
+            $('#selectItensPorPagina').change(function() {
+                var itensPorPagina = $(this).val();
+                var filtroStatus = $('#filtroStatus').val() || '';
+                var filtroData = $('#filtroData').val() || '';
+                var pesquisa = $('#campoPesquisaForm').val() || '';
+                
+                var url = '@Url.Action("Listar", "GerenciamentoFormularioAdocao")' + 
+                    '?pagina=1&itensPorPagina=' + itensPorPagina;
+                
+                if (filtroStatus) {
+                    url += '&filtroStatus=' + encodeURIComponent(filtroStatus);
+                }
+                
+                if (filtroData) {
+                    url += '&filtroData=' + encodeURIComponent(filtroData);
+                }
+                
+                if (pesquisa) {
+                    url += '&pesquisa=' + encodeURIComponent(pesquisa);
+                }
+                
+                window.location.href = url;
+            });
+        });
+    </script>
+</body>
+</html> 

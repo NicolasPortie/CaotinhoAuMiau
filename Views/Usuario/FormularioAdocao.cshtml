@@ -1,0 +1,739 @@
+@model CaotinhoAuMiau.Models.ViewModels.Usuario.FormularioAdocaoViewModel
+
+@{
+    ViewData["Title"] = "Formulário de Adoção";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="adoption-header">
+    <div class="adoption-title-container">
+        <h1 class="form-title">Formulário de Adoção</h1>
+        <p class="subtitle" style="text-align: center; width: 100%; display: block; margin: 0 auto;">Vamos dar um novo lar para esse amiguinho especial</p>
+    </div>
+</div>
+
+<div class="progress-container">
+    <div class="progress-wrapper">
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressFill"></div>
+        </div>
+        <div class="progress-steps">
+            <div class="progress-step active" data-step="1">
+                <div class="step-icon"><i class="fas fa-home"></i></div>
+                <div class="step-label">Moradia</div>
+            </div>
+            <div class="progress-step" data-step="2">
+                <div class="step-icon"><i class="fas fa-wallet"></i></div>
+                <div class="step-label">Financeiro</div>
+            </div>
+            <div class="progress-step" data-step="3">
+                <div class="step-icon"><i class="fas fa-paw"></i></div>
+                <div class="step-label">Experiência</div>
+            </div>
+            <div class="progress-step" data-step="4">
+                <div class="step-icon"><i class="fas fa-heart"></i></div>
+                <div class="step-label">Motivação</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="adoption-layout">
+    <div class="floating-pet-card">
+        <div class="pet-card-content">
+            <div class="pet-image-wrapper">
+                @if (Model.Pet != null && !string.IsNullOrEmpty(Model.Pet.NomeArquivoImagem))
+                {
+                    <img src="/imagens/pets/@Model.Pet.NomeArquivoImagem" alt="@Model.Pet.Nome">
+                }
+                else
+                {
+                    <img src="/imagens/pets/default-pet.jpg" alt="Imagem do Pet">
+                }
+                <div class="pet-type-badge @(Model.Pet?.Especie?.ToLower() == "cachorro" ? "dog-badge" : (Model.Pet?.Especie?.ToLower() == "gato" ? "cat-badge" : "other-badge"))">
+                    <i class="fas @(Model.Pet?.Especie?.ToLower() == "cachorro" ? "fa-dog" : (Model.Pet?.Especie?.ToLower() == "gato" ? "fa-cat" : "fa-paw"))"></i>
+                </div>
+            </div>
+            <div class="pet-info">
+                <h2 class="pet-name">@Model.Pet?.Nome</h2>
+                <div class="pet-details">
+                    <div class="pet-trait">
+                        <div class="trait-icon">
+                            <i class="fas fa-ruler-vertical"></i>
+                        </div>
+                        <div class="trait-value">
+                            <span class="trait-label">Porte</span>
+                            <span class="trait-data">@Model.Pet?.Porte</span>
+                        </div>
+                    </div>
+                    <div class="pet-trait">
+                        <div class="trait-icon">
+                            <i class="fas fa-venus-mars"></i>
+                        </div>
+                        <div class="trait-value">
+                            <span class="trait-label">Sexo</span>
+                            <span class="trait-data">@Model.Pet?.Sexo</span>
+                        </div>
+                    </div>
+                    <div class="pet-trait">
+                        <div class="trait-icon">
+                            <i class="fas fa-birthday-cake"></i>
+                        </div>
+                        <div class="trait-value">
+                            <span class="trait-label">Idade</span>
+                            <span class="trait-data">@Model.Pet?.Idade</span>
+                        </div>
+                    </div>
+                </div>
+                
+                @if (Model.Pet != null && !string.IsNullOrEmpty(Model.Pet.Descricao))
+                {
+                    <div class="pet-bio">
+                        <p>@(Model.Pet.Descricao.Length > 100 ? Model.Pet.Descricao.Substring(0, 100) + "..." : Model.Pet.Descricao)</p>
+                    </div>
+                }
+                
+                <a href="@Url.Action("ExplorarPets", "Pet", new { area = "Usuario" })" class="btn btn-outline back-button">
+                    <i class="fas fa-arrow-left"></i> Escolher outro pet
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="form-container">
+        <form id="formularioAdocao" method="post" asp-controller="Adocao" asp-action="ProcessarFormulario" asp-route-petId="@(Model.Pet?.Id ?? 0)" class="adoption-form needs-validation" novalidate>
+            <input type="hidden" name="PetId" value="@(Model.Pet?.Id ?? 0)" />
+            <input type="hidden" name="PetNome" value="@(Model.Pet?.Nome ?? string.Empty)" />
+            
+            
+            <input type="hidden" name="ConcordaTermos" value="false" />
+            
+            @Html.AntiForgeryToken()
+            
+            
+            <div class="form-panels">
+                
+                <div class="form-panel active" data-section="1">
+                    <div class="panel-header">
+                        <h2 class="panel-title">Sobre seu Lar</h2>
+                        <p class="panel-subtitle">Queremos conhecer o lugar onde o pet vai viver</p>
+                    </div>
+                    
+                    <div class="panel-body">
+                        <div class="input-row">
+                            <div class="input-group">
+                                <label for="tipoResidencia">
+                                    <i class="fas fa-building"></i>
+                                    Tipo de residência <span class="required">*</span>
+                                </label>
+                                <div class="select-wrapper">
+                                    <select class="input-field custom-select" id="tipoResidencia" name="TipoResidencia" required>
+                                        <option value="">Selecione...</option>
+                                        <option value="Casa">Casa</option>
+                                        <option value="Apartamento">Apartamento</option>
+                                        <option value="Chácara">Chácara</option>
+                                        <option value="Outro">Outro</option>
+                                    </select>
+                                    <div class="invalid-feedback">Por favor, selecione o tipo de residência</div>
+                                </div>
+                            </div>
+                            
+                            <div class="input-group">
+                                <label for="qtdMoradores">
+                                    <i class="fas fa-users"></i>
+                                    Pessoas na residência <span class="required">*</span>
+                                </label>
+                                <div class="number-wrapper">
+                                    <button type="button" class="number-btn" id="decreaseMoradores">-</button>
+                                    <input type="number" class="input-field number-input" id="qtdMoradores" name="NumeroMoradores" min="1" value="1" required>
+                                    <button type="button" class="number-btn" id="increaseMoradores">+</button>
+                                </div>
+                                <div class="invalid-feedback">Informe pelo menos 1 morador</div>
+                            </div>
+                        </div>
+                        
+                        <div class="input-group full-width">
+                            <label for="descricaoMoradia">
+                                <i class="fas fa-home"></i>
+                                Descreva sua moradia <span class="required">*</span>
+                            </label>
+                            <div class="textarea-wrapper">
+                                <textarea class="input-field custom-textarea" id="descricaoMoradia" name="DescricaoMoradia" rows="3" required placeholder="Conte-nos como é sua casa/apartamento: tamanho dos cômodos, se é térreo ou andar, espaço para o pet brincar, etc."></textarea>
+                                <div class="textarea-info">
+                                    <span class="char-count">0/500</span>
+                                </div>
+                                <div class="invalid-feedback">Por favor, descreva sua moradia</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="panel-footer">
+                        <a href="@Url.Action("ExplorarPets", "Pet", new { area = "Usuario" })" class="btn btn-outline">
+                            <i class="fas fa-arrow-left"></i> Voltar
+                        </a>
+                        <button type="button" class="btn btn-primary next-btn" data-next="2">
+                            Próximo <i class="fas fa-arrow-right"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                
+                <div class="form-panel" data-section="2">
+                    <div class="panel-header">
+                        <h2 class="panel-title">Condições Financeiras</h2>
+                        <p class="panel-subtitle">Ter um pet envolve custos com alimentação, saúde e bem-estar</p>
+                    </div>
+                    
+                    <div class="panel-body">
+                        <div class="input-group">
+                            <label for="rendaMensal">
+                                <i class="fas fa-money-bill-wave"></i>
+                                Renda mensal aproximada <span class="required">*</span>
+                            </label>
+                            <div class="input-with-icon">
+                                <input type="text" class="input-field moeda-mask" id="rendaMensal" name="RendaMensal" required>
+                                <div class="invalid-feedback">Por favor, informe sua renda mensal</div>
+                            </div>
+                            <small class="help-text">Esta informação é confidencial e usada apenas para avaliar sua capacidade de cuidar do pet.</small>
+                        </div>
+                        
+                        <div class="input-group full-width">
+                            <label for="condicoesFinanceiras">
+                                <i class="fas fa-comment-dollar"></i>
+                                Como planeja arcar com os custos do pet? <span class="required">*</span>
+                            </label>
+                            <div class="textarea-wrapper">
+                                <textarea class="input-field custom-textarea" id="condicoesFinanceiras" name="CondicoesFinanceiras" rows="3" required placeholder="Descreva como você planeja custear a alimentação, vacinas, consultas veterinárias e outros cuidados necessários."></textarea>
+                                <div class="textarea-info">
+                                    <span class="char-count">0/500</span>
+                                </div>
+                                <div class="invalid-feedback">Por favor, informe como planeja arcar com os custos</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="panel-footer">
+                        <button type="button" class="btn btn-outline prev-btn" data-prev="1">
+                            <i class="fas fa-arrow-left"></i> Anterior
+                        </button>
+                        <button type="button" class="btn btn-primary next-btn" data-next="3">
+                            Próximo <i class="fas fa-arrow-right"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                
+                <div class="form-panel" data-section="3">
+                    <div class="panel-header">
+                        <h2 class="panel-title">Experiência com Pets</h2>
+                        <p class="panel-subtitle">Conte-nos sobre sua experiência e como pretende cuidar do pet</p>
+                    </div>
+                    
+                    <div class="panel-body">
+                        <div class="radio-cards">
+                            <p class="option-title">Você já teve pets antes? <span class="required">*</span></p>
+                            <div class="radio-card-group">
+                                <div class="radio-card">
+                                    <input type="radio" id="tevePetSim" name="TevePet" value="sim" class="radio-card-input">
+                                    <label for="tevePetSim" class="radio-card-label">
+                                        <i class="fas fa-check-circle"></i>
+                                        <span>Sim</span>
+                                    </label>
+                                </div>
+                                <div class="radio-card">
+                                    <input type="radio" id="tevePetNao" name="TevePet" value="nao" class="radio-card-input">
+                                    <label for="tevePetNao" class="radio-card-label">
+                                        <i class="fas fa-times-circle"></i>
+                                        <span>Não</span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="input-group full-width" id="experienciaAnteriorGroup" style="display: none;">
+                            <label for="experienciaAnterior">
+                                <i class="fas fa-paw"></i>
+                                Conte-nos sobre sua experiência com pets <span class="required">*</span>
+                            </label>
+                            <div class="textarea-wrapper">
+                                <textarea class="input-field custom-textarea" id="experienciaAnterior" name="ExperienciaAnterior" rows="3" placeholder="Conte-nos quais pets você já teve, por quanto tempo e como foi a experiência."></textarea>
+                                <div class="textarea-info">
+                                    <span class="char-count">0/500</span>
+                                </div>
+                                <div class="invalid-feedback">Por favor, conte-nos sobre sua experiência</div>
+                            </div>
+                        </div>
+                        
+                        <div class="input-group full-width">
+                            <label for="espacoAdequado">
+                                <i class="fas fa-expand"></i>
+                                Qual espaço o pet terá disponível? <span class="required">*</span>
+                            </label>
+                            <div class="textarea-wrapper">
+                                <textarea class="input-field custom-textarea" id="espacoAdequado" name="EspacoAdequado" rows="3" required placeholder="Descreva o espaço que o pet terá para dormir, brincar e se exercitar."></textarea>
+                                <div class="textarea-info">
+                                    <span class="char-count">0/500</span>
+                                </div>
+                                <div class="invalid-feedback">Por favor, descreva o espaço disponível</div>
+                            </div>
+                        </div>
+                        
+                        <div class="slider-group">
+                            <label class="slider-label">Quanto tempo livre você tem para dedicar ao pet diariamente? <span class="required">*</span></label>
+                            <div class="time-slider-container">
+                                <input type="range" min="1" max="8" step="1" value="4" class="time-slider" id="tempoDisponivel">
+                                <div class="slider-labels">
+                                    <span>1h</span>
+                                    <span>2h</span>
+                                    <span>3h</span>
+                                    <span>4h</span>
+                                    <span>5h</span>
+                                    <span>6h</span>
+                                    <span>7h</span>
+                                    <span>8h+</span>
+                                </div>
+                            </div>
+                            <input type="hidden" name="TempoDisponivel" id="tempoDisponivelHidden" value="4">
+                        </div>
+                    </div>
+                    
+                    <div class="panel-footer">
+                        <button type="button" class="btn btn-outline prev-btn" data-prev="2">
+                            <i class="fas fa-arrow-left"></i> Anterior
+                        </button>
+                        <button type="button" class="btn btn-primary next-btn" data-next="4">
+                            Próximo <i class="fas fa-arrow-right"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                
+                <div class="form-panel" data-section="4">
+                    <div class="panel-header">
+                        <h2 class="panel-title">Motivação e Planejamento</h2>
+                        <p class="panel-subtitle">Os últimos detalhes antes de confirmar sua solicitação</p>
+                    </div>
+                    
+                    <div class="panel-body">
+                        <div class="input-group full-width">
+                            <label for="planejamentoViagens">
+                                <i class="fas fa-plane"></i>
+                                O que fará com o pet quando precisar viajar? <span class="required">*</span>
+                            </label>
+                            <div class="textarea-wrapper">
+                                <textarea class="input-field custom-textarea" id="planejamentoViagens" name="PlanejamentoViagens" rows="3" required placeholder="Explique seu plano para quando precisar viajar ou ficar ausente por períodos mais longos."></textarea>
+                                <div class="textarea-info">
+                                    <span class="char-count">0/500</span>
+                                </div>
+                                <div class="invalid-feedback">Por favor, informe seu planejamento para viagens</div>
+                            </div>
+                        </div>
+                        
+                        <div class="input-group full-width">
+                            <label for="motivacaoAdocao">
+                                <i class="fas fa-heart"></i>
+                                Por que você quer adotar especificamente o(a) @Model.Pet?.Nome? <span class="required">*</span>
+                            </label>
+                            <div class="textarea-wrapper">
+                                <textarea class="input-field custom-textarea" id="motivacaoAdocao" name="MotivacaoAdocao" rows="3" required placeholder="Conte-nos o que te motivou a escolher este pet específico para adoção."></textarea>
+                                <div class="textarea-info">
+                                    <span class="char-count">0/500</span>
+                                </div>
+                                <div class="invalid-feedback">Por favor, compartilhe sua motivação</div>
+                            </div>
+                        </div>
+                        
+                        <div class="confirmation-checkbox">
+                            <div class="custom-checkbox">
+                                <input type="checkbox" id="concordaTermos" name="ConcordaTermos" value="true" required>
+                                <label for="concordaTermos">
+                                    Estou ciente que a adoção é um compromisso de longa duração e que serei responsável pelo bem-estar do animal.
+                                </label>
+                                <div class="invalid-feedback">Você precisa concordar com os termos para prosseguir</div>
+                            </div>
+                        </div>
+                        
+                        <div class="submission-note">
+                            <i class="fas fa-info-circle"></i>
+                            <p>
+                                Após o envio, sua solicitação será analisada pela nossa equipe. 
+                                Poderemos entrar em contato para uma entrevista virtual ou presencial.
+                                A aprovação final depende da avaliação completa do perfil.
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <div class="panel-footer">
+                        <button type="button" class="btn btn-outline prev-btn" data-prev="3">
+                            <i class="fas fa-arrow-left"></i> Anterior
+                        </button>
+                        <button type="submit" class="btn btn-success submit-btn">
+                            <i class="fas fa-paw"></i> Enviar Solicitação
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+
+<div class="modal fade" id="modalConfirmacao" tabindex="-1" role="dialog" aria-labelledby="modalConfirmacaoLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title-container">
+                    <div class="success-icon-container">
+                        <i class="fas fa-paw"></i>
+                    </div>
+                    <h5 class="modal-title" id="modalConfirmacaoLabel">Solicitação Enviada!</h5>
+                </div>
+                <button type="button" class="btn-close" data-dismiss="modal" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="success-animation">
+                    <div class="pet-animation">
+                        <img src="@(string.IsNullOrEmpty(Model.Pet?.NomeArquivoImagem) ? "/imagens/pets/pet-placeholder.jpg" : $"/imagens/pets/{Model.Pet?.NomeArquivoImagem}")" alt="@Model.Pet?.Nome">
+                        <div class="animation-hearts">
+                            <i class="fas fa-heart heart-1"></i>
+                            <i class="fas fa-heart heart-2"></i>
+                            <i class="fas fa-heart heart-3"></i>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="success-message">
+                    <h4>Parabéns! <span class="emoji">🎉</span></h4>
+                    <p>Sua solicitação de adoção para <strong>@Model.Pet?.Nome</strong> foi enviada com sucesso!</p>
+                </div>
+                
+                <div class="timeline">
+                    <div class="timeline-item completed">
+                        <div class="timeline-icon">
+                            <i class="fas fa-check"></i>
+                        </div>
+                        <div class="timeline-content">
+                            <h6>Solicitação Enviada</h6>
+                            <p>@DateTime.Now.ToString("dd/MM/yyyy")</p>
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-icon">
+                            <i class="fas fa-file-alt"></i>
+                        </div>
+                        <div class="timeline-content">
+                            <h6>Análise do Formulário</h6>
+                            <p>Em até 3 dias úteis</p>
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-icon">
+                            <i class="fas fa-calendar-check"></i>
+                        </div>
+                        <div class="timeline-content">
+                            <h6>Aguardando Buscar</h6>
+                            <p>Aprovado para adoção</p>
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-icon">
+                            <i class="fas fa-home"></i>
+                        </div>
+                        <div class="timeline-content">
+                            <h6>Adoção Finalizada</h6>
+                            <p>Seu novo amigo vai para casa!</p>
+                        </div>
+                    </div>
+                </div>
+                
+            </div>
+            <div class="modal-footer">
+                <a href="/usuario/adocoes?notificacoes=true" class="btn btn-primary btn-lg" id="btnMinhasAdocoes">
+                    <i class="fas fa-list-alt"></i> Minhas Adoções
+                </a>
+                <a href="@Url.Action("ExplorarPets", "Pet", new { area = "Usuario" })" class="btn btn-outline-primary" id="btnExplorarPets">
+                    <i class="fas fa-search"></i> Explorar Mais Pets
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/usuario/usuario-formulario-adocao.css" asp-append-version="true">
+}
+
+@section Scripts {
+    <script src="~/lib/vanilla-masker/vanilla-masker.js"></script>
+    <script src="~/js/usuario/formulario-adocao.js" asp-append-version="true"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            VMasker(document.querySelector(".moeda-mask")).maskMoney({
+                precision: 2,
+                separator: ',',
+                delimiter: '.',
+                unit: 'R$ '
+            });
+            
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('notificacoes') === 'true') {
+                setTimeout(function() {
+                    if (typeof togglePainelNotificacoes === 'function') {
+                        togglePainelNotificacoes();
+                    } else if (typeof abrirModalNotificacoes === 'function') {
+                        abrirModalNotificacoes();
+                    } else {
+                        console.error('Funções de notificação não disponíveis');
+                    }
+                }, 500); 
+            }
+            
+            const panels = document.querySelectorAll('.form-panel');
+            const progressSteps = document.querySelectorAll('.progress-step');
+            const progressFill = document.getElementById('progressFill');
+            
+            function updateProgress(step) {
+                const totalSteps = panels.length;
+                const progress = ((step - 1) / (totalSteps - 1)) * 100;
+                progressFill.style.width = `${progress}%`;
+                
+                progressSteps.forEach(stepEl => {
+                    const stepNum = parseInt(stepEl.dataset.step);
+                    stepEl.classList.remove('active', 'completed');
+                    
+                    if (stepNum < step) {
+                        stepEl.classList.add('completed');
+                    } else if (stepNum === step) {
+                        stepEl.classList.add('active');
+                    }
+                });
+            }
+            
+            function showPanel(panelIndex) {
+                panels.forEach(panel => {
+                    panel.classList.remove('active');
+                });
+                
+                const targetPanel = document.querySelector(`.form-panel[data-section="${panelIndex}"]`);
+                if (targetPanel) {
+                    targetPanel.classList.add('active');
+                    
+                    targetPanel.style.animation = 'none';
+                    setTimeout(() => {
+                        targetPanel.style.animation = 'panelFadeIn 0.5s ease forwards';
+                    }, 10);
+                    
+                    updateProgress(panelIndex);
+                    
+                    window.scrollTo({
+                        top: document.querySelector('.progress-container').offsetTop - 80,
+                        behavior: 'smooth'
+                    });
+                }
+            }
+            
+            document.querySelectorAll('.next-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const currentPanel = this.closest('.form-panel');
+                    const currentStep = parseInt(currentPanel.dataset.section);
+                    
+                    const inputs = currentPanel.querySelectorAll('input[required], select[required], textarea[required]');
+                    let isValid = true;
+                    
+                    inputs.forEach(input => {
+                        if (input.id === 'experienciaAnterior' && document.getElementById('tevePetNao').checked) {
+                            input.classList.remove('is-invalid');
+                            return;
+                        }
+                        
+                        if (!input.checkValidity()) {
+                            input.classList.add('is-invalid');
+                            isValid = false;
+                        } else {
+                            input.classList.remove('is-invalid');
+                        }
+                    });
+                    
+                    if (isValid) {
+                        showPanel(currentStep + 1);
+                    }
+                });
+            });
+            
+            document.querySelectorAll('.prev-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const currentPanel = this.closest('.form-panel');
+                    const currentStep = parseInt(currentPanel.dataset.section);
+                    showPanel(currentStep - 1);
+                });
+            });
+            
+            progressSteps.forEach(step => {
+                step.addEventListener('click', function() {
+                    const stepNum = parseInt(this.dataset.step);
+                    showPanel(stepNum);
+                });
+            });
+            
+            document.querySelectorAll('.custom-textarea').forEach(textarea => {
+                const counter = textarea.parentElement.querySelector('.char-count');
+                
+                textarea.addEventListener('input', function() {
+                    const count = this.value.length;
+                    counter.textContent = `${count}/500`;
+                    
+                    if (count > 450) {
+                        counter.classList.add('warning');
+                    } else {
+                        counter.classList.remove('warning');
+                    }
+                });
+            });
+            
+            document.getElementById('decreaseMoradores').addEventListener('click', function() {
+                const input = document.getElementById('qtdMoradores');
+                if (parseInt(input.value) > parseInt(input.min)) {
+                    input.value = parseInt(input.value) - 1;
+                }
+            });
+            
+            document.getElementById('increaseMoradores').addEventListener('click', function() {
+                const input = document.getElementById('qtdMoradores');
+                input.value = parseInt(input.value) + 1;
+            });
+            
+            const timeSlider = document.getElementById('tempoDisponivel');
+            const timeHidden = document.getElementById('tempoDisponivelHidden');
+            
+            timeSlider.addEventListener('input', function() {
+                timeHidden.value = this.value;
+            });
+            
+            document.getElementById('btnAbrirNotificacoes')?.addEventListener('click', function() {
+                if (typeof togglePainelNotificacoes === 'function') {
+                    togglePainelNotificacoes();
+                } else if (typeof abrirModalNotificacoes === 'function') {
+                    abrirModalNotificacoes();
+                } else {
+                    console.error('Funções de notificação não disponíveis');
+                }
+            });
+            
+            const form = document.getElementById('formularioAdocao');
+            form.addEventListener('submit', function(event) {
+                event.preventDefault();
+                
+                if (document.getElementById('tevePetNao').checked) {
+                    document.getElementById('experienciaAnterior').removeAttribute('required');
+                    
+                    const experienciaField = document.getElementById('experienciaAnterior');
+                    if (!experienciaField.value.trim()) {
+                        experienciaField.value = 'Não possui experiência anterior com pets.';
+                    }
+                }
+                
+                if (!form.checkValidity()) {
+                    event.stopPropagation();
+                    
+                    let firstInvalidPanel = null;
+                    panels.forEach(panel => {
+                        const invalidInputs = panel.querySelectorAll(':invalid');
+                        if (invalidInputs.length > 0 && !firstInvalidPanel) {
+                            firstInvalidPanel = parseInt(panel.dataset.section);
+                        }
+                    });
+                    
+                    if (firstInvalidPanel) {
+                        showPanel(firstInvalidPanel);
+                    }
+                    
+                    const invalidInputs = form.querySelectorAll(':invalid');
+                    invalidInputs.forEach(input => {
+                        input.classList.add('is-invalid');
+                    });
+                    
+                    form.classList.add('was-validated');
+                    return;
+                }
+                
+                const formData = new FormData(form);
+                
+                const checkboxes = ['ConcordaTermos'];
+                checkboxes.forEach(name => {
+                    const checkbox = document.querySelector(`input[name="${name}"]`);
+                    if (checkbox) {
+                        formData.set(name, checkbox.checked);
+                    }
+                });
+                
+                window.abrirNotificacoes = function() {
+                    if (typeof togglePainelNotificacoes === 'function') {
+                        togglePainelNotificacoes();
+                    } else if (typeof abrirModalNotificacoes === 'function') {
+                        abrirModalNotificacoes();
+                    } else {
+                        console.error('Funções de notificação não disponíveis');
+                    }
+                };
+                
+                if (formData.has('RendaMensal')) {
+                    const rendaMensal = formData.get('RendaMensal');
+                    const rendaLimpa = rendaMensal.replace('R$ ', '').replace(/\./g, '').replace(',', '.');
+                    formData.set('RendaMensal', rendaLimpa);
+                }
+                
+                fetch(form.action, {
+                    method: 'POST',
+                    body: new URLSearchParams(formData),
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        const modal = new bootstrap.Modal(document.getElementById('modalConfirmacao'));
+                        modal.show();
+                        
+                        document.getElementById('btnAbrirNotificacoes')?.addEventListener('click', function() {
+                            if (typeof togglePainelNotificacoes === 'function') {
+                                togglePainelNotificacoes();
+                            } else if (typeof abrirModalNotificacoes === 'function') {
+                                abrirModalNotificacoes();
+                            } else {
+                                console.error('Funções de notificação não disponíveis');
+                            }
+                        });
+                    } else {
+                        alert(data.message);
+                        console.error('Erros:', data.errors);
+                    }
+                })
+                .catch(error => {
+                    console.error('Erro ao enviar formulário:', error);
+                    alert('Ocorreu um erro ao enviar o formulário. Por favor, tente novamente.');
+                });
+            });
+            
+            showPanel(1);
+            
+            document.getElementById('tevePetSim').addEventListener('change', function() {
+                if (this.checked) {
+                    const experienciaGroup = document.getElementById('experienciaAnteriorGroup');
+                    experienciaGroup.style.display = 'block';
+                    document.getElementById('experienciaAnterior').setAttribute('required', '');
+                    document.getElementById('experienciaAnterior').value = '';
+                }
+            });
+            
+            document.getElementById('tevePetNao').addEventListener('change', function() {
+                if (this.checked) {
+                    const experienciaGroup = document.getElementById('experienciaAnteriorGroup');
+                    experienciaGroup.style.display = 'none';
+                    document.getElementById('experienciaAnterior').removeAttribute('required');
+                    document.getElementById('experienciaAnterior').value = 'Não possui experiência anterior com pets.';
+                }
+            });
+        });
+    </script>
+} 

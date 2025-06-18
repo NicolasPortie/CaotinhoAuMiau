@@ -1,0 +1,230 @@
+﻿@{
+    ViewData["Title"] = "Início";
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <base href="~/" />
+    <title>@ViewData["Title"] - CaotinhoAuMiau</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/home/home.css" asp-append-version="true" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="navbar-container">
+            <a href="@Url.Action("Index", "Home")" class="navbar-brand">
+                <i class="fas fa-paw"></i> CaotinhoAuMiau
+            </a>
+            <div class="navbar-links">
+                <a href="/usuario/login" class="navbar-link">
+                    <i class="fas fa-sign-in-alt"></i> Login
+                </a>
+                <a href="/usuario/cadastro" class="navbar-link">
+                    <i class="fas fa-user-plus"></i> Cadastro
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <section class="banner">
+        <div class="conteudo-banner">
+            <h1 class="titulo-banner">Adote um Amigo</h1>
+            <p class="subtitulo-banner">Dê uma segunda chance a um pet e receba amor infinito em troca.</p>
+            <div class="botoes-banner">
+                <a href="@Url.Action("ExplorarPets", "Usuario")" class="botao-banner">
+                    <i class="fas fa-search"></i>
+                    Encontre seu Pet
+                </a>
+                <a href="@Url.Action("Sobre", "Home")" class="botao-banner botao-secundario">
+                    <i class="fas fa-users"></i>
+                    Sobre Nós
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <section class="secao">
+        <div class="container">
+            <h2 class="titulo-secao">Por que Adotar?</h2>
+            <div class="row">
+                <div class="col-lg-3 col-md-6">
+                    <div class="cartao-motivo">
+                        <i class="fas fa-heart"></i>
+                        <h4>Amor Verdadeiro</h4>
+                        <p>Ganhe um companheiro leal que irá te amar incondicionalmente todos os dias</p>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6">
+                    <div class="cartao-motivo">
+                        <i class="fas fa-hand-holding-heart"></i>
+                        <h4>Salve uma Vida</h4>
+                        <p>Ao adotar, você transforma a vida de um pet e abre espaço para ajudar outros</p>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6">
+                    <div class="cartao-motivo">
+                        <i class="fas fa-home"></i>
+                        <h4>Família Completa</h4>
+                        <p>Tenha mais alegria, diversão e amor em seu lar com um novo membro da família</p>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6">
+                    <div class="cartao-motivo">
+                        <i class="fas fa-smile-beam"></i>
+                        <h4>Benefícios</h4>
+                        <p>Pets reduzem estresse, ansiedade e trazem mais saúde para nossa vida</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="secao">
+        <div class="container">
+            <h2 class="titulo-secao">Como Funciona?</h2>
+            <div class="row">
+                <div class="col-lg-3 col-md-6">
+                    <div class="cartao-passo">
+                        <div class="numero-passo">1</div>
+                        <h4>Escolha</h4>
+                        <p>Encontre o pet ideal para você em nosso catálogo de adoráveis amigos</p>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6">
+                    <div class="cartao-passo">
+                        <div class="numero-passo">2</div>
+                        <h4>Formulário</h4>
+                        <p>Preencha o formulário com suas informações pessoais e condições para adotar o pet</p>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6">
+                    <div class="cartao-passo">
+                        <div class="numero-passo">3</div>
+                        <h4>Avaliação</h4>
+                        <p>Nossa equipe avalia seu formulário para verificar se você tem as condições necessárias para adotar</p>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6">
+                    <div class="cartao-passo">
+                        <div class="numero-passo">4</div>
+                        <h4>Adoção</h4>
+                        <p>Após aprovação, você pode levar seu novo amigo para casa e começar uma nova vida juntos</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="secao-contador">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-4">
+                    <div class="item-contador">
+                        <div class="numero-contador">500+</div>
+                        <div class="texto-contador">Pets Resgatados</div>
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <div class="item-contador">
+                        <div class="numero-contador">300+</div>
+                        <div class="texto-contador">Famílias Felizes</div>
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <div class="item-contador">
+                        <div class="numero-contador">100%</div>
+                        <div class="texto-contador">Satisfação</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="secao-newsletter">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-lg-6 text-center">
+                    <h2 class="titulo-secao">Receba Novidades</h2>
+                    <p class="texto-contador">Inscreva-se para receber atualizações sobre novos pets disponíveis para adoção</p>
+                    <form class="formulario-newsletter" id="formulario-newsletter">
+                        <div class="grupo-input">
+                            <input type="email" placeholder="Seu melhor e-mail" required>
+                            <button type="submit" class="botao-newsletter">
+                                <i class="fas fa-paper-plane"></i> Inscrever
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="rodape">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-4">
+                    <h3 class="titulo-rodape">CaotinhoAuMiau</h3>
+                    <p class="texto-rodape">Conectando pets a lares amorosos desde 2024. Nossa missão é encontrar o lar perfeito para cada animalzinho.</p>
+                    <div class="links-sociais">
+                        <a href="#" class="link-social"><i class="fab fa-facebook"></i></a>
+                        <a href="#" class="link-social"><i class="fab fa-instagram"></i></a>
+                        <a href="#" class="link-social"><i class="fab fa-twitter"></i></a>
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <h3 class="titulo-rodape">Links Úteis</h3>
+                    <ul class="links-rodape">
+                        <li><a href="@Url.Action("Sobre", "Home")">Sobre Nós</a></li>
+                        <li><a href="@Url.Action("ExplorarPets", "Usuario")">Pets Disponíveis</a></li>
+                        <li><a href="@Url.Action("Contato", "Home")">Contato</a></li>
+                        <li><a href="@Url.Action("Termos", "Home")">Termos de Uso</a></li>
+                        <li><a href="@Url.Action("Privacidade", "Home")">Política de Privacidade</a></li>
+                    </ul>
+                </div>
+                <div class="col-lg-4">
+                    <h3 class="titulo-rodape">Contato</h3>
+                    <ul class="contato-rodape">
+                        <li>
+                            <i class="fas fa-map-marker-alt"></i>
+                            <span>Rua dos Animais, 123 - São Paulo, SP</span>
+                        </li>
+                        <li>
+                            <i class="fas fa-phone"></i>
+                            <span>(11) 1234-5678</span>
+                        </li>
+                        <li>
+                            <i class="fas fa-envelope"></i>
+                            <span>contato@caotinhoaumiau.com.br</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+    <script src="~/js/home/home.js" asp-append-version="true"></script>
+    <script>
+        window.addEventListener('scroll', function() {
+            const navbar = document.querySelector('.navbar');
+            if (window.scrollY > 50) {
+                navbar.classList.add('scrolled');
+            } else {
+                navbar.classList.remove('scrolled');
+            }
+        });
+    </script>
+</body>
+</html>

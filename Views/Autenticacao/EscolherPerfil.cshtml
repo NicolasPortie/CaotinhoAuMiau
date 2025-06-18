@@ -1,0 +1,60 @@
+@{
+    ViewData["Title"] = "Escolher Perfil";
+    Layout = "_LayoutUsuarioLogado";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/autenticacao/escolher-perfil.css" />
+}
+
+<div class="container my-5">
+    <div class="container-escolha">
+        <div class="titulo-escolha mb-4">
+            <h2 class="text-center">Escolha seu perfil</h2>
+            <p class="text-center">Selecione o perfil que deseja utilizar no sistema</p>
+        </div>
+
+        <form id="formPerfil" method="post" asp-action="EscolherPerfil" asp-controller="Autenticacao">
+            @Html.AntiForgeryToken()
+            <input type="hidden" id="tipoPerfil" name="perfil" value="" />
+            
+            <div class="opcoes-perfil">
+                @if (ViewBag.PerfisUsuario.Contains("Admin"))
+                {
+                    <div id="card-Admin" class="cartao-opcao" onclick="selecionarPerfil('Admin')">
+                        <div class="icone-opcao">
+                            <i class="fa-solid fa-user-gear"></i>
+                        </div>
+                        <div class="opcao-info">
+                            <h3 class="titulo-opcao">Admin</h3>
+                            <p class="descricao-opcao">Gerenciar o sistema</p>
+                        </div>
+                    </div>
+                }
+                
+                @if (ViewBag.PerfisUsuario.Contains("Usuario"))
+                {
+                    <div id="card-Usuario" class="cartao-opcao" onclick="selecionarPerfil('Usuario')">
+                        <div class="icone-opcao">
+                            <i class="fa-solid fa-user"></i>
+                        </div>
+                        <div class="opcao-info">
+                            <h3 class="titulo-opcao">Usuário</h3>
+                            <p class="descricao-opcao">Adotar pets e acompanhar adoções</p>
+                        </div>
+                    </div>
+                }
+            </div>
+            
+            <div class="d-flex justify-content-center mt-4">
+                <button id="btnContinuar" type="submit" class="btn btn-primary botao-continuar" disabled>
+                    Continuar <i class="fas fa-arrow-right ms-2"></i>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/autenticacao/escolher-perfil.js"></script>
+} 
