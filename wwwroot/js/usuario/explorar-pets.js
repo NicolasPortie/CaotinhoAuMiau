@@ -1088,16 +1088,16 @@ function obterCardsPorLinha() {
         
         
         
-        if (window.innerWidth <= 576) {
-            return 1; 
-        } else if (window.innerWidth <= 768) {
-            return 2; 
-        } else if (window.innerWidth <= 1200) {
-            return 3; 
-        } else if (window.innerWidth <= 1600) {
-            return 4; 
+        if (window.innerWidth <= 992) {
+            return 2;
+        } else if (window.innerWidth <= 1366) {
+            return 3;
+        } else if (window.innerWidth <= 1920) {
+            return 4;
+        } else if (window.innerWidth <= 2560) {
+            return 5;
         } else {
-            return 5; 
+            return 6;
         }
     }
     
@@ -1140,16 +1140,16 @@ function obterCardsPorLinha() {
             }
             
             
-            if (window.innerWidth <= 576) {
-                return 1;
-            } else if (window.innerWidth <= 768) {
+            if (window.innerWidth <= 992) {
                 return 2;
-            } else if (window.innerWidth <= 1200) {
+            } else if (window.innerWidth <= 1366) {
                 return 3;
-            } else if (window.innerWidth <= 1600) {
+            } else if (window.innerWidth <= 1920) {
                 return 4;
-            } else {
+            } else if (window.innerWidth <= 2560) {
                 return 5;
+            } else {
+                return 6;
             }
         }
         
@@ -1158,16 +1158,16 @@ function obterCardsPorLinha() {
         console.error("Erro ao calcular colunas do grid:", e);
         
         
-        if (window.innerWidth <= 576) {
-            return 1;
-        } else if (window.innerWidth <= 768) {
+        if (window.innerWidth <= 992) {
             return 2;
-        } else if (window.innerWidth <= 1200) {
+        } else if (window.innerWidth <= 1366) {
             return 3;
-        } else if (window.innerWidth <= 1600) {
+        } else if (window.innerWidth <= 1920) {
             return 4;
-        } else {
+        } else if (window.innerWidth <= 2560) {
             return 5;
+        } else {
+            return 6;
         }
     }
 }
