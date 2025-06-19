@@ -301,10 +301,10 @@ body {
 
 .pets-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(350px, 380px));
+    grid-template-columns: repeat(auto-fill, minmax(360px, 420px));
     gap: 2rem;
     width: 100%;
-    max-width: 1600px; 
+    max-width: 1800px;
     padding: 0 1.5rem;
     margin: 2rem auto;
     max-height: none;
@@ -329,7 +329,7 @@ body {
     width: 100%;
     margin: 0 auto;
     box-sizing: border-box;
-    max-width: 380px;
+    max-width: 420px;
 }
 
 
@@ -362,7 +362,7 @@ body {
 .image-container {
     position: relative;
     overflow: hidden;
-    height: 160px;
+    height: 200px;
     border-radius: 12px 12px 0 0;
     border-bottom: 2px solid rgba(255, 107, 107, 0.4);
 }
@@ -513,7 +513,7 @@ body {
 .pet-characteristics {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 16px;
+    gap: 20px;
     margin: 20px 0;
     width: 100%;
     box-sizing: border-box;
@@ -1675,9 +1675,21 @@ body.modal-aberto {
 
 @media (min-width: 1601px) {
     .pets-container .pets-grid {
-        
-        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-        gap: 2rem; 
+        grid-template-columns: repeat(auto-fill, minmax(360px, 420px));
+        gap: 2rem;
+    }
+}
+
+@media (min-width: 1920px) {
+    .pets-container .pets-grid {
+        max-width: 2000px;
+        grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));
+    }
+}
+
+@media (min-width: 2560px) {
+    .pets-container .pets-grid {
+        max-width: 2400px;
     }
 }
 
