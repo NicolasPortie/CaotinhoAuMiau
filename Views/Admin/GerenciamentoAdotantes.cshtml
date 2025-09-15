@@ -1,0 +1,3131 @@
+@model CaotinhoAuMiau.Models.ViewModels.Admin.GerenciamentoUsuariosViewModel
+
+@{
+    ViewData["Title"] = "Gerenciamento de Adotantes - CaotinhoAuMiau";
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/admin/admin-gerenciamento-usuarios.css" asp-append-version="true" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" />
+    <link rel="stylesheet" href="~/css/admin/admin-modal-adotantes.css" />
+    
+    <style>
+        .modal .fas,
+        .modal .far,
+        .modal .fab,
+        .modal i[class*="fa-"] {
+            font-family: "Font Awesome 6 Free" !important;
+            font-weight: 900 !important;
+            font-style: normal !important;
+            font-variant: normal !important;
+        }
+        
+        .modal .fas:before,
+        .modal .far:before, 
+        .modal .fab:before,
+        .modal i[class*="fa-"]:before {
+            font-family: "Font Awesome 6 Free" !important;
+            font-weight: 900 !important;
+        }
+        
+        .usuarios-table {
+            font-size: 14px;
+        }
+        
+        .usuarios-table th {
+            text-align: center;
+            vertical-align: middle;
+            background-color: #f8f9fa;
+            font-weight: 600;
+            color: #495057;
+            border-bottom: 2px solid #dee2e6;
+            padding: 12px 8px;
+        }
+        
+        .usuarios-table td {
+            vertical-align: middle;
+            text-align: center;
+            padding: 12px 8px;
+            border-bottom: 1px solid #dee2e6;
+        }
+        
+        .coluna-usuario {
+            min-width: 200px;
+            text-align: left !important;
+        }
+        
+        .usuario-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            justify-content: flex-start;
+        }
+        
+        .usuario-avatar {
+            flex-shrink: 0;
+        }
+        
+        .foto-usuario, .avatar-sem-foto {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+        
+        .avatar-sem-foto {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #E67E22 0%, #D35400 100%);
+            color: white;
+            font-weight: bold;
+            font-size: 16px;
+        }
+        
+        .usuario-nome {
+            font-weight: 600;
+            color: #2d3748;
+            margin: 0;
+            text-align: left;
+        }
+        
+        .coluna-contato {
+            min-width: 180px;
+        }
+        
+        .contato-info {
+            text-align: center;
+        }
+        
+        .contato-info .email {
+            font-weight: 500;
+            color: #2d3748;
+            margin-bottom: 4px;
+            display: block;
+        }
+        
+        .contato-info .telefone {
+            color: #4a5568;
+            font-size: 13px;
+            margin-bottom: 4px;
+            display: block;
+        }
+        
+        .contato-info .localizacao {
+            color: #718096;
+            font-size: 12px;
+            display: block;
+        }
+        
+        .coluna-status {
+            min-width: 120px;
+        }
+        
+        .status-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+        }
+        
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            padding: 6px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            min-width: 70px;
+        }
+        
+        .status-badge.ativo {
+            background: #c6f6d5;
+            color: #22543d;
+        }
+        
+        .status-badge.inativo {
+            background: #fed7d7;
+            color: #742a2a;
+        }
+        
+        .status-badge.quarentena {
+            background: #fef5e7;
+            color: #744210;
+        }
+        
+        .quarentena-info, .violacoes-info {
+            font-size: 10px;
+            color: #718096;
+            text-align: center;
+        }
+        
+        .violacoes-info i {
+            color: #f56565;
+        }
+        
+        .coluna-data {
+            min-width: 100px;
+        }
+        
+        .data-info {
+            text-align: center;
+        }
+        
+        .data-info .data {
+            font-weight: 500;
+            color: #2d3748;
+            display: block;
+            margin-bottom: 2px;
+        }
+        
+        .data-info .hora {
+            font-size: 12px;
+            color: #718096;
+            display: block;
+        }
+        
+        .coluna-acesso {
+            min-width: 110px;
+        }
+        
+        .acesso-info {
+            font-size: 13px;
+            color: #4a5568;
+            text-align: center;
+        }
+        
+        .coluna-adocoes {
+            min-width: 90px;
+        }
+        
+        .adocoes-stats {
+            text-align: center;
+        }
+        
+        .adocoes-stats .total {
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 2px;
+            display: block;
+        }
+        
+        .adocoes-stats .finalizadas {
+            font-size: 12px;
+            color: #22543d;
+            display: block;
+        }
+        
+        .coluna-acoes {
+            min-width: 160px;
+        }
+        
+        .acoes-grupo {
+            display: flex;
+            gap: 4px;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        .btn-acao {
+            width: 32px;
+            height: 32px;
+            border: none;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 14px;
+        }
+        
+        .btn-acao.detalhes {
+            background: #e2e8f0;
+            color: #4a5568;
+        }
+        
+        .btn-acao.detalhes:hover {
+            background: #cbd5e0;
+            color: #2d3748;
+        }
+        
+        .btn-acao.aplicar-quarentena {
+            background: #fef5e7;
+            color: #744210;
+        }
+        
+        .btn-acao.aplicar-quarentena:hover {
+            background: #f7d794;
+            color: #5a2d0c;
+        }
+        
+        .btn-acao.remover-quarentena {
+            background: #c6f6d5;
+            color: #22543d;
+        }
+        
+        .btn-acao.remover-quarentena:hover {
+            background: #9ae6b4;
+            color: #1a202c;
+        }
+        
+        .btn-acao.desativar {
+            background: #fed7d7;
+            color: #742a2a;
+        }
+        
+        .btn-acao.desativar:hover {
+            background: #feb2b2;
+            color: #551a1a;
+        }
+        
+        .btn-acao.ativar {
+            background: #c6f6d5;
+            color: #22543d;
+        }
+        
+        .btn-acao.ativar:hover {
+            background: #9ae6b4;
+            color: #1a202c;
+        }
+        
+        .btn-acao.observacoes {
+            background: #e6fffa;
+            color: #234e52;
+        }
+        
+        .btn-acao.observacoes:hover {
+            background: #b2f5ea;
+            color: #1a202c;
+        }
+        
+        .row-problema {
+            background: rgba(245, 101, 101, 0.05) !important;
+            border-left: 4px solid #f56565;
+        }
+        
+        /* Estilos profissionais para o modal de detalhes */
+        .modal-content-professional {
+            border: none;
+            border-radius: 16px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15);
+            overflow: hidden;
+        }
+
+        .modal-header-professional {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            padding: 2rem 2.5rem 1.5rem;
+            position: relative;
+        }
+
+        .modal-header-professional::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #4facfe 0%, #00f2fe 100%);
+        }
+
+        .modal-title-professional {
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: white;
+            margin: 0;
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+        }
+
+        .modal-body-professional {
+            padding: 2.5rem;
+            background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%);
+            min-height: 400px;
+        }
+
+        .modal-footer-professional {
+            background: #f8fafc;
+            border-top: 1px solid #e2e8f0;
+            padding: 1.5rem 2.5rem;
+        }
+
+        .btn-professional {
+            border-radius: 10px;
+            padding: 0.75rem 2rem;
+            font-weight: 600;
+            font-size: 0.95rem;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 2px solid transparent;
+        }
+
+        .btn-professional:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Loading profissional */
+        .loading-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 300px;
+            text-align: center;
+        }
+
+        .loading-spinner {
+            margin-bottom: 2rem;
+        }
+
+        .spinner-professional {
+            width: 60px;
+            height: 60px;
+            border: 4px solid #e2e8f0;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            animation: spin-professional 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @@keyframes spin-professional {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loading-text h6 {
+            color: #4a5568;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            font-size: 1.1rem;
+        }
+
+        .loading-text p {
+            color: #718096;
+            margin: 0;
+            font-size: 0.9rem;
+        }
+
+        /* Estilos para o conteúdo do usuário quando carregado */
+        .user-profile-section {
+            background: white;
+            border-radius: 16px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
+            border: 1px solid #e2e8f0;
+        }
+
+        .user-profile-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        .user-avatar-large {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            margin-right: 2rem;
+            border: 4px solid white;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+        }
+
+        .user-basic-info h4 {
+            color: #2d3748;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            font-size: 1.5rem;
+        }
+
+        .user-basic-info p {
+            color: #718096;
+            margin: 0;
+            font-size: 1rem;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 1.5rem;
+        }
+
+        .info-card {
+            background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid #e2e8f0;
+            transition: all 0.3s ease;
+        }
+
+        .info-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 25px rgba(0, 0, 0, 0.08);
+        }
+
+        .info-card-title {
+            color: #667eea;
+            font-weight: 600;
+            font-size: 1.1rem;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+        }
+
+        .info-card-title i {
+            margin-right: 0.5rem;
+            font-size: 1.2rem;
+        }
+
+        .info-item-professional {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 0;
+            border-bottom: 1px dashed #e2e8f0;
+        }
+
+        .info-item-professional:last-child {
+            border-bottom: none;
+        }
+
+        .info-label-professional {
+            font-weight: 500;
+            color: #4a5568;
+            font-size: 0.9rem;
+        }
+
+        .info-value-professional {
+            font-weight: 600;
+            color: #2d3748;
+            text-align: right;
+            font-size: 0.95rem;
+        }
+
+        @@media (max-width: 768px) {
+            .acoes-grupo {
+                flex-direction: column;
+                gap: 4px;
+            }
+
+            .btn-acao {
+                width: 100%;
+                height: 36px;
+                border-radius: 4px;
+                justify-content: flex-start;
+                padding: 0 8px;
+                font-size: 13px;
+            }
+
+            .btn-acao i {
+                margin-right: 6px;
+            }
+
+            .modal-header-professional,
+            .modal-body-professional,
+            .modal-footer-professional {
+                padding-left: 1.5rem;
+                padding-right: 1.5rem;
+            }
+
+            .user-profile-header {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .user-avatar-large {
+                margin-right: 0;
+                margin-bottom: 1rem;
+            }
+
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Estilos específicos para headers dos modais */
+        .modal-header-warning {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            color: white;
+            border: none;
+            padding: 2rem 2.5rem 1.5rem;
+            position: relative;
+        }
+
+        .modal-header-warning::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #fbbf24 0%, #f59e0b 100%);
+        }
+
+        .modal-header-success {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            border: none;
+            padding: 2rem 2.5rem 1.5rem;
+            position: relative;
+        }
+
+        .modal-header-success::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #34d399 0%, #10b981 100%);
+        }
+
+        .modal-header-primary {
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            color: white;
+            border: none;
+            padding: 2rem 2.5rem 1.5rem;
+            position: relative;
+        }
+
+        .modal-header-primary::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #60a5fa 0%, #3b82f6 100%);
+        }
+
+        .modal-header-confirmation {
+            background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+            color: white;
+            border: none;
+            padding: 2rem 2.5rem 1.5rem;
+            position: relative;
+        }
+
+        .modal-header-confirmation::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #fb923c 0%, #f97316 100%);
+        }
+
+        /* Alerts profissionais */
+        .alert-professional {
+            display: flex;
+            align-items: flex-start;
+            padding: 1.5rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+            border: none;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .alert-professional::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+        }
+
+        .alert-warning-professional {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            color: #92400e;
+        }
+
+        .alert-warning-professional::before {
+            background: #f59e0b;
+        }
+
+        .alert-success-professional {
+            background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
+            color: #166534;
+        }
+
+        .alert-success-professional::before {
+            background: #10b981;
+        }
+
+        .alert-info-professional {
+            background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+            color: #1e40af;
+        }
+
+        .alert-info-professional::before {
+            background: #3b82f6;
+        }
+
+        .alert-icon {
+            flex-shrink: 0;
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 1rem;
+            font-size: 1.5rem;
+            color: white;
+        }
+
+        .alert-warning-professional .alert-icon {
+            background: #f59e0b;
+        }
+
+        .alert-success-professional .alert-icon {
+            background: #10b981;
+        }
+
+        .alert-info-professional .alert-icon {
+            background: #3b82f6;
+        }
+
+        .alert-content strong {
+            display: block;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            font-size: 1.1rem;
+        }
+
+        .alert-content p {
+            margin: 0;
+            line-height: 1.5;
+            font-size: 0.95rem;
+        }
+
+        /* Formulários profissionais */
+        .form-professional {
+            margin-top: 1.5rem;
+        }
+
+        .form-group-professional {
+            margin-bottom: 2rem;
+        }
+
+        .form-label-professional {
+            display: flex;
+            align-items: center;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 0.75rem;
+            font-size: 1rem;
+        }
+
+        .required-indicator {
+            color: #ef4444;
+            margin-left: 0.25rem;
+            font-weight: 700;
+        }
+
+        .form-control-professional {
+            width: 100%;
+            padding: 0.875rem 1rem;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+            background: white;
+            color: #374151;
+        }
+
+        .form-control-professional:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+            background: #fefefe;
+        }
+
+        .textarea-large {
+            min-height: 120px;
+            resize: vertical;
+            line-height: 1.6;
+            font-family: system-ui, -apple-system, sans-serif;
+        }
+
+        .form-help-text {
+            margin-top: 0.5rem;
+            font-size: 0.85rem;
+            color: #6b7280;
+            display: flex;
+            align-items: flex-start;
+            line-height: 1.4;
+        }
+
+        .character-counter {
+            text-align: right;
+            margin-top: 0.5rem;
+            font-size: 0.8rem;
+            color: #9ca3af;
+            font-weight: 500;
+        }
+
+        /* Botões de ação profissionais */
+        .btn-action-warning {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            border-color: #f59e0b;
+            color: white;
+        }
+
+        .btn-action-warning:hover {
+            background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
+            border-color: #d97706;
+            color: white;
+        }
+
+        .btn-action-success {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            border-color: #10b981;
+            color: white;
+        }
+
+        .btn-action-success:hover {
+            background: linear-gradient(135deg, #059669 0%, #047857 100%);
+            border-color: #059669;
+            color: white;
+        }
+
+        .btn-action-primary {
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            border-color: #3b82f6;
+            color: white;
+        }
+
+        .btn-action-primary:hover {
+            background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%);
+            border-color: #1d4ed8;
+            color: white;
+        }
+
+        /* Modal de confirmação */
+        .confirmation-container {
+            display: flex;
+            align-items: flex-start;
+            gap: 1.5rem;
+            padding: 1rem 0;
+        }
+
+        .confirmation-icon {
+            flex-shrink: 0;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            color: #f59e0b;
+            border: 4px solid white;
+            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.2);
+        }
+
+        .confirmation-content {
+            flex: 1;
+        }
+
+        .confirmation-title {
+            font-weight: 700;
+            color: #374151;
+            margin-bottom: 0.75rem;
+            font-size: 1.1rem;
+        }
+
+        .confirmation-message {
+            color: #4b5563;
+            margin-bottom: 1rem;
+            line-height: 1.6;
+            font-size: 0.95rem;
+        }
+
+        .confirmation-warning {
+            background: #f3f4f6;
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            color: #6b7280;
+            font-size: 0.85rem;
+            border-left: 4px solid #d1d5db;
+        }
+
+        /* ========== ESTILOS DO MODAL DE PERFIL PROFISSIONAL ========== */
+
+        .modal-profile-container {
+            border: none;
+            border-radius: 20px;
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.15);
+            overflow: hidden;
+            background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+        }
+
+        .modal-profile-header {
+            background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 50%, #3b82f6 100%);
+            color: white;
+            border: none;
+            padding: 2rem 2.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: relative;
+        }
+
+        .modal-profile-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: linear-gradient(90deg, #60a5fa 0%, #3b82f6 50%, #2563eb 100%);
+        }
+
+        .profile-header-content {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .profile-header-icon {
+            width: 60px;
+            height: 60px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            backdrop-filter: blur(10px);
+        }
+
+        .profile-title {
+            margin: 0;
+            font-size: 1.5rem;
+            font-weight: 700;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .profile-subtitle {
+            margin: 0;
+            font-size: 0.95rem;
+            opacity: 0.9;
+            font-weight: 400;
+        }
+
+        .profile-header-actions {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .btn-profile-action {
+            width: 44px;
+            height: 44px;
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .btn-profile-action:hover {
+            background: rgba(255, 255, 255, 0.25);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .btn-close-professional {
+            background: none !important;
+            border: none !important;
+            opacity: 1 !important;
+            font-size: 1.5rem;
+            color: white;
+            transition: all 0.3s ease;
+        }
+
+        .btn-close-professional:hover {
+            opacity: 0.8 !important;
+            transform: scale(1.1);
+        }
+
+        /* Modal Confirmação Compacto */
+        .modal-content-compact {
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(239, 68, 68, 0.2);
+        }
+
+        .modal-header-compact {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: white;
+            border-radius: 12px 12px 0 0;
+            padding: 15px 20px;
+            border: none;
+        }
+
+        .modal-header-compact .modal-title {
+            font-weight: 600;
+            font-size: 16px;
+        }
+
+        .modal-body-compact {
+            padding: 20px;
+            background: white;
+        }
+
+        .confirmation-container-compact {
+            text-align: center;
+        }
+
+        .confirmation-message-compact {
+            font-size: 15px;
+            color: #1e293b;
+            margin-bottom: 15px;
+            font-weight: 500;
+        }
+
+        .confirmation-warning-compact {
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            border-radius: 8px;
+            padding: 10px;
+            font-size: 12px;
+            color: #991b1b;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+        }
+
+        .modal-footer-compact {
+            padding: 15px 20px;
+            background: #f8fafc;
+            border-radius: 0 0 12px 12px;
+            border: none;
+            gap: 10px;
+        }
+
+        .modal-profile-body {
+            padding: 0;
+            background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%);
+            min-height: 600px;
+        }
+
+        /* Estado de Loading Avançado */
+        .profile-loading-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 500px;
+            padding: 3rem;
+            text-align: center;
+        }
+
+        .loading-animation {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .loading-circle {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            animation: loading-bounce 1.4s ease-in-out infinite both;
+        }
+
+        .loading-circle:nth-child(1) { animation-delay: -0.32s; }
+        .loading-circle:nth-child(2) { animation-delay: -0.16s; }
+        .loading-circle:nth-child(3) { animation-delay: 0s; }
+
+        @@keyframes loading-bounce {
+            0%, 80%, 100% { transform: scale(0); }
+            40% { transform: scale(1); }
+        }
+
+        .loading-content h5 {
+            color: #1e40af;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            font-size: 1.25rem;
+        }
+
+        .loading-content p {
+            color: #6b7280;
+            margin-bottom: 2rem;
+        }
+
+        .loading-progress {
+            width: 300px;
+            height: 4px;
+            background: #e5e7eb;
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .loading-progress-bar {
+            height: 100%;
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            border-radius: 2px;
+            animation: loading-progress 2s ease-in-out infinite;
+        }
+
+        @@keyframes loading-progress {
+            0% { width: 0%; }
+            50% { width: 70%; }
+            100% { width: 100%; }
+        }
+
+        /* Container principal do perfil */
+        .profile-data-container {
+            height: 100%;
+        }
+
+        /* Header principal do perfil */
+        .profile-main-header {
+            background: linear-gradient(135deg, #ffffff 0%, #f1f5f9 100%);
+            padding: 2.5rem;
+            border-bottom: 1px solid #e2e8f0;
+            display: grid;
+            grid-template-columns: 300px 1fr 280px;
+            gap: 2.5rem;
+            align-items: flex-start;
+        }
+
+        .profile-avatar-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .profile-avatar-container {
+            position: relative;
+            display: inline-block;
+        }
+
+        .profile-avatar-large {
+            width: 140px;
+            height: 140px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #E67E22 0%, #D35400 100%);
+            border: 6px solid white;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .avatar-placeholder {
+            font-size: 3rem;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 100%;
+            font-weight: bold;
+        }
+
+        .profile-status-indicator {
+            position: absolute;
+            bottom: 12px;
+            right: 12px;
+            width: 28px;
+            height: 28px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            border: 3px solid white;
+        }
+
+        .profile-status-indicator.active i {
+            font-size: 14px;
+            color: #22c55e;
+            animation: pulse-green 2s infinite;
+        }
+
+        .profile-verification-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 16px;
+            border: 3px solid white;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+
+
+        .profile-avatar-info {
+            text-align: center;
+        }
+
+        .last-seen, .member-type {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+
+        .last-seen {
+            background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+            color: #64748b;
+            border: 1px solid #cbd5e1;
+        }
+
+        .member-type {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            color: #92400e;
+            border: 1px solid #f59e0b;
+        }
+
+        .member-type i {
+            color: #f59e0b;
+        }
+
+        .profile-main-info {
+            min-width: 0;
+        }
+
+        .profile-user-name {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin: 0 0 0.5rem 0;
+            line-height: 1.2;
+        }
+
+        .profile-user-meta {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .profile-user-id {
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .profile-join-date {
+            color: #64748b;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .profile-quick-stats {
+            display: flex;
+            gap: 2rem;
+        }
+
+        .quick-stat-item {
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .quick-stat-item i {
+            font-size: 1.2rem;
+            color: #3b82f6;
+            margin-bottom: 0.25rem;
+        }
+
+        .quick-stat-item span {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1e293b;
+            line-height: 1;
+        }
+
+        .quick-stat-item label {
+            font-size: 0.8rem;
+            color: #64748b;
+            text-transform: uppercase;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        .profile-actions-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            align-items: flex-end;
+        }
+
+        .profile-action-btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            min-width: 160px;
+            justify-content: center;
+        }
+
+        .profile-btn-primary {
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            color: white;
+        }
+
+        .profile-btn-primary:hover {
+            background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(59, 130, 246, 0.3);
+        }
+
+        .profile-btn-warning {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            color: white;
+        }
+
+        .profile-btn-warning:hover {
+            background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(245, 158, 11, 0.3);
+        }
+
+        .profile-btn-danger {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            color: white;
+        }
+
+        .profile-btn-danger:hover {
+            background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(239, 68, 68, 0.3);
+        }
+
+        /* Sistema de abas */
+        .profile-nav-tabs {
+            background: white;
+            border-bottom: 2px solid #f1f5f9;
+            padding: 0 2.5rem;
+            display: flex;
+            gap: 0;
+            overflow-x: auto;
+        }
+
+        .profile-tab {
+            background: none;
+            border: none;
+            padding: 1.25rem 1.5rem;
+            color: #64748b;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-bottom: 3px solid transparent;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            white-space: nowrap;
+            position: relative;
+        }
+
+        .profile-tab:hover {
+            color: #3b82f6;
+            background: #f8fafc;
+        }
+
+        .profile-tab.active {
+            color: #3b82f6;
+            border-bottom-color: #3b82f6;
+            background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%);
+        }
+
+        .profile-tab.active::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #3b82f6 0%, #1d4ed8 100%);
+        }
+
+        /* Conteúdo das abas */
+        .profile-tab-content {
+            background: white;
+        }
+
+        .profile-tab-pane {
+            display: none;
+            padding: 2.5rem;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .profile-tab-pane.active {
+            display: block;
+        }
+
+        @@keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .profile-section-title {
+            color: #1e293b;
+            font-weight: 700;
+            margin-bottom: 2rem;
+            font-size: 1.25rem;
+            display: flex;
+            align-items: center;
+            padding-bottom: 0.75rem;
+            border-bottom: 2px solid #f1f5f9;
+        }
+
+        /* Grid de informações */
+        .profile-info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2rem;
+        }
+
+        .profile-info-card {
+            background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+            border: 1px solid #e2e8f0;
+            border-radius: 16px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
+        }
+
+        .profile-info-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .info-card-header {
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            padding: 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .info-card-header i {
+            font-size: 1.1rem;
+            color: #3b82f6;
+        }
+
+        .info-card-header span {
+            font-weight: 600;
+            color: #1e293b;
+            font-size: 1rem;
+        }
+
+        .info-card-body {
+            padding: 1.5rem 1.25rem;
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 0;
+            border-bottom: 1px dashed #e2e8f0;
+        }
+
+        .info-row:last-child {
+            border-bottom: none;
+        }
+
+        .info-row label {
+            font-weight: 500;
+            color: #64748b;
+            font-size: 0.9rem;
+        }
+
+        .info-row span {
+            font-weight: 600;
+            color: #1e293b;
+            text-align: right;
+            font-size: 0.95rem;
+        }
+
+        /* Cards de contato */
+        .contact-methods {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .contact-card {
+            background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+            border: 1px solid #e2e8f0;
+            border-radius: 16px;
+            padding: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
+        }
+
+        .contact-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        .contact-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: white;
+            flex-shrink: 0;
+        }
+
+        
+
+        .contact-card:nth-child(2) .contact-icon {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        }
+
+        .contact-card:nth-child(3) .contact-icon {
+            background: linear-gradient(135deg, #25d366 0%, #128c7e 100%);
+        }
+
+        .contact-info {
+            flex: 1;
+        }
+
+        .contact-info h6 {
+            font-weight: 600;
+            color: #1e293b;
+            margin: 0 0 0.5rem 0;
+            font-size: 1.1rem;
+        }
+
+        .contact-info p {
+            margin: 0 0 0.5rem 0;
+            color: #475569;
+            font-size: 0.95rem;
+        }
+
+        .contact-status {
+            font-size: 0.8rem;
+            font-weight: 600;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .contact-status.verified {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .contact-status.available {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .contact-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .btn-contact-action {
+            width: 44px;
+            height: 44px;
+            border: 2px solid #e2e8f0;
+            background: white;
+            border-radius: 10px;
+            color: #64748b;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-contact-action:hover {
+            background: #3b82f6;
+            border-color: #3b82f6;
+            color: white;
+            transform: scale(1.1);
+        }
+
+        /* Footer do modal */
+        .modal-profile-footer {
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            border-top: 1px solid #cbd5e1;
+            padding: 1.5rem 2.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .profile-footer-info {
+            color: #64748b;
+            font-size: 0.9rem;
+        }
+
+        .profile-footer-actions {
+            display: flex;
+            gap: 1rem;
+        }
+
+        #lastUpdate {
+            font-weight: 600;
+            color: #475569;
+        }
+
+        /* Responsividade */
+        @@media (max-width: 1200px) {
+            .profile-main-header {
+                grid-template-columns: 1fr;
+                text-align: center;
+                gap: 1.5rem;
+            }
+
+            .profile-actions-panel {
+                align-items: center;
+            }
+
+            .profile-quick-stats {
+                justify-content: center;
+            }
+        }
+
+        @@media (max-width: 768px) {
+            .modal-profile-header {
+                padding: 1.5rem;
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .profile-header-content {
+                flex-direction: column;
+                text-align: center;
+                gap: 1rem;
+            }
+
+            .profile-header-actions {
+                order: -1;
+            }
+
+            .profile-main-header {
+                padding: 1.5rem;
+                gap: 1rem;
+            }
+
+            .profile-tab-pane {
+                padding: 1.5rem;
+            }
+
+            .profile-info-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .modal-profile-footer {
+                padding: 1.5rem;
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .profile-nav-tabs {
+                padding: 0 1.5rem;
+            }
+        }
+
+        /* ========== ESTILOS PARA CONTEÚDO DAS ABAS ========== */
+
+        /* Aba de Adoções */
+        .adoption-summary-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+        }
+
+        .adoption-summary-card {
+            background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+            border: 2px solid #e2e8f0;
+            border-radius: 16px;
+            padding: 1.5rem;
+            text-align: center;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .adoption-summary-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+        }
+
+        .adoption-summary-card.total::before { background: linear-gradient(90deg, #3b82f6 0%, #1d4ed8 100%); }
+        .adoption-summary-card.completed::before { background: linear-gradient(90deg, #10b981 0%, #059669 100%); }
+        .adoption-summary-card.pending::before { background: linear-gradient(90deg, #f59e0b 0%, #d97706 100%); }
+        .adoption-summary-card.cancelled::before { background: linear-gradient(90deg, #ef4444 0%, #dc2626 100%); }
+
+        .adoption-summary-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.1);
+            border-color: #cbd5e1;
+        }
+
+        .summary-icon {
+            width: 60px;
+            height: 60px;
+            margin: 0 auto 1rem;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: white;
+        }
+
+        .adoption-summary-card.total .summary-icon { background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); }
+        .adoption-summary-card.completed .summary-icon { background: linear-gradient(135deg, #10b981 0%, #059669 100%); }
+        .adoption-summary-card.pending .summary-icon { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); }
+        .adoption-summary-card.cancelled .summary-icon { background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); }
+
+        .summary-content h6 {
+            color: #1e293b;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            font-size: 1rem;
+        }
+
+        .summary-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #0f172a;
+            display: block;
+            line-height: 1;
+            margin-bottom: 0.25rem;
+        }
+
+        .summary-content small {
+            color: #64748b;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        /* Timeline de Adoções */
+        .adoption-timeline-container {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 16px;
+            padding: 0;
+            overflow: hidden;
+        }
+
+        .timeline-header {
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            padding: 1.5rem;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .timeline-header h6 {
+            margin: 0;
+            color: #1e293b;
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        .timeline-empty, .activity-log-empty, .admin-actions-empty {
+            text-align: center;
+            padding: 3rem;
+            color: #94a3b8;
+        }
+
+        .timeline-empty i, .activity-log-empty i, .admin-actions-empty i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            display: block;
+            opacity: 0.5;
+        }
+
+        /* Aba de Atividade */
+        .activity-metrics {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+        }
+
+        .activity-metric-card {
+            background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+            border: 1px solid #e2e8f0;
+            border-radius: 16px;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .activity-metric-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+            border-color: #cbd5e1;
+        }
+
+        .metric-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+        }
+
+        .metric-header i {
+            font-size: 1.2rem;
+            color: #3b82f6;
+        }
+
+        .metric-header span {
+            font-weight: 600;
+            color: #374151;
+            font-size: 0.95rem;
+        }
+
+        .metric-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #1e293b;
+            line-height: 1;
+            margin-bottom: 0.5rem;
+        }
+
+        .metric-detail {
+            color: #64748b;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        /* Gráfico de Atividade */
+        .activity-chart-container {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 16px;
+            padding: 0;
+            margin-bottom: 2rem;
+            overflow: hidden;
+        }
+
+        .chart-header {
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            padding: 1.5rem;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .chart-header h6 {
+            margin: 0;
+            color: #1e293b;
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        .chart-legend {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .legend-color {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+
+        .legend-color.login { background: #3b82f6; }
+        .legend-color.forms { background: #10b981; }
+
+        .chart-placeholder {
+            text-align: center;
+            padding: 3rem;
+            color: #94a3b8;
+        }
+
+        .chart-placeholder i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            display: block;
+            opacity: 0.5;
+        }
+
+        /* Log de Atividades */
+        .recent-activity-container {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 16px;
+            overflow: hidden;
+        }
+
+        .activity-log-header {
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            padding: 1.5rem;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .activity-log-header h6 {
+            margin: 0;
+            color: #1e293b;
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        /* Aba Administrativa */
+        .admin-section-subtitle {
+            color: #1e293b;
+            font-weight: 600;
+            font-size: 1.1rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        /* Status do Usuário */
+        .admin-status-section {
+            margin-bottom: 3rem;
+        }
+
+        .admin-status-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .admin-status-card {
+            background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .admin-status-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+        }
+
+        .status-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .status-dot.active { background: #10b981; }
+        .status-dot.quarantine { background: #f59e0b; }
+        .status-dot.inactive { background: #ef4444; }
+
+        .status-indicator span {
+            font-weight: 600;
+            color: #1e293b;
+        }
+
+        .status-details p {
+            margin: 0 0 0.25rem 0;
+            color: #475569;
+            font-size: 0.9rem;
+        }
+
+        .status-details small {
+            color: #64748b;
+            font-size: 0.8rem;
+        }
+
+        /* Observações Administrativas */
+        .admin-notes-section {
+            margin-bottom: 3rem;
+        }
+
+        .notes-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .admin-notes-content {
+            background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 1.5rem;
+            min-height: 100px;
+        }
+
+        .notes-empty {
+            text-align: center;
+            color: #94a3b8;
+        }
+
+        .notes-empty i {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+            display: block;
+            opacity: 0.5;
+        }
+
+        /* Histórico de Ações Administrativas */
+        .admin-actions-section {
+            margin-bottom: 3rem;
+        }
+
+        .admin-actions-timeline {
+            background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 1.5rem;
+            min-height: 120px;
+        }
+
+        /* Configurações de Segurança */
+        .security-settings-section {
+            margin-bottom: 3rem;
+        }
+
+        .security-settings-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .security-setting-item {
+            background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 1.25rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+
+        .security-setting-item:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+
+        .setting-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .setting-info i {
+            font-size: 1.5rem;
+            color: #3b82f6;
+            width: 40px;
+            text-align: center;
+        }
+
+        .setting-info strong {
+            color: #1e293b;
+            font-weight: 600;
+            display: block;
+            margin-bottom: 0.25rem;
+        }
+
+        .setting-info p {
+            margin: 0;
+            color: #64748b;
+            font-size: 0.85rem;
+        }
+
+        .setting-status {
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .setting-status.verified {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .setting-status.pending {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .setting-status.failed {
+            background: #fecaca;
+            color: #991b1b;
+        }
+
+        /* Ações Rápidas */
+        .admin-quick-actions {
+            margin-bottom: 2rem;
+        }
+
+        .quick-actions-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 1rem;
+        }
+
+        .quick-action-btn {
+            background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .quick-action-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+            border-color: #cbd5e1;
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .quick-action-btn i {
+            font-size: 1.5rem;
+            color: #3b82f6;
+        }
+
+        .quick-action-btn span {
+            font-weight: 600;
+            color: #374151;
+            font-size: 0.85rem;
+            text-align: center;
+        }
+
+        .quick-action-btn.action-quarantine:hover { border-color: #f59e0b; }
+        .quick-action-btn.action-quarantine:hover i { color: #f59e0b; }
+
+        .quick-action-btn.action-deactivate:hover { border-color: #ef4444; }
+        .quick-action-btn.action-deactivate:hover i { color: #ef4444; }
+
+        .quick-action-btn.action-reset-password:hover { border-color: #8b5cf6; }
+        .quick-action-btn.action-reset-password:hover i { color: #8b5cf6; }
+
+        .quick-action-btn.action-send-message:hover { border-color: #06b6d4; }
+        .quick-action-btn.action-send-message:hover i { color: #06b6d4; }
+
+        .quick-action-btn.action-export-data:hover { border-color: #10b981; }
+        .quick-action-btn.action-export-data:hover i { color: #10b981; }
+
+        .quick-action-btn.action-audit-log:hover { border-color: #f59e0b; }
+        .quick-action-btn.action-audit-log:hover i { color: #f59e0b; }
+
+        /* Responsividade para conteúdo das abas */
+        @@media (max-width: 768px) {
+            .adoption-summary-cards,
+            .activity-metrics,
+            .admin-status-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .quick-actions-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .timeline-header,
+            .chart-header,
+            .activity-log-header {
+                flex-direction: column;
+                gap: 1rem;
+                align-items: flex-start;
+            }
+
+            .chart-legend {
+                margin-top: 0.5rem;
+            }
+
+            .notes-header {
+                flex-direction: column;
+                gap: 1rem;
+                align-items: flex-start;
+            }
+        }
+
+        @@keyframes pulse-green {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+    </style>
+}
+
+<div class="cabecalho-painel">
+    <h1 class="titulo-pagina">Gerenciamento de Adotantes</h1>
+</div>
+
+@Html.AntiForgeryToken()
+
+@if (TempData["Erro"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="fas fa-exclamation-triangle me-2"></i>
+        @TempData["Erro"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+<div class="cartoes-status">
+    <div class="cartao-status total">
+        <div class="conteudo-cartao-status">
+            <div class="icone">
+                <i class="fa-solid fa-users"></i>
+            </div>
+            <div>
+                <div class="rotulo">Usuários Aprovados</div>
+                <div class="numero">@Model.TotalUsuarios</div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="cartao-status aprovadas">
+        <div class="conteudo-cartao-status">
+            <div class="icone">
+                <i class="fa-solid fa-user-check"></i>
+            </div>
+            <div>
+                <div class="rotulo">Usuários Ativos</div>
+                <div class="numero">@Model.UsuariosAtivos</div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="cartao-status contratos-pendentes">
+        <div class="conteudo-cartao-status">
+            <div class="icone">
+                <i class="fa-solid fa-user-lock"></i>
+            </div>
+            <div>
+                <div class="rotulo">Em Quarentena</div>
+                <div class="numero">@Model.UsuariosQuarentena</div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="cartao-status aguardando-buscar">
+        <div class="conteudo-cartao-status">
+            <div class="icone">
+                <i class="fa-solid fa-exclamation-triangle"></i>
+            </div>
+            <div>
+                <div class="rotulo">Com Violações</div>
+                <div class="numero">@Model.UsuariosViolacoes</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<form method="get" asp-action="Index" class="secao-filtros">
+    <div class="row align-items-center">
+        <div class="col-md-5 mb-2 mb-md-0">
+            <div class="caixa-pesquisa">
+                <i class="fas fa-search"></i>
+                <input type="text" name="pesquisa" value="@Model.Pesquisa" class="form-control" placeholder="Pesquisar por nome, email ou CPF..." style="height: 40px;">
+            </div>
+        </div>
+        <div class="col-md-3 mb-2 mb-md-0">
+            <select name="filtroStatus" class="form-select" style="height: 40px;">
+                <option value="todos" selected="@(Model.FiltroStatus == "todos")">Todos os Status</option>
+                <option value="ativo" selected="@(Model.FiltroStatus == "ativo")">Ativos</option>
+                <option value="inativo" selected="@(Model.FiltroStatus == "inativo")">Inativos</option>
+                <option value="quarentena" selected="@(Model.FiltroStatus == "quarentena")">Em Quarentena</option>
+                <option value="violacoes" selected="@(Model.FiltroStatus == "violacoes")">Com Violações</option>
+            </select>
+        </div>
+        <div class="col-md-4 d-flex align-items-center">
+            <div class="flex-grow-1 me-2">
+                <select name="filtroTipo" class="form-select" style="height: 40px;">
+                    <option value="todos" selected="@(Model.FiltroTipo == "todos")">Todos os Tipos</option>
+                    <option value="Usuario" selected="@(Model.FiltroTipo == "Usuario")">Usuários</option>
+                </select>
+            </div>
+            <button type="submit" class="botao-primario me-2">
+                <i class="fas fa-search me-1"></i> Filtrar
+            </button>
+            <a href="@Url.Action("Index")" class="botao-secundario">
+                <i class="fas fa-undo me-1"></i> Limpar
+            </a>
+        </div>
+    </div>
+</form>
+
+<div class="tabela-responsiva">
+        <table class="tabela usuarios-table">
+            <thead>
+                <tr>
+                    <th>Usuário</th>
+                    <th>Contato</th>
+                    <th>Status</th>
+                    <th>Cadastro</th>
+                    <th>Último Acesso</th>
+                    <th>Adoções</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model.Usuarios.Any())
+                {
+                    foreach (var usuario in Model.Usuarios)
+                    {
+                        <tr class="usuario-row @(usuario.UsuarioProblematico ? "row-problema" : "")" data-id="@usuario.Id">
+                            <!-- Usuário -->
+                            <td class="coluna-usuario">
+                                <div class="usuario-info">
+                                    <div class="usuario-avatar">
+                                        @if (!string.IsNullOrEmpty(usuario.FotoPerfil))
+                                        {
+                                            <img src="~/imagens/perfil/@usuario.FotoPerfil" 
+                                                 alt="Foto de @usuario.Nome" 
+                                                 class="foto-usuario"
+                                                 onerror="this.style.display='none'; this.parentElement.innerHTML='<div class=&quot;avatar-sem-foto&quot;><span>@((!string.IsNullOrEmpty(usuario.Nome)) ? usuario.Nome.Substring(0, 1).ToUpper() : "?")</span></div>';" />
+                                        }
+                                        else
+                                        {
+                                            <div class="avatar-sem-foto">
+                                                <span>@((!string.IsNullOrEmpty(usuario.Nome)) ? usuario.Nome.Substring(0, 1).ToUpper() : "?")</span>
+                                            </div>
+                                        }
+                                    </div>
+                                    <div class="usuario-dados">
+                                        <div class="usuario-nome">@usuario.Nome</div>
+                                    </div>
+                                </div>
+                            </td>
+                            
+                            <!-- Contato -->
+                            <td class="coluna-contato">
+                                <div class="contato-info">
+                                    <div class="email" title="@usuario.Email">@usuario.Email</div>
+                                    @if (!string.IsNullOrEmpty(usuario.Telefone))
+                                    {
+                                        <div class="telefone" title="@usuario.Telefone">@(usuario.Telefone.Length == 11 ? $"({usuario.Telefone.Substring(0, 2)}) {usuario.Telefone.Substring(2, 5)}-{usuario.Telefone.Substring(7, 4)}" : usuario.Telefone)</div>
+                                    }
+                                    <div class="localizacao">@usuario.LocalizacaoResumo</div>
+                                </div>
+                            </td>
+                            
+                            <!-- Status -->
+                            <td class="coluna-status">
+                                <div class="status-container">
+                                    <span class="status-badge @usuario.StatusCssClass">@usuario.StatusTexto</span>
+                                    @if (usuario.QuarentenaAtiva)
+                                    {
+                                        <div class="quarentena-info">
+                                            <small>@usuario.DiasRestantesQuarentena dias restantes</small>
+                                        </div>
+                                    }
+                                    @if (usuario.NumeroViolacoes > 0)
+                                    {
+                                        <div class="violacoes-info">
+                                            <small><i class="fa-solid fa-exclamation-triangle"></i> @usuario.NumeroViolacoes violações</small>
+                                        </div>
+                                    }
+                                </div>
+                            </td>
+                            
+                            <!-- Cadastro -->
+                            <td class="coluna-data">
+                                <div class="data-info">
+                                    <div class="data">@usuario.DataCadastro.ToString("dd/MM/yyyy")</div>
+                                    <div class="hora">@usuario.DataCadastro.ToString("HH:mm")</div>
+                                </div>
+                            </td>
+                            
+                            <!-- Último Acesso -->
+                            <td class="coluna-acesso">
+                                <div class="acesso-info">@usuario.UltimoAcessoTexto</div>
+                            </td>
+                            
+                            <!-- Adoções -->
+                            <td class="coluna-adocoes">
+                                <div class="adocoes-stats">
+                                    <div class="total">@usuario.TotalAdocoes total</div>
+                                    <div class="finalizadas">@usuario.AdocoesFinalizadas finalizadas</div>
+                                </div>
+                            </td>
+                            
+                            <!-- Ações -->
+                            <td class="coluna-acoes">
+                                <div class="acoes-grupo">
+                                    <button class="btn-acao detalhes" onclick="verDetalhes(@usuario.Id)" title="Ver detalhes">
+                                        <i class="fa-solid fa-magnifying-glass"></i>
+                                    </button>
+                                    
+                                    @if (usuario.QuarentenaAtiva)
+                                    {
+                                        <button class="btn-acao remover-quarentena" onclick="mostrarModalRemoverQuarentena(@usuario.Id)" title="Remover quarentena">
+                                            <i class="fa-solid fa-unlock-keyhole"></i>
+                                        </button>
+                                    }
+                                    else
+                                    {
+                                        <button class="btn-acao aplicar-quarentena" onclick="mostrarModalAplicarQuarentena(@usuario.Id)" title="Aplicar quarentena">
+                                            <i class="fa-solid fa-lock"></i>
+                                        </button>
+                                    }
+                                    
+                                    @if (usuario.Ativo)
+                                    {
+                                        <button class="btn-acao desativar" onclick="alterarStatusUsuario(@usuario.Id, false)" title="Desativar usuário">
+                                            <i class="fa-solid fa-user-slash"></i>
+                                        </button>
+                                    }
+                                    else
+                                    {
+                                        <button class="btn-acao ativar" onclick="alterarStatusUsuario(@usuario.Id, true)" title="Ativar usuário">
+                                            <i class="fa-solid fa-user-check"></i>
+                                        </button>
+                                    }
+                                    
+                                    <button class="btn-acao observacoes" onclick="mostrarModalObservacoes(@usuario.Id)" title="Observações administrativas">
+                                        <i class="fa-solid fa-sticky-note"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+
+    @if (!Model.Usuarios.Any())
+    {
+        <div class="estado-vazio" style="font-family: 'Poppins', sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; min-height: 300px; padding: 2rem;">
+            <div class="icone-vazio" style="margin-bottom: 1.5rem;">
+                <i class="fas fa-users" style="font-size: 3rem; color: #6c757d;"></i>
+            </div>
+            <h3 class="titulo-sem-adocoes" style="font-family: 'Poppins', sans-serif; font-weight: 600; margin-bottom: 1rem; color: #495057;">Nenhum usuário aprovado encontrado</h3>
+            <p class="texto-sem-adocoes" style="font-family: 'Poppins', sans-serif; font-weight: 400; margin-bottom: 0; color: #6c757d; max-width: 500px;">Não há usuários com formulários de adoção aprovados que correspondam aos filtros.</p>
+        </div>
+    }
+    
+    @if (Model.TotalPaginas > 1)
+    {
+        <div class="paginacao-container w-100">
+            <div class="paginacao mt-4">
+                <nav aria-label="Navegação de páginas">
+                    <ul class="pagination justify-content-center flex-wrap">
+                        @if (Model.TemPaginaAnterior)
+                        {
+                            <li class="page-item">
+                                <a class="page-link" href="?pagina=@(Model.PaginaAtual - 1)&filtroStatus=@Model.FiltroStatus&filtroTipo=@Model.FiltroTipo&pesquisa=@Model.Pesquisa">
+                                    <i class="fa-solid fa-chevron-left"></i>
+                                </a>
+                            </li>
+                        }
+                        else
+                        {
+                            <li class="page-item disabled">
+                                <span class="page-link"><i class="fa-solid fa-chevron-left"></i></span>
+                            </li>
+                        }
+                        
+                        @for (int i = Math.Max(1, Model.PaginaAtual - 2); i <= Math.Min(Model.TotalPaginas, Model.PaginaAtual + 2); i++)
+                        {
+                            <li class="page-item @(i == Model.PaginaAtual ? "active" : "")">
+                                <a class="page-link" href="?pagina=@i&filtroStatus=@Model.FiltroStatus&filtroTipo=@Model.FiltroTipo&pesquisa=@Model.Pesquisa">@i</a>
+                            </li>
+                        }
+                        
+                        @if (Model.TemProximaPagina)
+                        {
+                            <li class="page-item">
+                                <a class="page-link" href="?pagina=@(Model.PaginaAtual + 1)&filtroStatus=@Model.FiltroStatus&filtroTipo=@Model.FiltroTipo&pesquisa=@Model.Pesquisa">
+                                    <i class="fa-solid fa-chevron-right"></i>
+                                </a>
+                            </li>
+                        }
+                        else
+                        {
+                            <li class="page-item disabled">
+                                <span class="page-link"><i class="fa-solid fa-chevron-right"></i></span>
+                            </li>
+                        }
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    }
+</div>
+
+<!-- Modais -->
+
+<!-- Modal Aplicar Quarentena -->
+<div class="modal fade" id="modalAplicarQuarentena" data-bs-backdrop="static" tabindex="-1" aria-labelledby="modalAplicarQuarentenaLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content modal-content-professional">
+            <div class="modal-header modal-header-warning">
+                <h5 class="modal-title modal-title-professional" id="modalAplicarQuarentenaLabel">
+                    <i class="fa-solid fa-user-lock me-2"></i>Aplicar Quarentena ao Adotante
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body modal-body-professional">
+                <div class="alert-professional alert-warning-professional">
+                    <div class="alert-icon">
+                        <i class="fa-solid fa-exclamation-triangle"></i>
+                    </div>
+                    <div class="alert-content">
+                        <strong>Medida Restritiva</strong>
+                        <p>Esta ação impedirá temporariamente o usuário de iniciar novos processos de adoção durante o período especificado.</p>
+                    </div>
+                </div>
+                <form id="formAplicarQuarentena" class="form-professional">
+                    <input type="hidden" id="usuarioIdQuarentena">
+
+                    <div class="form-group-professional">
+                        <label for="diasDuracao" class="form-label-professional">
+                            <i class="fa-solid fa-calendar-days me-2"></i>Duração da Quarentena
+                            <span class="required-indicator">*</span>
+                        </label>
+                        <select class="form-control-professional" id="diasDuracao" required>
+                            <option value="">Selecione o período de restrição</option>
+                            <option value="7">7 dias - Advertência leve</option>
+                            <option value="15">15 dias - Advertência moderada</option>
+                            <option value="30">30 dias - Restrição padrão</option>
+                            <option value="60">60 dias - Restrição severa</option>
+                            <option value="90">90 dias - Suspensão temporária</option>
+                            <option value="365">1 ano - Suspensão prolongada</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group-professional">
+                        <label for="motivoQuarentena" class="form-label-professional">
+                            <i class="fa-solid fa-file-text me-2"></i>Justificativa da Medida
+                            <span class="required-indicator">*</span>
+                        </label>
+                        <textarea class="form-control-professional" id="motivoQuarentena" rows="4" required
+                                  placeholder="Descreva detalhadamente o motivo da aplicação da quarentena. Esta justificativa será registrada no histórico do usuário e poderá ser visualizada pelo mesmo."></textarea>
+                        <div class="form-help-text">
+                            <i class="fa-solid fa-info-circle me-1"></i>
+                            Esta justificativa será comunicada ao usuário e registrada no sistema de auditoria.
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer modal-footer-professional">
+                <button type="button" class="btn btn-outline-secondary btn-professional" data-bs-dismiss="modal">
+                    <i class="fa-solid fa-times me-1"></i>Cancelar
+                </button>
+                <button type="button" class="btn btn-warning btn-professional btn-action-warning" onclick="confirmarAplicarQuarentena()">
+                    <i class="fa-solid fa-user-lock me-1"></i>Aplicar Quarentena
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Remover Quarentena -->
+<div class="modal fade" id="modalRemoverQuarentena" data-bs-backdrop="static" tabindex="-1" aria-labelledby="modalRemoverQuarentenaLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content modal-content-professional">
+            <div class="modal-header modal-header-success">
+                <h5 class="modal-title modal-title-professional" id="modalRemoverQuarentenaLabel">
+                    <i class="fa-solid fa-user-check me-2"></i>Remover Quarentena do Adotante
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body modal-body-professional">
+                <div class="alert-professional alert-success-professional">
+                    <div class="alert-icon">
+                        <i class="fa-solid fa-unlock-keyhole"></i>
+                    </div>
+                    <div class="alert-content">
+                        <strong>Liberação de Restrição</strong>
+                        <p>O usuário será imediatamente habilitado para iniciar novos processos de adoção após a confirmação desta ação.</p>
+                    </div>
+                </div>
+                <form id="formRemoverQuarentena" class="form-professional">
+                    <input type="hidden" id="usuarioIdRemoverQuarentena">
+
+                    <div class="form-group-professional">
+                        <label for="justificativaRemocao" class="form-label-professional">
+                            <i class="fa-solid fa-clipboard-check me-2"></i>Justificativa da Liberação
+                            <span class="required-indicator">*</span>
+                        </label>
+                        <textarea class="form-control-professional" id="justificativaRemocao" rows="4" required
+                                  placeholder="Descreva os motivos que justificam a remoção antecipada da quarentena. Esta justificativa será registrada no histórico administrativo do usuário."></textarea>
+                        <div class="form-help-text">
+                            <i class="fa-solid fa-info-circle me-1"></i>
+                            Documente adequadamente os critérios que levaram à decisão de liberação antecipada.
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer modal-footer-professional">
+                <button type="button" class="btn btn-outline-secondary btn-professional" data-bs-dismiss="modal">
+                    <i class="fa-solid fa-times me-1"></i>Cancelar
+                </button>
+                <button type="button" class="btn btn-success btn-professional btn-action-success" onclick="confirmarRemoverQuarentena()">
+                    <i class="fa-solid fa-user-check me-1"></i>Liberar Usuário
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Observações Administrativas -->
+<div class="modal fade" id="modalObservacoes" data-bs-backdrop="static" tabindex="-1" aria-labelledby="modalObservacoesLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content modal-content-professional">
+            <div class="modal-header modal-header-primary">
+                <h5 class="modal-title modal-title-professional" id="modalObservacoesLabel">
+                    <i class="fa-solid fa-file-invoice me-2"></i>Observações Administrativas do Adotante
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body modal-body-professional">
+                <div class="alert-professional alert-info-professional">
+                    <div class="alert-icon">
+                        <i class="fa-solid fa-shield-halved"></i>
+                    </div>
+                    <div class="alert-content">
+                        <strong>Registro Confidencial</strong>
+                        <p>Estas anotações são exclusivamente para uso da equipe administrativa e não são compartilhadas com o usuário em questão.</p>
+                    </div>
+                </div>
+                <form id="formObservacoes" class="form-professional">
+                    <input type="hidden" id="usuarioIdObservacoes">
+
+                    <div class="form-group-professional">
+                        <label for="observacoesTexto" class="form-label-professional">
+                            <i class="fa-solid fa-pen-to-square me-2"></i>Anotações e Observações
+                        </label>
+                        <textarea class="form-control-professional textarea-large" id="observacoesTexto" rows="8"
+                                  placeholder="Registre aqui informações relevantes sobre:&#10;&#10;• Comportamento do usuário durante processos de adoção&#10;• Histórico de interações com a equipe&#10;• Observações sobre responsabilidade e cuidado com animais&#10;• Situações especiais ou preocupações identificadas&#10;• Feedback de outros colaboradores&#10;• Qualquer informação que possa ser útil em futuras avaliações"></textarea>
+                        <div class="form-help-text">
+                            <i class="fa-solid fa-info-circle me-1"></i>
+                            Máximo de 1000 caracteres. Mantenha as observações objetivas e profissionais.
+                        </div>
+                        <div class="character-counter">
+                            <span id="contadorCaracteres">0</span>/1000 caracteres
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer modal-footer-professional">
+                <button type="button" class="btn btn-outline-secondary btn-professional" data-bs-dismiss="modal">
+                    <i class="fa-solid fa-times me-1"></i>Cancelar
+                </button>
+                <button type="button" class="btn btn-primary btn-professional btn-action-primary" onclick="salvarObservacoes()">
+                    <i class="fa-solid fa-floppy-disk me-1"></i>Salvar Registro
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Detalhes do Usuário -->
+<div class="modal fade" id="modalDetalhesUsuario" data-bs-backdrop="static" tabindex="-1" aria-labelledby="modalDetalhesUsuarioLabel" aria-hidden="true">
+    <div class="modal-dialog modal-fullscreen-xl-down modal-xl modal-dialog-scrollable">
+        <div class="modal-content modal-profile-container">
+            <div class="modal-header modal-profile-header">
+                <div class="profile-header-content">
+                    <div class="profile-header-icon">
+                        <i class="fa-solid fa-id-card"></i>
+                    </div>
+                    <div class="profile-header-text">
+                        <h4 class="profile-title">Perfil Completo do Adotante</h4>
+                        <p class="profile-subtitle">Informações detalhadas e histórico do usuário</p>
+                    </div>
+                </div>
+                <div class="profile-header-actions">
+
+
+                    <button type="button" class="btn-close btn-close-professional" data-bs-dismiss="modal" aria-label="Fechar">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="modal-body modal-profile-body">
+                <div id="conteudoDetalhesUsuario">
+                    <!-- Loading State -->
+                    <div class="profile-loading-state">
+                        <div class="loading-animation">
+                            <div class="loading-circle"></div>
+                            <div class="loading-circle"></div>
+                            <div class="loading-circle"></div>
+                        </div>
+                        <div class="loading-content">
+                            <h5>Carregando perfil do adotante</h5>
+                            <p>Compilando informações detalhadas do usuário...</p>
+                            <div class="loading-progress">
+                                <div class="loading-progress-bar"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Template para dados carregados (oculto por padrão) -->
+                    <div id="profileDataTemplate" class="profile-data-container d-none">
+                        <!-- Estatísticas Principais -->
+                        <div class="stats-overview-section">
+                            <div class="stats-cards-row">
+                                <div class="overview-stat-card">
+                                    <div class="stat-icon-container">
+                                        <i class="fa-solid fa-heart"></i>
+                                    </div>
+                                    <div class="stat-info">
+                                        <span class="stat-number" id="totalAdoptions">0</span>
+                                        <span class="stat-label">Adoções</span>
+                                        
+                                    </div>
+                                </div>
+
+                                <div class="overview-stat-card">
+                                    <div class="stat-icon-container">
+                                        <i class="fa-solid fa-file-alt"></i>
+                                    </div>
+                                    <div class="stat-info">
+                                        <span class="stat-number" id="formsSubmitted">0</span>
+                                        <span class="stat-label">Formulários</span>
+                                    </div>
+                                </div>
+
+                                <div class="overview-stat-card">
+                                    <div class="stat-icon-container">
+                                        <i class="fa-solid fa-exclamation-triangle"></i>
+                                    </div>
+                                    <div class="stat-info">
+                                        <span class="stat-number" id="violations">0</span>
+                                        <span class="stat-label">Violações</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+
+                        <!-- Abas de Navegação -->
+                        <div class="profile-nav-tabs">
+                            <button class="profile-tab active" data-tab="personal">
+                                <i class="fa-solid fa-user"></i>
+                                Dados Pessoais
+                            </button>
+                            <button class="profile-tab" data-tab="contact">
+                                <i class="fa-solid fa-address-book"></i>
+                                Contato
+                            </button>
+                            <button class="profile-tab" data-tab="adoptions">
+                                <i class="fa-solid fa-paw"></i>
+                                Histórico de Adoções
+                            </button>
+                            <button class="profile-tab" data-tab="administrative">
+                                <i class="fa-solid fa-shield-alt"></i>
+                                Administrativo
+                            </button>
+                        </div>
+
+                        <!-- Conteúdo das Abas -->
+                        <div class="profile-tab-content">
+                            <!-- Aba Dados Pessoais - Versão Profissional -->
+                            <div class="profile-tab-pane active" id="personal">
+                                <div class="professional-section">
+                                    <!-- Seção de Identificação -->
+                                    <div class="info-section identification-section">
+                                        <div class="section-header">
+                                            <h6><i class="fa-solid fa-id-card me-2"></i>Identificação Pessoal</h6>
+                                        </div>
+                                        <div class="info-grid two-columns">
+                                            <div class="info-field">
+                                                <label class="field-label">Nome Completo</label>
+                                                <div class="field-value" id="fullName">
+                                                    <i class="fa-solid fa-user field-icon"></i>
+                                                    <span class="value-text">-</span>
+                                                </div>
+                                            </div>
+                                            <div class="info-field">
+                                                <label class="field-label">CPF</label>
+                                                <div class="field-value" id="cpf">
+                                                    <i class="fa-solid fa-fingerprint field-icon"></i>
+                                                    <span class="value-text">-</span>
+                                                </div>
+                                            </div>
+                                            <div class="info-field">
+                                                <label class="field-label">Data de Nascimento</label>
+                                                <div class="field-value" id="birthDate">
+                                                    <i class="fa-solid fa-calendar field-icon"></i>
+                                                    <span class="value-text">-</span>
+                                                </div>
+                                            </div>
+                                            <div class="info-field">
+                                                <label class="field-label">Idade</label>
+                                                <div class="field-value" id="userAge">
+                                                    <i class="fa-solid fa-hourglass-half field-icon"></i>
+                                                    <span class="value-text">-</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Seção de Endereço -->
+                                    <div class="info-section address-section">
+                                        <div class="section-header">
+                                            <h6><i class="fa-solid fa-map-marker-alt me-2"></i>Endereço Residencial</h6>
+                                        </div>
+                                        <div class="info-grid address-grid">
+                                            <div class="info-field full-width">
+                                                <label class="field-label">Endereço Completo</label>
+                                                <div class="field-value" id="address">
+                                                    <i class="fa-solid fa-home field-icon"></i>
+                                                    <span class="value-text">-</span>
+                                                </div>
+                                            </div>
+                                            <div class="info-field">
+                                                <label class="field-label">Cidade</label>
+                                                <div class="field-value" id="city">
+                                                    <i class="fa-solid fa-city field-icon"></i>
+                                                    <span class="value-text">-</span>
+                                                </div>
+                                            </div>
+                                            <div class="info-field">
+                                                <label class="field-label">Estado</label>
+                                                <div class="field-value" id="state">
+                                                    <i class="fa-solid fa-map field-icon"></i>
+                                                    <span class="value-text">-</span>
+                                                </div>
+                                            </div>
+                                            <div class="info-field">
+                                                <label class="field-label">CEP</label>
+                                                <div class="field-value" id="zipCode">
+                                                    <i class="fa-solid fa-mail-bulk field-icon"></i>
+                                                    <span class="value-text">-</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Aba Contato - Versão Profissional -->
+                            <div class="profile-tab-pane" id="contact">
+                                <div class="professional-section">
+                                    <!-- Seção de Contato Principal -->
+                                    <div class="info-section contact-section">
+                                        <div class="section-header">
+                                            <h6><i class="fa-solid fa-address-book me-2"></i>Informações de Contato</h6>
+                                        </div>
+                                        <div class="contact-grid">
+                                            <div class="contact-method primary">
+                                                <div class="method-header">
+                                                    <div class="method-icon email-icon">
+                                                        <i class="fa-solid fa-envelope"></i>
+                                                    </div>
+                                                    <div class="method-info">
+                                                        <h6>E-mail Principal</h6>
+                                                        <div class="contact-value" id="primaryEmail">-</div>
+                                                    </div>
+                                                </div>
+                                                
+                                            </div>
+
+                                            <div class="contact-method">
+                                                <div class="method-header">
+                                                    <div class="method-icon phone-icon">
+                                                        <i class="fa-solid fa-phone"></i>
+                                                    </div>
+                                                    <div class="method-info">
+                                                        <h6>Telefone</h6>
+                                                        <div class="contact-value" id="phoneNumber">-</div>
+                                                    </div>
+                                                </div>
+                                                
+                                            </div>
+
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+
+                            <!-- Aba Histórico de Adoções -->
+                            <div class="profile-tab-pane" id="adoptions">
+                                <div class="profile-section">
+                                    <h5 class="profile-section-title">
+                                        <i class="fa-solid fa-paw me-2"></i>
+                                        Histórico de Adoções
+                                    </h5>
+
+                                    <!-- Resumo das Adoções -->
+                                    <div class="adoption-summary-cards">
+                                        <div class="adoption-summary-card total">
+                                            <div class="summary-icon">
+                                                <i class="fa-solid fa-heart"></i>
+                                            </div>
+                                            <div class="summary-content">
+                                                <h6>Total de Adoções</h6>
+                                                <span class="summary-number" id="totalAdoptionsCount">0</span>
+                                                <small>Processos iniciados</small>
+                                            </div>
+                                        </div>
+                                        <div class="adoption-summary-card completed">
+                                            <div class="summary-icon">
+                                                <i class="fa-solid fa-check-circle"></i>
+                                            </div>
+                                            <div class="summary-content">
+                                                <h6>Finalizadas</h6>
+                                                <span class="summary-number" id="completedAdoptionsCount">0</span>
+                                                <small>Com sucesso</small>
+                                            </div>
+                                        </div>
+                                        <div class="adoption-summary-card pending">
+                                            <div class="summary-icon">
+                                                <i class="fa-solid fa-clock"></i>
+                                            </div>
+                                            <div class="summary-content">
+                                                <h6>Em Andamento</h6>
+                                                <span class="summary-number" id="pendingAdoptionsCount">0</span>
+                                                <small>Processos ativos</small>
+                                            </div>
+                                        </div>
+                                        <div class="adoption-summary-card cancelled">
+                                            <div class="summary-icon">
+                                                <i class="fa-solid fa-times-circle"></i>
+                                            </div>
+                                            <div class="summary-content">
+                                                <h6>Canceladas</h6>
+                                                <span class="summary-number" id="cancelledAdoptionsCount">0</span>
+                                                <small>Não finalizadas</small>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Timeline de Adoções -->
+                                    <div class="adoption-timeline-container">
+                                        <div class="timeline-header">
+                                            <h6><i class="fa-solid fa-timeline me-2"></i>Linha do Tempo</h6>
+                                            <div class="timeline-filters">
+                                                <select class="form-select form-select-sm" id="adoptionStatusFilter">
+                                                    <option value="all">Todos os status</option>
+                                                    <option value="completed">Finalizadas</option>
+                                                    <option value="pending">Em andamento</option>
+                                                    <option value="cancelled">Canceladas</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="adoption-timeline" id="adoptionsTimeline">
+                                            <!-- Será preenchido dinamicamente -->
+                                            <div class="timeline-empty">
+                                                <i class="fa-solid fa-paw"></i>
+                                                <p>Nenhuma adoção encontrada para este usuário</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+
+                            <!-- Aba Administrativa -->
+                            <div class="profile-tab-pane" id="administrative">
+                                <div class="profile-section">
+                                    <h5 class="profile-section-title">
+                                        <i class="fa-solid fa-shield-alt me-2"></i>
+                                        Informações Administrativas
+                                    </h5>
+
+                                    <!-- Status do Usuário -->
+                                    <div class="admin-status-section">
+                                        <h6 class="admin-section-subtitle">
+                                            <i class="fa-solid fa-user-shield me-2"></i>
+                                            Status e Permissões
+                                        </h6>
+                                        <div class="admin-status-grid">
+                                            <div class="admin-status-card">
+                                                <div class="status-indicator" id="userStatus">
+                                                    <div class="status-dot active"></div>
+                                                    <span>Ativo</span>
+                                                </div>
+                                                <div class="status-details">
+                                                    <p>Usuário habilitado para adoções</p>
+                                                    <small>Desde: <span id="activeSince">-</span></small>
+                                                </div>
+                                            </div>
+                                            <div class="admin-status-card">
+                                                <div class="status-indicator" id="quarantineStatus">
+                                                    <div class="status-dot quarantine" style="display: none;"></div>
+                                                    <div class="status-dot active"></div>
+                                                    <span>Sem Restrições</span>
+                                                </div>
+                                                <div class="status-details">
+                                                    <p>Nenhuma quarentena ativa</p>
+                                                    <small>Última verificação: <span id="lastQuarantineCheck">-</span></small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Observações Administrativas -->
+                                    <div class="admin-notes-section">
+                                        <div class="notes-header">
+                                            <h6 class="admin-section-subtitle">
+                                                <i class="fa-solid fa-sticky-note me-2"></i>
+                                                Observações Internas
+                                            </h6>
+                                            
+                                        </div>
+                                        <div class="admin-notes-content" id="adminNotesContent">
+                                            <div class="notes-empty">
+                                                <i class="fa-solid fa-note-sticky"></i>
+                                                <p>Nenhuma observação administrativa registrada</p>
+                                                <small>Clique em "Editar" para adicionar observações</small>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Histórico de Ações Administrativas -->
+                                    <div class="admin-actions-section">
+                                        <h6 class="admin-section-subtitle">
+                                            <i class="fa-solid fa-gavel me-2"></i>
+                                            Histórico de Ações Administrativas
+                                        </h6>
+                                        <div class="admin-actions-timeline" id="adminActionsTimeline">
+                                            <!-- Será preenchido dinamicamente -->
+                                            <div class="admin-actions-empty">
+                                                <i class="fa-solid fa-shield-check"></i>
+                                                <p>Nenhuma ação administrativa registrada</p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    
+
+                                    
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer modal-profile-footer">
+                <div class="profile-footer-info">
+                    <span class="last-updated">Última atualização: <span id="lastUpdate">-</span></span>
+                </div>
+                <div class="profile-footer-actions">
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Confirmação Ação -->
+<div class="modal fade" id="modalConfirmarAcao" data-bs-backdrop="static" tabindex="-1" aria-labelledby="modalConfirmarAcaoLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+        <div class="modal-content modal-content-compact">
+            <div class="modal-header modal-header-compact" id="modalConfirmarHeader">
+                <h6 class="modal-title" id="modalConfirmarAcaoLabel">
+                    <i class="fa-solid fa-circle-exclamation me-2"></i>Confirmação
+                </h6>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body modal-body-compact">
+                <div class="confirmation-container-compact">
+                    <p id="mensagemConfirmacao" class="confirmation-message-compact"></p>
+                    <div class="confirmation-warning-compact">
+                        <i class="fa-solid fa-info-circle me-1"></i>
+                        Esta ação será registrada no sistema.
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer modal-footer-compact">
+                <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">
+                    <i class="fa-solid fa-times me-1"></i>Cancelar
+                </button>
+                <button type="button" class="btn btn-danger btn-sm" id="btnConfirmarAcao">
+                    <i class="fa-solid fa-check me-1"></i>Confirmar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/admin/gerenciamento-usuarios.js" asp-append-version="true"></script>
+}

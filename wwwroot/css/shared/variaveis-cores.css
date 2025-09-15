@@ -1,0 +1,61 @@
+﻿/* ============================================
+   VARIÃVEIS DE CORES DO SISTEMA
+   ============================================ */
+:root {
+    /* Cores PrimÃ¡rias */
+    --primary-color: #FF6B6B;
+    --secondary-color: #4ECDC4;
+    --tertiary-color: #FFE66D;
+    /* Cores de Fundo */
+    --background-color: #FFFFFF;
+    --light-gray: #F7F7F7;
+    --medium-gray: #DDDDDD;
+    --dark-gray: #555555;
+    /* Cores de Texto */
+    --text-color: #333333;
+    --text-light: #666666;
+    --text-muted: #999999;
+    /* Cores de Estado */
+    --error-color: #FF5252;
+    --success-color: #4CAF50;
+    --warning-color: #FFC107;
+    --info-color: #2196F3;
+    /* Cores para Pets */
+    --pet-primary: #E67E22;
+    --pet-secondary: #D35400;
+    /* Cores para EspÃ©cies */
+    --cao-color: #8B4513;
+    --felino-color: #9C27B0;
+    /* Cores para Sexo */
+    --macho-color: #3498db;
+    --femea-color: #e91e63;
+    /* Cores para Porte */
+    --porte-pequeno-color: #4CAF50;
+    --porte-medio-color: #FF9800;
+    --porte-grande-color: #F44336;
+    /* Efeitos e Sombras */
+    --default-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    --hover-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+    --border-radius: 8px;
+    --transition: all 0.3s ease;
+    /* Cores de Admin */
+    --admin-primary: #2c3e50;
+    --admin-secondary: #3498db;
+    --admin-success: #27ae60;
+    --admin-danger: #e74c3c;
+    --admin-warning: #f39c12;
+    --admin-info: #3498db;
+}
+/* Temas Alternativos */
+.tema-escuro {
+    --background-color: #2c3e50;
+    --text-color: #ecf0f1;
+    --light-gray: #34495e;
+    --medium-gray: #95a5a6;
+}
+.tema-alto-contraste {
+    --background-color: #000000;
+    --text-color: #ffffff;
+    --primary-color: #ffff00;
+    --light-gray: #333333;
+}

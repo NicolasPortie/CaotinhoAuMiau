@@ -1,0 +1,709 @@
+﻿    font-family: var(--font-primary);
+    background-color: var(--color-light);
+    min-height: 100vh;
+    display: flex;
+    margin: 0;
+    padding: 0;
+}
+.conteudo-principal {
+    flex: 1;
+    padding: 1.5rem 2rem;
+    min-height: 100vh;
+    background: var(--color-gray-50);
+}
+.cabecalho-painel {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+    background: transparent;
+}
+.titulo-pagina {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--color-gray-900);
+    margin: 0;
+    line-height: 1.2;
+    font-family: var(--font-primary);
+}
+.titulo-pagina i {
+    color: var(--color-secondary);
+    margin-right: 10px;
+}
+.cartoes-status {
+    margin-bottom: 2rem;
+    margin-top: 1.5rem;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.5rem;
+}
+.conteudo-cartao-status {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 6px !important;
+    padding: 0.5rem 0;
+}
+.cartao-status .conteudo-cartao-status {
+    gap: 6px !important;
+}
+.cartao-status {
+    background: white;
+    border-radius: 16px;
+    padding: 1.8rem 1.5rem;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+    position: relative;
+    height: auto;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    min-height: 140px;
+    justify-content: flex-start;
+    border: 1px solid var(--color-gray-100);
+}
+.cartao-status::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    z-index: 1;
+}
+.cartao-status.cachorros::before {
+    background: var(--color-secondary);
+}
+.cartao-status.gatos::before {
+    background: var(--color-accent);
+}
+.cartao-status.aprovados::before {
+    background: var(--color-success);
+}
+.cartao-status.pendentes::before {
+    background: var(--color-warning);
+}
+.cartao-status .icone {
+    min-width: 50px;
+    height: 50px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+    margin-bottom: 0;
+    color: white;
+    box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+}
+.cartao-status.cachorros .icone {
+    background: var(--color-secondary);
+}
+.cartao-status.gatos .icone {
+    background: var(--color-accent);
+}
+.cartao-status.aprovados .icone {
+    background: var(--color-success);
+}
+.cartao-status.pendentes .icone {
+    background: var(--color-warning);
+}
+.cartao-status .d-flex {
+    width: 100%;
+}
+.cartao-status .rotulo {
+    font-size: 1rem;
+    color: var(--color-gray-600);
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+    display: block;
+    text-align: left;
+    font-family: var(--font-primary);
+}
+.cartao-status .numero {
+    font-size: 2.4rem;
+    font-weight: 700;
+    color: var(--color-gray-900);
+    line-height: 1.2;
+    text-align: left;
+    font-family: var(--font-primary);
+}
+@keyframes girar {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+@keyframes contadorAnimacao {
+    0% {
+        opacity: 0.3;
+        transform: translateY(10px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+.cartao-status .numero.animando {
+    animation: contadorAnimacao 0.5s ease forwards;
+}
+.atividades-recentes {
+    background: white;
+    border-radius: 16px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    box-shadow: var(--shadow-default);
+}
+.titulo-atividade {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--color-gray-900);
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--color-gray-200);
+}
+.titulo-atividade i {
+    color: var(--color-secondary);
+}
+.lista-atividade {
+    max-height: 400px;
+    overflow-y: auto;
+}
+.item-atividade {
+    display: flex;
+    padding: 1rem 0;
+    border-bottom: 1px solid var(--color-gray-100);
+}
+.item-atividade:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+.icone-atividade {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    margin-right: 1rem;
+    flex-shrink: 0;
+}
+.icone-atividade.adocao {
+    background: linear-gradient(135deg, var(--color-secondary) 0%, var(--color-secondary-light) 100%);
+}
+.icone-atividade.usuario {
+    background: var(--success-gradient);
+}
+.icone-atividade.pet {
+    background: var(--accent-gradient);
+}
+.conteudo-atividade {
+    flex: 1;
+}
+.acao-atividade {
+    font-weight: 500;
+    color: var(--color-gray-900);
+    margin-bottom: 0.25rem;
+}
+.data-atividade {
+    font-size: 0.85rem;
+    color: var(--color-gray-500);
+}
+.botao-acao-flutuante {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    width: 60px;
+    height: 60px;
+    border-radius: 30px;
+    background: linear-gradient(135deg, var(--color-secondary) 0%, var(--color-secondary-light) 100%);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(99, 102, 241, 0.5);
+    z-index: 10;
+    transition: all 0.3s ease;
+}
+.botao-acao-flutuante span {
+    font-size: 1.5rem;
+}
+@media (max-width: 1200px) {
+    .cartoes-status {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+    }
+}
+@media (max-width: 991px) {
+    .container-painel {
+        flex-direction: column;
+    }
+    .valor-cartao-estatistica {
+        font-size: 2rem;
+    }
+}
+@media (max-width: 768px) {
+    .conteudo-principal {
+        padding: 1rem;
+    }
+    .cartoes-status {
+        grid-template-columns: 1fr;
+    }
+    .titulo-pagina {
+        font-size: 1.5rem;
+    }
+    .botao-acao-flutuante {
+        width: 50px;
+        height: 50px;
+        font-size: 1.2rem;
+    }
+}
+.mensagem-erro {
+    color: var(--color-danger);
+    font-size: 0.85rem;
+    margin-top: 0.25rem;
+    display: none;
+}
+input.is-invalid + .mensagem-erro {
+    display: block;
+}
+/* === ESTILOS DOS GRÃFICOS === */
+.container-graficos {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    margin: 2rem 0;
+}
+/* GrÃ¡fico Principal - Funil */
+.grafico-principal {
+    background: white;
+    border-radius: 16px;
+    box-shadow: var(--shadow-default);
+    overflow: hidden;
+}
+/* Segunda linha - dois grÃ¡ficos lado a lado */
+.graficos-secundarios {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+}
+.grafico-status-pets,
+.grafico-conversao-especies {
+    background: white;
+    border-radius: 16px;
+    box-shadow: var(--shadow-default);
+    overflow: hidden;
+}
+/* Terceiro grÃ¡fico - linha temporal */
+.grafico-tendencia {
+    background: white;
+    border-radius: 16px;
+    box-shadow: var(--shadow-default);
+    overflow: hidden;
+}
+/* TÃ­tulos dos grÃ¡ficos */
+.titulo-grafico {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem;
+    border-bottom: 1px solid var(--color-gray-200);
+    background: var(--color-gray-50);
+}
+.texto-titulo-grafico {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--color-gray-900);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.texto-titulo-grafico i {
+    color: var(--color-secondary);
+}
+/* Filtros de perÃ­odo */
+.filtros-periodo {
+    display: flex;
+    gap: 0.5rem;
+}
+.filtro-periodo {
+    padding: 0.5rem 1rem;
+    border: 2px solid var(--color-gray-200);
+    background: white;
+    border-radius: 25px;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    color: var(--color-gray-600);
+}
+.filtro-periodo:hover,
+.filtro-periodo.ativo {
+    background: var(--color-secondary);
+    border-color: var(--color-secondary);
+    color: white;
+}
+/* Ãreas dos grÃ¡ficos */
+.area-grafico {
+    padding: 2rem;
+    height: 400px;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.grafico-principal .area-grafico {
+    height: 280px;
+}
+.area-grafico canvas {
+    max-width: 100%;
+    max-height: 100%;
+    width: 100% !important;
+    height: 100% !important;
+}
+/* Estados de carregamento */
+.grafico-carregando {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: var(--color-gray-500);
+}
+.grafico-carregando i {
+    font-size: 2rem;
+    color: var(--color-secondary);
+    margin-bottom: 1rem;
+    animation: spin 1s linear infinite;
+}
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+/* Estilos especÃ­ficos para cards do dashboard */
+.cartao-status {
+    position: relative;
+    overflow: hidden;
+}
+.cartao-status::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    border-radius: 16px 16px 0 0;
+}
+.cartao-status.aguardando-retirada::before {
+    background: #dc2626;
+}
+.cartao-status.pendentes-hoje::before {
+    background: #eab308;
+}
+.cartao-status.disponiveis::before {
+    background: #16a34a;
+}
+.cartao-status.finalizadas::before {
+    background: #2563eb;
+}
+/* FORÃ‡A ESTILOS DOS ÃCONES - MÃXIMA ESPECIFICIDADE */
+body .container-admin .cartoes-status .cartao-status.aguardando-retirada .conteudo-cartao-status .icone {
+    background-color: #dc2626 !important;
+    color: #ffffff !important;
+    border: none !important;
+}
+body .container-admin .cartoes-status .cartao-status.pendentes-hoje .conteudo-cartao-status .icone {
+    background-color: #eab308 !important;
+    color: #ffffff !important;
+    border: none !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-size: 1.4rem !important;
+    min-width: 50px !important;
+    height: 50px !important;
+    border-radius: 12px !important;
+}
+body .container-admin .cartoes-status .cartao-status.pendentes-hoje .conteudo-cartao-status .icone i {
+    color: #ffffff !important;
+    font-size: 1.4rem !important;
+    display: block !important;
+}
+body .container-admin .cartoes-status .cartao-status.disponiveis .conteudo-cartao-status .icone {
+    background-color: #16a34a !important;
+    color: #ffffff !important;
+    border: none !important;
+}
+body .container-admin .cartoes-status .cartao-status.finalizadas .conteudo-cartao-status .icone {
+    background-color: #2563eb !important;
+    color: #ffffff !important;
+    border: none !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-size: 1.4rem !important;
+    min-width: 50px !important;
+    height: 50px !important;
+    border-radius: 12px !important;
+}
+body .container-admin .cartoes-status .cartao-status.finalizadas .conteudo-cartao-status .icone i {
+    color: #ffffff !important;
+    font-size: 1.4rem !important;
+    display: block !important;
+}
+/* ForÃ§a cores dos Ã­cones internos tambÃ©m */
+body .container-admin .cartoes-status .cartao-status .icone i {
+    color: #ffffff !important;
+}
+.conteudo-cartao-status {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 15px;
+    padding: 1rem;
+    height: 100%;
+    min-height: 90px;
+}
+.conteudo-cartao-status .icone {
+    flex-shrink: 0;
+    align-self: center;
+}
+.conteudo-cartao-status .d-flex {
+    flex-grow: 1;
+    align-self: center;
+    justify-content: center !important;
+    text-align: center;
+    width: 100%;
+}
+.conteudo-cartao-status .rotulo,
+.conteudo-cartao-status .numero {
+    text-align: center;
+    width: 100%;
+}
+.cartao-status .icone {
+    min-width: 50px;
+    height: 50px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+    margin-bottom: 0;
+    color: white;
+    box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+}
+.cartao-status .d-flex {
+    width: 100%;
+}
+.cartao-status .rotulo {
+    font-size: 1rem;
+    color: var(--color-gray-600);
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+    display: block;
+}
+.cartao-status .numero {
+    font-size: 2.4rem;
+    font-weight: 700;
+    color: var(--color-gray-900);
+    line-height: 1.2;
+    text-align: left;
+}
+/* Responsividade */
+@media (max-width: 1024px) {
+    .graficos-secundarios {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+}
+@media (max-width: 768px) {
+    .container-graficos {
+        gap: 1.5rem;
+        margin: 1.5rem 0;
+    }
+    .area-grafico {
+        padding: 1rem;
+        height: 300px;
+    }
+    .grafico-principal .area-grafico {
+        height: 250px;
+    }
+    .titulo-grafico {
+        padding: 1rem;
+        flex-direction: column;
+        gap: 1rem;
+        align-items: flex-start;
+    }
+    .filtros-periodo {
+        align-self: stretch;
+        justify-content: center;
+    }
+    .filtro-periodo {
+        flex: 1;
+        text-align: center;
+    }
+}
+/* === ATIVIDADES RECENTES === */
+.atividades-recentes {
+    background: white;
+    border-radius: 16px;
+    box-shadow: var(--shadow-default);
+    overflow: hidden;
+    margin-top: 2rem;
+}
+.titulo-atividade {
+    padding: 1.5rem;
+    border-bottom: 1px solid var(--color-gray-200);
+    background: var(--color-gray-50);
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--color-gray-900);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.titulo-atividade i {
+    color: var(--color-secondary);
+}
+.lista-atividade {
+    max-height: 400px;
+    overflow-y: auto;
+}
+.atividade-item {
+    display: flex;
+    align-items: flex-start;
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid var(--color-gray-100);
+    transition: background-color 0.2s ease;
+}
+.atividade-item:hover {
+    background: var(--color-gray-50);
+}
+.atividade-item:last-child {
+    border-bottom: none;
+}
+.atividade-icone {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 1rem;
+    flex-shrink: 0;
+}
+.atividade-icone.formulario {
+    background: rgba(234, 179, 8, 0.1);
+    color: #eab308;
+}
+.atividade-icone.pet {
+    background: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+}
+.atividade-icone.usuario {
+    background: rgba(34, 197, 94, 0.1);
+    color: #22c55e;
+}
+.atividade-icone.adocao {
+    background: rgba(37, 99, 235, 0.1);
+    color: #2563eb;
+}
+.atividade-icone.contrato {
+    background: rgba(147, 51, 234, 0.1);
+    color: #9333ea;
+}
+.atividade-conteudo {
+    flex: 1;
+    min-width: 0;
+}
+.atividade-titulo {
+    font-weight: 500;
+    color: var(--color-gray-900);
+    margin-bottom: 0.25rem;
+    line-height: 1.4;
+}
+.atividade-detalhes {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 0.875rem;
+    flex-wrap: wrap;
+}
+.atividade-detalhes .usuario {
+    color: var(--color-gray-600);
+    font-weight: 500;
+}
+.atividade-detalhes .status {
+    padding: 0.125rem 0.5rem;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    text-transform: uppercase;
+}
+.status.pendente {
+    background: rgba(234, 179, 8, 0.1);
+    color: #eab308;
+}
+.status.aprovado, .status.finalizado, .status.ativo {
+    background: rgba(34, 197, 94, 0.1);
+    color: #22c55e;
+}
+.status.disponivel {
+    background: rgba(37, 99, 235, 0.1);
+    color: #2563eb;
+}
+.status.adotado {
+    background: rgba(147, 51, 234, 0.1);
+    color: #9333ea;
+}
+.status.default {
+    background: rgba(107, 114, 128, 0.1);
+    color: #6b7280;
+}
+.atividade-detalhes .data {
+    color: var(--color-gray-500);
+    font-size: 0.75rem;
+    margin-left: auto;
+}
+.atividade-item.sem-atividades,
+.atividade-item.erro {
+    justify-content: center;
+    text-align: center;
+    padding: 2rem;
+    color: var(--color-gray-500);
+}
+.atividade-item.erro {
+    color: var(--color-danger);
+}
+.sem-atividades .atividade-icone,
+.erro .atividade-icone {
+    background: rgba(107, 114, 128, 0.1);
+    color: #6b7280;
+    margin-right: 0;
+    margin-bottom: 0.5rem;
+}
+.erro .atividade-icone {
+    background: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+}
+/* Responsividade para atividades */
+@media (max-width: 768px) {
+    .atividades-recentes {
+        margin-top: 1.5rem;
+    }
+    .atividade-item {
+        padding: 0.75rem 1rem;
+    }
+    .atividade-icone {
+        width: 32px;
+        height: 32px;
+        margin-right: 0.75rem;
+    }
+    .atividade-detalhes {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.25rem;
+    }
+    .atividade-detalhes .data {
+        margin-left: 0;
+    }
+}

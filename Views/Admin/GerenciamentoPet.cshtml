@@ -1,0 +1,864 @@
+@{
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+}
+
+@model CaotinhoAuMiau.Models.ViewModels.Admin.GerenciamentoPetViewModel
+@using CaotinhoAuMiau.Models.Enums
+@using CaotinhoAuMiau.Utils
+
+@{
+    ViewData["Title"] = "Gerenciamento de Pets";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/admin/admin-gerenciamento-pets.css" asp-append-version="true" />
+    <style>
+        select.select-personalizado,
+        .select-personalizado {
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='none' stroke='%236B7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3E%3C/svg%3E") !important;
+            background-repeat: no-repeat !important;
+            background-position: right 0.75rem center !important;
+            background-size: 16px 12px !important;
+            padding-right: 2.5rem !important;
+        }
+
+        /* Estilo do botão Novo Pet */
+        #btn-new-pet {
+            background: #007bff !important;
+            background: linear-gradient(135deg, #007bff 0%, #0056b3 100%) !important;
+            color: white !important;
+            border: none !important;
+            border-radius: 12px !important;
+            padding: 12px 24px !important;
+            font-weight: 600 !important;
+            font-size: 14px !important;
+            display: flex !important;
+            align-items: center !important;
+            gap: 8px !important;
+            transition: all 0.3s ease !important;
+            box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3) !important;
+        }
+
+        #btn-new-pet:hover {
+            background: linear-gradient(135deg, #0056b3 0%, #004085 100%) !important;
+            transform: translateY(-2px) !important;
+            box-shadow: 0 6px 20px rgba(0, 123, 255, 0.4) !important;
+        }
+
+        /* ÍCONES AZUIS APENAS NO MODAL DE DETALHES */
+        #modal-pet-details .fas,
+        #modal-pet-details .far,
+        #modal-pet-details .fab {
+            color: #007bff !important;
+        }
+
+        /* Exceções para ícones nos botões do modal de detalhes */
+        #modal-pet-details .btn .fas,
+        #modal-pet-details .btn .far,
+        #modal-pet-details .btn .fab {
+            color: inherit !important;
+        }
+
+        #btn-new-pet:active {
+            transform: translateY(0) !important;
+            box-shadow: 0 2px 8px rgba(0, 123, 255, 0.3) !important;
+        }
+
+        #btn-new-pet i {
+            font-size: 16px !important;
+        }
+
+        /* Estilos para rascunhos - apenas contorno chamativo */
+        .cartao-rascunho {
+            border: 3px solid #ff6b35 !important;
+            border-radius: 12px !important;
+            box-shadow: 0 0 20px rgba(255, 107, 53, 0.4) !important;
+            animation: pulse-rascunho 2s infinite !important;
+            position: relative !important;
+        }
+
+        @@keyframes pulse-rascunho {
+            0% { 
+                border-color: #ff6b35;
+                box-shadow: 0 0 15px rgba(255, 107, 53, 0.4); 
+            }
+            50% { 
+                border-color: #ff8c42;
+                box-shadow: 0 0 25px rgba(255, 140, 66, 0.6); 
+            }
+            100% { 
+                border-color: #ff6b35;
+                box-shadow: 0 0 15px rgba(255, 107, 53, 0.4); 
+            }
+        }
+
+        .tag-rascunho-destaque {
+            background: linear-gradient(135deg, #ff6b35 0%, #ff8c42 100%) !important;
+            color: white !important;
+            padding: 8px 12px !important;
+            border-radius: 20px !important;
+            font-weight: 700 !important;
+            font-size: 12px !important;
+            letter-spacing: 0.5px !important;
+            border: 1px solid #ffffff !important;
+            box-shadow: 0 2px 8px rgba(255, 107, 53, 0.3) !important;
+        }
+
+
+        
+        /* Garantir que Font Awesome funcione nos modais - FORÇADO */
+        .modal .fas, 
+        .modal .far, 
+        .modal .fab,
+        .modal i[class*="fa-"],
+        #modal-pet .fas,
+        #modal-pet .far, 
+        #modal-pet .fab,
+        #modal-pet i[class*="fa-"],
+        #modal-pet-details .fas,
+        #modal-pet-details .far, 
+        #modal-pet-details .fab,
+        #modal-pet-details i[class*="fa-"],
+        #modal-confirm-delete .fas,
+        #modal-confirm-delete .far, 
+        #modal-confirm-delete .fab,
+        #modal-confirm-delete i[class*="fa-"] {
+            font-family: "Font Awesome 6 Free" !important;
+            font-weight: 900 !important;
+            font-style: normal !important;
+            display: inline-block !important;
+            -webkit-font-smoothing: antialiased !important;
+            -moz-osx-font-smoothing: grayscale !important;
+        }
+
+        /* Força aplicação nos pseudo-elementos */
+        .modal .fas:before,
+        .modal .far:before, 
+        .modal .fab:before,
+        .modal i[class*="fa-"]:before,
+        #modal-pet .fas:before,
+        #modal-pet .far:before, 
+        #modal-pet .fab:before,
+        #modal-pet i[class*="fa-"]:before {
+            font-family: "Font Awesome 6 Free" !important;
+            font-weight: 900 !important;
+        }
+
+        /* SOLUÇÃO DEFINITIVA PARA MODAIS */
+        
+        /* Garantir que todos os ícones nos modais tenham a fonte correta */
+        .modal * {
+            font-family: inherit !important;
+        }
+        
+        .modal .fas,
+        .modal .far,
+        .modal .fab,
+        .modal i[class*="fa-"] {
+            font-family: "Font Awesome 6 Free" !important;
+            font-weight: 900 !important;
+            font-style: normal !important;
+            font-variant: normal !important;
+        }
+
+        /* Font Awesome 6 - Estilos específicos para o modal */
+        #modal-pet .rotulo-form i {
+            color: #007bff !important;
+            margin-right: 6px !important;
+            font-size: 14px !important;
+            font-family: "Font Awesome 6 Free" !important;
+            font-weight: 900 !important;
+        }
+
+        #modal-pet .mensagem-erro i {
+            color: #dc3545 !important;
+            margin-right: 4px !important;
+            font-family: "Font Awesome 6 Free" !important;
+            font-weight: 900 !important;
+        }
+
+        #modal-pet .mensagem-soltar {
+            display: flex !important;
+            flex-direction: column !important;
+            align-items: center !important;
+            justify-content: center !important;
+            height: 100% !important;
+            text-align: center !important;
+        }
+        
+        #modal-pet .mensagem-soltar i {
+            font-size: 48px !important;
+            color: #007bff !important;
+            margin-bottom: 10px !important;
+            display: block !important;
+            font-family: "Font Awesome 6 Free" !important;
+            font-weight: 900 !important;
+        }
+        
+        #modal-pet .mensagem-soltar p {
+            margin: 0 !important;
+            color: #6c757d !important;
+            font-size: 14px !important;
+        }
+
+        #modal-pet .botao-remover-img i {
+            color: white !important;
+            font-size: 14px !important;
+            font-family: "Font Awesome 6 Free" !important;
+            font-weight: 900 !important;
+        }
+
+        /* Estilos gerais para ícones nos formulários */
+        .rotulo-form i {
+            color: #6c757d !important;
+            font-size: 16px !important;
+            margin-right: 8px !important;
+            font-family: "Font Awesome 6 Free" !important;
+            font-weight: 900 !important;
+        }
+
+        .mensagem-erro i {
+            color: #dc3545 !important;
+            font-size: 14px !important;
+            font-family: "Font Awesome 6 Free" !important;
+            font-weight: 900 !important;
+        }
+        
+        /* Estilos para os campos de idade */
+        .grupo-campo {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+        
+        .grupo-campo .campo-form {
+            flex: 1;
+            border-top-right-radius: 0 !important;
+            border-bottom-right-radius: 0 !important;
+            border-right: none !important;
+        }
+        
+        .texto-addon {
+            background-color: #f8f9fa;
+            border: 1px solid #ced4da;
+            border-left: none;
+            border-radius: 0 0.375rem 0.375rem 0;
+            padding: 0.375rem 0.75rem;
+            color: #6c757d;
+            font-size: 0.875rem;
+            white-space: nowrap;
+        }
+
+        /* Estilos para área de imagem inválida */
+        .area-soltar-imagem.is-invalid {
+            border-color: #dc3545 !important;
+            box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25) !important;
+        }
+
+        .area-soltar-imagem.is-invalid .mensagem-soltar {
+            color: #dc3545 !important;
+        }
+
+        .area-soltar-imagem.is-invalid .mensagem-soltar i {
+            color: #dc3545 !important;
+        }
+
+    </style>
+}
+        <div class="cabecalho-painel">
+            <h1 class="titulo-pagina">Gerenciamento de Pets</h1>
+            
+            <button type="button" class="btn-primary" onclick="resetarFormulario()" data-bs-toggle="modal" data-bs-target="#modal-pet" id="btn-new-pet">
+                <i class="fas fa-plus"></i>
+                <span>Novo Pet</span>
+            </button>
+        </div>
+
+        @Html.AntiForgeryToken()
+
+        <div class="cartoes-status">
+            <div class="cartao-status total">
+                <div class="conteudo-cartao-status">
+                    <div class="icone">
+                        <i class="fas fa-paw"></i>
+                    </div>
+                    <div class="d-flex flex-column align-items-start">
+                        <span class="rotulo">Total de Pets</span>
+                        <span class="numero">@Model.Statistics.TotalPets</span>
+                    </div>
+                </div>
+            </div>
+            <div class="cartao-status cachorros">
+                <div class="conteudo-cartao-status">
+                    <div class="icone">
+                        <i class="fas fa-dog"></i>
+                    </div>
+                    <div class="d-flex flex-column align-items-start">
+                        <span class="rotulo">Cachorros</span>
+                        <span class="numero">@Model.Statistics.TotalCachorros</span>
+                    </div>
+                </div>
+            </div>
+            <div class="cartao-status gatos">
+                <div class="conteudo-cartao-status">
+                    <div class="icone">
+                        <i class="fas fa-cat"></i>
+                    </div>
+                    <div class="d-flex flex-column align-items-start">
+                        <span class="rotulo">Gatos</span>
+                        <span class="numero">@Model.Statistics.TotalGatos</span>
+                    </div>
+                </div>
+            </div>
+            <div class="cartao-status adotados">
+                <div class="conteudo-cartao-status">
+                    <div class="icone">
+                        <i class="fas fa-heart"></i>
+                    </div>
+                    <div class="d-flex flex-column align-items-start">
+                        <span class="rotulo">Adotados</span>
+                        <span class="numero">@Model.Statistics.PetsAdotados</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <form method="get" asp-action="ListarAsync" class="secao-filtros">
+            <div class="row align-items-center">
+                <div class="col-md-5 mb-2 mb-md-0">
+                    <div class="caixa-pesquisa">
+                        <i class="fas fa-search"></i>
+                        <input type="text" name="filtroNome" value="@Model.FiltroNome" class="form-control" placeholder="Buscar por nome, raça, idade..." style="height: 40px;">
+                    </div>
+                </div>
+                <div class="col-md-3 mb-2 mb-md-0">
+                    <select name="filtroEspecie" class="form-select" style="height: 40px;">
+                        @foreach (var opcao in Model.FilterOptions.Especies)
+                        {
+                            <option value="@opcao.Value" selected="@(Model.FiltroEspecie?.ToString() == opcao.Value)">
+                                @opcao.Text
+                            </option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-4 d-flex align-items-center">
+                    <div class="flex-grow-1 me-2">
+                        <select name="filtroStatus" class="form-select" style="height: 40px;">
+                            @foreach (var opcao in Model.FilterOptions.StatusOptions)
+                            {
+                                <option value="@opcao.Value" selected="@(Model.FiltroStatus?.ToString() == opcao.Value)">
+                                    @opcao.Text
+                                </option>
+                            }
+                        </select>
+                    </div>
+                    <button type="submit" class="botao-primario me-2">
+                        <i class="fas fa-search me-1"></i> Filtrar
+                    </button>
+                    <a href="@Url.Action("ListarAsync")" class="botao-secundario">
+                        <i class="fas fa-undo me-1"></i> Limpar
+                    </a>
+                </div>
+            </div>
+            <input type="hidden" name="ordenarPor" value="@Model.OrdenarPor" />
+            <input type="hidden" name="direcaoOrdem" value="@Model.DirecaoOrdem" />
+            <input type="hidden" name="pagina" value="@Model.Pagination.PaginaAtual" />
+            <input type="hidden" name="itensPorPagina" value="@Model.Pagination.ItensPorPagina" />
+        </form>
+
+        <div class="pets-container">
+            <div class="pets-grid" id="listaPets" data-itens="@Model.Pagination.ItensPorPagina">
+                @if (Model.Pets != null && Model.Pets.Any())
+                {
+                    foreach (var pet in Model.Pets)
+                    {
+                        <div class="cartao-pet @(pet.PodeEditar ? "" : "border-warning") @(pet.Status == StatusPet.Rascunho ? "cartao-rascunho" : "")" 
+                             data-id="@pet.Id" 
+                             data-especie="@pet.Especie.ToString().ToLower()"
+                             data-status="@pet.StatusCssClass"
+                             data-nome-arquivo-imagem="@pet.NomeArquivoImagem"
+                             data-json="@System.Net.WebUtility.HtmlEncode(System.Text.Json.JsonSerializer.Serialize(pet))">
+                            <div class="container-imagem">
+                                <div class="etiqueta-pet @pet.StatusCssClass @(pet.Status == StatusPet.Rascunho ? "tag-rascunho-destaque" : "")">
+                                    @pet.StatusTexto
+                                </div>
+                                
+                                <img src="@pet.ImagemUrl" class="imagem-pet" alt="@pet.Nome" loading="lazy" 
+                                     onerror="this.style.display='none'; this.parentNode.querySelector('.sem-imagem') ? this.parentNode.querySelector('.sem-imagem').style.display='flex' : this.parentNode.innerHTML += '<div class=\'sem-imagem\'></div>'">
+                            </div>
+                            <div class="info-pet">
+                                <h3 class="nome-pet">@pet.Nome</h3>
+                                <div class="detalhes-pet">
+                                    <span><i class="fas fa-paw"></i> @pet.Especie</span>
+                                                                        <span class="idade-pet"><i class="fas fa-birthday-cake"></i> 
+                                        @if (pet.Anos > 0)
+                                        {
+                                            @(pet.Anos) @(pet.Anos == 1 ? "ano" : "anos")
+                                            if (pet.Meses > 0)
+                                            {
+                                                @($" e {pet.Meses} {(pet.Meses == 1 ? "mês" : "meses")}")
+                                            }
+                                        }
+                                        else if (pet.Meses > 0)
+                                        {
+                                            @($"{pet.Meses} {(pet.Meses == 1 ? "mês" : "meses")}")
+                                        }
+                                        else
+                                        {
+                                            @("Recém-nascido")
+                                        }
+                                    </span>
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div class="etiquetas-pet">
+                                        <span class="etiqueta etiqueta-@(pet.Sexo.ToLower() == "macho" ? "m" : "f")">
+                                            <i class="fas @(pet.Sexo.ToLower() == "macho" ? "fa-mars" : "fa-venus")"></i> @pet.Sexo
+                                        </span>
+                                        <span class="etiqueta">
+                                            <i class="fas fa-ruler-vertical"></i> @pet.Raca
+                                        </span>
+                                    </div>
+                                </div>
+                                
+                                @if (pet.TemAdocaoAtiva)
+                                {
+                                    <div class="info-adocao">
+                                        <i class="fas fa-user"></i> Adotante: @pet.NomeAdotante
+                                        <small class="d-block text-muted">@pet.TempoDesdeUltimaAtualizacao</small>
+                                    </div>
+                                }
+                                
+                                <div class="acoes-card-pet">
+                                    @if (pet.PodeEditar)
+                                    {
+                                        <button type="button" class="botao-acao editar btn-editar" data-pet-id="@pet.Id" title="Editar">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                    }
+                                    <button type="button" class="botao-acao visualizar btn-visualizar" data-pet-id="@pet.Id" title="Ver Detalhes">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                    @if (pet.PodeExcluir)
+                                    {
+                                        <button type="button" class="botao-acao excluir btn-excluir" data-pet-id="@pet.Id" title="Excluir">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div class="sem-registros">
+                        <div class="icone-vazio">
+                            <i class="fas fa-paw"></i>
+                        </div>
+                        <h3>Nenhum pet encontrado</h3>
+                        <p class="mb-4">@(string.IsNullOrEmpty(Model.FiltroNome) && !Model.FiltroEspecie.HasValue && !Model.FiltroStatus.HasValue ? "Comece adicionando um novo pet no sistema." : "Ajuste os filtros para encontrar pets.")</p>
+                    </div>
+                }
+            </div>
+            
+            <div class="mensagem-sem-pets" style="display: none;">
+                <div class="text-center p-4">
+                    <i class="fas fa-paw fa-3x text-muted mb-3"></i>
+                    <p class="mb-0 text-muted">Nenhum pet encontrado com os critérios selecionados.</p>
+                </div>
+            </div>
+            
+            
+            @if (Model.Pagination.TotalPaginas > 1)
+            {
+                <div class="paginacao-container w-100" style="margin-top: -0.25rem;">
+                    <div class="paginacao">
+                        <nav aria-label="Navegação de páginas">
+                            <ul class="pagination justify-content-center flex-wrap">
+                                @if (Model.Pagination.PaginaAtual > 1)
+                                {
+                                    <li class="page-item">
+                                        <a class="page-link" href="@Url.Action("ListarAsync", new { 
+                                            filtroNome = Model.FiltroNome, 
+                                            filtroEspecie = Model.FiltroEspecie, 
+                                            filtroStatus = Model.FiltroStatus,
+                                            ordenarPor = Model.OrdenarPor,
+                                            direcaoOrdem = Model.DirecaoOrdem,
+                                            pagina = Model.Pagination.PaginaAtual - 1, 
+                                            itensPorPagina = Model.Pagination.ItensPorPagina 
+                                        })">
+                                            <i class="fas fa-chevron-left"></i>
+                                        </a>
+                                    </li>
+                                }
+                                else
+                                {
+                                    <li class="page-item disabled">
+                                        <span class="page-link"><i class="fas fa-chevron-left"></i></span>
+                                    </li>
+                                }
+
+                                @for (int i = Math.Max(1, Model.Pagination.PaginaAtual - 2); i <= Math.Min(Model.Pagination.TotalPaginas, Model.Pagination.PaginaAtual + 2); i++)
+                                {
+                                    <li class="page-item @(i == Model.Pagination.PaginaAtual ? "active" : "")">
+                                        <a class="page-link" href="@Url.Action("ListarAsync", new { 
+                                            filtroNome = Model.FiltroNome, 
+                                            filtroEspecie = Model.FiltroEspecie, 
+                                            filtroStatus = Model.FiltroStatus,
+                                            ordenarPor = Model.OrdenarPor,
+                                            direcaoOrdem = Model.DirecaoOrdem,
+                                            pagina = i, 
+                                            itensPorPagina = Model.Pagination.ItensPorPagina 
+                                        })">@i</a>
+                                    </li>
+                                }
+
+                                @if (Model.Pagination.PaginaAtual < Model.Pagination.TotalPaginas)
+                                {
+                                    <li class="page-item">
+                                        <a class="page-link" href="@Url.Action("ListarAsync", new { 
+                                            filtroNome = Model.FiltroNome, 
+                                            filtroEspecie = Model.FiltroEspecie, 
+                                            filtroStatus = Model.FiltroStatus,
+                                            ordenarPor = Model.OrdenarPor,
+                                            direcaoOrdem = Model.DirecaoOrdem,
+                                            pagina = Model.Pagination.PaginaAtual + 1, 
+                                            itensPorPagina = Model.Pagination.ItensPorPagina 
+                                        })">
+                                            <i class="fas fa-chevron-right"></i>
+                                        </a>
+                                    </li>
+                                }
+                                else
+                                {
+                                    <li class="page-item disabled">
+                                        <span class="page-link"><i class="fas fa-chevron-right"></i></span>
+                                    </li>
+                                }
+                            </ul>
+                        </nav>
+                    </div>
+                    
+                    <div class="paginacao-info mt-0 d-flex justify-content-between align-items-center">
+                        <div class="info-paginacao">
+                            Exibindo <span>@Model.Pets.Count</span> de <span>@Model.Pagination?.TotalItens</span> pets
+                        </div>
+                        <div class="itens-por-pagina">
+                            <label for="selectItensPorPagina">Itens por página:</label>
+                            <select id="selectItensPorPagina" class="form-select form-select-sm">
+                                @foreach (var opcao in new[] { 10, 20, 50 })
+                                {
+                                    <option value="@opcao" selected="@(Model.Pagination.ItensPorPagina == opcao)">@opcao</option>
+                                }
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    <div class="modal fade" id="modal-confirm-delete" data-bs-backdrop="static" tabindex="-1" aria-labelledby="modalConfirmacaoExclusaoLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title" id="modalConfirmacaoExclusaoLabel">
+                        Confirmar Exclusão
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <h4 class="mb-3">Tem certeza que deseja excluir?</h4>
+                    <p class="mb-3">Você está prestes a excluir <span id="nomePetExclusao" class="fw-bold"></span>.</p>
+                    <p class="text-danger mb-0">Esta ação não pode ser desfeita.</p>
+                    <input type="hidden" id="petIdParaExcluir" value="" />
+                </div>
+                <div class="modal-footer justify-content-center">
+                    <button type="button" class="botao-contorno-secundario" data-bs-dismiss="modal">
+                        Cancelar
+                    </button>
+                    <button type="button" class="botao-perigo" id="btnConfirmarExclusao">
+                        Excluir Pet
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    
+    <div class="modal fade" id="modal-pet" data-bs-backdrop="static" tabindex="-1" aria-labelledby="modalPetLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalPetLabel">
+                        <span id="tituloCadastroEdicao">Novo Pet</span>
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="form-pet" class="needs-validation" novalidate method="post" action="/admin/pets/SalvarPet" enctype="multipart/form-data">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" id="petId" name="Id" value="0" />
+                        <input type="hidden" id="statusPet" name="Status" value="Disponível" />
+                        <input type="hidden" id="usuarioId" name="UsuarioId" value="1" />
+                        <input type="hidden" id="cadastroCompleto" name="CadastroCompleto" value="true" />
+                        
+                        <div class="row mb-4">
+                            <div class="col-md-5">
+                                <div class="pet-drop-container mb-3">
+                                    <div class="area-soltar-imagem ratio ratio-1x1 mb-2" id="dropArea">
+                                        <div class="mensagem-soltar">
+                                                <i class="fas fa-cloud-upload-alt"></i>
+                                            <p>Arraste a imagem ou clique aqui</p>
+                                        </div>
+                                        <img id="previewImagem" class="img-preview" src="" alt="Preview da imagem" style="display: none;">
+                                        <button type="button" class="botao-remover-img" id="btnRemoverImagem" style="display: none;">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                        <div class="progresso-upload" style="display: none;">
+                                            <div class="spinner-border text-primary" role="status">
+                                                <span class="visually-hidden">Carregando...</span>
+                                            </div>
+                                            <small class="text-muted mt-1">Isso pode levar algum tempo dependendo do tamanho do arquivo</small>
+                                        </div>
+                                    </div>
+                                    <input type="file" class="campo-form" id="fotoPet" name="foto" accept="image/*" hidden>
+                                    <div class="mensagem-erro">
+                                        Por favor, selecione uma foto do pet.
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-7">
+                                <div class="mb-3">
+                                    <label for="nomePet" class="rotulo-form"><i class="fas fa-tag"></i>Nome do Pet*</label>
+                                    <input type="text" class="campo-form" id="nomePet" name="Nome" required maxlength="100" placeholder="Digite o nome do pet" data-required-for-draft="true">
+                                    <div class="mensagem-erro">
+                                        <i class="fas fa-exclamation-circle"></i>Por favor, informe o nome do pet.
+                                    </div>
+                                    <small class="text-muted small-info">* Único campo obrigatório para salvar como rascunho</small>
+                                </div>
+                                
+                                <div class="row mb-3">
+                                    <div class="col-md-6">
+                                        <label for="especiePet" class="rotulo-form"><i class="fas fa-paw"></i>Espécie*</label>
+                                        <select class="campo-form select-personalizado" id="especiePet" name="Especie" required data-required-for-complete="true" style="appearance: none; background-image: url('data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 16 16\'%3E%3Cpath fill=\'none\' stroke=\'%236B7280\' stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'2\' d=\'M2 5l6 6 6-6\'/%3E%3C/svg%3E'); background-repeat: no-repeat; background-position: right 0.75rem center; background-size: 16px 12px; padding-right: 2.5rem;">
+                                            <option value="" selected disabled>Selecione</option>
+                                            <option value="Cao">Cão</option>
+                                            <option value="Felino">Felino</option>
+                                        </select>
+                                        <div class="mensagem-erro">
+                                            <i class="fas fa-exclamation-circle"></i>Por favor, selecione a espécie.
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="racaPet" class="rotulo-form"><i class="fas fa-clipboard"></i>Raça*</label>
+                                        <input type="text" class="campo-form" id="racaPet" name="Raca" required maxlength="50" placeholder="Ex: Buldogue" data-required-for-complete="true">
+                                        <div class="mensagem-erro">
+                                            <i class="fas fa-exclamation-circle"></i>Por favor, informe a raça.
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="row mb-3">
+                                    <div class="col-md-6">
+                                        <label for="sexoPet" class="rotulo-form"><i class="fas fa-venus-mars"></i>Sexo*</label>
+                                        <select class="campo-form select-personalizado" id="sexoPet" name="Sexo" required data-required-for-complete="true" style="appearance: none; background-image: url('data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 16 16\'%3E%3Cpath fill=\'none\' stroke=\'%236B7280\' stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'2\' d=\'M2 5l6 6 6-6\'/%3E%3C/svg%3E'); background-repeat: no-repeat; background-position: right 0.75rem center; background-size: 16px 12px; padding-right: 2.5rem;">
+                                            <option value="" selected disabled>Selecione</option>
+                                            <option value="Macho">Macho</option>
+                                            <option value="Fêmea">Fêmea</option>
+                                        </select>
+                                        <div class="mensagem-erro">
+                                            <i class="fas fa-exclamation-circle"></i>Por favor, selecione o sexo.
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="portePet" class="rotulo-form"><i class="fas fa-arrows-alt-v"></i>Porte*</label>
+                                        <select class="campo-form select-personalizado" id="portePet" name="Porte" required data-required-for-complete="true" style="appearance: none; background-image: url('data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 16 16\'%3E%3Cpath fill=\'none\' stroke=\'%236B7280\' stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'2\' d=\'M2 5l6 6 6-6\'/%3E%3C/svg%3E'); background-repeat: no-repeat; background-position: right 0.75rem center; background-size: 16px 12px; padding-right: 2.5rem;">
+                                            <option value="" selected disabled>Selecione</option>
+                                            <option value="Pequeno">Pequeno</option>
+                                            <option value="Médio">Médio</option>
+                                            <option value="Grande">Grande</option>
+                                        </select>
+                                        <div class="mensagem-erro">
+                                            <i class="fas fa-exclamation-circle"></i>Por favor, selecione o porte.
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        
+                        <div class="row mb-3">
+                            <div class="col-12">
+                                <label class="rotulo-form"><i class="fas fa-birthday-cake"></i>Idade*</label>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="grupo-campo mb-2">
+                                    <input type="number" id="anosPet" name="Anos" class="campo-form" min="0" max="30" value="0" required data-required-for-complete="true">
+                                </div>
+                                <div class="mensagem-erro">
+                                    <i class="fas fa-exclamation-circle"></i>A idade em anos deve estar entre 0 e 30.
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="grupo-campo mb-2">
+                                    <input type="number" id="mesesPet" name="Meses" class="campo-form" min="0" max="11" value="0" required data-required-for-complete="true">
+                                </div>
+                                <div class="mensagem-erro">
+                                    <i class="fas fa-exclamation-circle"></i>Os meses devem estar entre 0 e 11.
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <p class="texto-ajuda" id="idadeTotal"><i class="fas fa-info-circle me-1"></i>Idade total: 0 anos e 0 meses</p>
+                            </div>
+                        </div>
+                        
+                        
+                        <div class="row mb-3">
+                            <div class="col-12">
+                                <label for="descricaoPet" class="rotulo-form"><i class="fas fa-align-left"></i>Descrição*</label>
+                                <textarea class="campo-form" id="descricaoPet" name="Descricao" rows="4" required maxlength="500" placeholder="Descreva características, personalidade, histórico médico..." data-required-for-complete="true"></textarea>
+                                <div class="mensagem-erro">
+                                    <i class="fas fa-exclamation-circle"></i>Por favor, forneça uma descrição.
+                                </div>
+                                <div class="texto-ajuda">
+                                    <span id="contadorCaracteres">0</span>/500 caracteres
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="botao-contorno-secundario" data-bs-dismiss="modal">
+                        Cancelar
+                    </button>
+                    <button type="button" class="botao-contorno-primario" id="btnSalvarRascunho">
+                        Salvar Rascunho
+                    </button>
+                    <button type="button" class="botao-primario" id="btnSalvarPet">
+                        Salvar Pet
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    
+    <div class="modal fade" id="modal-pet-details" data-bs-backdrop="static" tabindex="-1" aria-labelledby="modalDetalhesPetLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <div class="modal-header" style="margin-bottom: 0; padding: 1.25rem 1.5rem; border-bottom: none; position: relative; background-color: var(--primary);">
+                    <h5 class="modal-title" id="modalDetalhesPetLabel" style="color: white; font-size: 1.3rem;">
+                        Detalhes do Pet
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" style="position: absolute; top: 50%; transform: translateY(-50%); right: 15px; z-index: 100; opacity: 0.8; padding: 0.25rem;" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                </div>
+                <div class="modal-body p-0" style="margin-top: 0; padding-top: 0;">
+                    <form id="formDetalhesPet">
+                        <input type="hidden" id="detalhePetId" value="0" />
+                        
+                        
+                        <div class="pet-detalhe-cabecalho" style="margin-top: -1px;">
+                            <div class="pet-imagem-container">
+                                <img id="imgPetDetalhes" src="/imagens/pets/pet-placeholder.jpg" class="imagem-pet-detalhes" alt="Foto do pet">
+                                <div id="pet-status-badge" class="pet-status-badge">Disponível</div>
+                            </div>
+                            <div class="pet-info-principal">
+                                <h2 id="nomeDetalhes" class="pet-nome-destaque">Nome do Pet</h2>
+                                <div class="pet-caracteristicas">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        
+                        <div class="pet-detalhes-container">
+                            <div class="pet-detalhes-secao">
+                                <h3 class="pet-secao-titulo"><i class="fas fa-info-circle"></i> Informações Básicas</h3>
+                                <div class="pet-detalhes-grid">
+                                    <div class="pet-detalhe-item">
+                                        <span class="pet-detalhe-label">Espécie</span>
+                                        <span class="pet-detalhe-valor" id="especieDetalhesInfo"></span>
+                                    </div>
+                                    <div class="pet-detalhe-item">
+                                        <span class="pet-detalhe-label">Raça</span>
+                                        <span class="pet-detalhe-valor" id="racaDetalhesInfo"></span>
+                                    </div>
+                                    <div class="pet-detalhe-item">
+                                        <span class="pet-detalhe-label">Idade</span>
+                                        <span class="pet-detalhe-valor" id="idadeDetalhesInfo"></span>
+                                    </div>
+                                    <div class="pet-detalhe-item">
+                                        <span class="pet-detalhe-label">Status</span>
+                                        <span class="pet-detalhe-valor" id="statusDetalhesInfo"></span>
+                                    </div>
+                                    <div class="pet-detalhe-item" id="sexoDetalhesContainer">
+                                        <span class="pet-detalhe-label">Sexo</span>
+                                        <span class="pet-detalhe-valor" id="sexoDetalhesInfo"></span>
+                                    </div>
+                                    <div class="pet-detalhe-item" id="porteDetalhesContainer">
+                                        <span class="pet-detalhe-label">Porte</span>
+                                        <span class="pet-detalhe-valor" id="porteDetalhesInfo"></span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="pet-detalhes-secao">
+                                <h3 class="pet-secao-titulo"><i class="fas fa-align-left"></i> Descrição</h3>
+                                <div class="pet-descricao-container">
+                                    <p id="descricaoDetalhes" class="pet-descricao-texto"></p>
+                                </div>
+                            </div>
+                            
+                            <div class="pet-detalhes-secao" id="datasCadastroContainer">
+                                <h3 class="pet-secao-titulo"><i class="fas fa-calendar-alt"></i> Datas Importantes</h3>
+                                <div class="pet-detalhes-grid">
+                                    <div class="pet-detalhe-item">
+                                        <span class="pet-detalhe-label">Data de Cadastro</span>
+                                        <span class="pet-detalhe-valor" id="dataCadastroInfo"></span>
+                                    </div>
+                                    <div class="pet-detalhe-item" id="dataAtualizacaoContainer">
+                                        <span class="pet-detalhe-label">Última Atualização</span>
+                                        <span class="pet-detalhe-valor" id="dataAtualizacaoInfo"></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer pet-detalhes-footer">
+                    <button type="button" class="botao-contorno-secundario" data-bs-dismiss="modal">
+                        Fechar
+                    </button>
+                    <button type="button" class="botao-contorno-primario btnEditarPet">
+                        Editar Pet
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+@section Scripts {
+    <script src="~/js/admin/gerenciamento-pets.js" asp-append-version="true"></script>
+    
+    <script>
+        // Função global para resetar formulário
+        function resetarFormulario() {
+            const form = document.getElementById('form-pet');
+            if (form) {
+                form.reset();
+                document.getElementById('tituloCadastroEdicao').textContent = 'Novo Pet';
+                document.getElementById('petId').value = '0';
+                
+                // Limpar preview de imagem
+                const previewImg = document.getElementById('previewImagem');
+                const removeBtn = document.getElementById('btnRemoverImagem');
+                const dropMessage = document.querySelector('.mensagem-soltar');
+                
+                if (previewImg) previewImg.style.display = 'none';
+                if (removeBtn) removeBtn.style.display = 'none';
+                if (dropMessage) dropMessage.style.display = 'block';
+            }
+        }
+    </script>
+}

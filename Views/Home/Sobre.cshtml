@@ -1,0 +1,355 @@
+@model CaotinhoAuMiau.Models.ViewModels.Home.SobreViewModel
+@{
+    ViewData["Title"] = "Sobre Nós";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section Styles {
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="~/css/home/sobre.css" asp-append-version="true" />
+}
+
+<div class="hero-section">
+    <div class="hero-content">
+        <h1 class="hero-title">
+            <i class="fas fa-paw icon-bounce"></i>
+            Sobre o CãotinhoAuMiau
+        </h1>
+        <p class="hero-subtitle">
+            Uma plataforma digital dedicada à adoção responsável de animais
+        </p>
+    </div>
+</div>
+
+<!-- Seção Nossa Missão -->
+<section class="secao-transparente nossa-missao">
+    <div class="container">
+        <h2 class="titulo-secao">Nossa Missão</h2>
+        <div class="row align-items-center">
+            <div class="col-lg-6">
+                <div class="missao-content">
+                    <p class="missao-text">
+                        O CãotinhoAuMiau é uma plataforma digital criada para **conectar pets abandonados com famílias responsáveis**. 
+                        Utilizamos tecnologia moderna para tornar o processo de adoção mais **transparente, eficiente e seguro**.
+                    </p>
+                    <p class="missao-text">
+                        Cada pet cadastrado em nossa plataforma passa por um rigoroso processo de avaliação, 
+                        e cada família interessada é cuidadosamente analisada através de nosso **sistema de formulários digitais**.
+                    </p>
+                    <div class="missao-destaque">
+                        <i class="fas fa-heart"></i>
+                        <span>Transformando vidas através da adoção responsável</span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="missao-image">
+                    <img src="~/imagens/Imagens CaotinhoAuMiau/carrossel2.jpg" alt="Pets felizes em suas novas famílias" class="img-fluid">
+                    <div class="missao-overlay">
+                        <div class="missao-overlay-content">
+                            <i class="fas fa-heart"></i>
+                            <span>Amor em cada adoção</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Como Funciona o Sistema -->
+<section class="secao-transparente">
+    <div class="container">
+        <h2 class="titulo-secao">Como Funciona Nossa Plataforma</h2>
+        <p class="subtitulo-secao">Um processo digital completo e seguro para adoção responsável</p>
+        
+        <div class="grid-premium-4">
+            <div class="cartao-passo">
+                <div class="numero-passo">1</div>
+                <i class="fas fa-search"></i>
+                <h4 class="heading-corporate">Explore os Pets</h4>
+                <p class="text-corporate">Navegue por nosso catálogo de pets disponíveis com informações detalhadas e fotos</p>
+            </div>
+            <div class="cartao-passo">
+                <div class="numero-passo">2</div>
+                <i class="fas fa-file-alt"></i>
+                <h4 class="heading-corporate">Formulário Digital</h4>
+                <p class="text-corporate">Preencha nosso formulário detalhado sobre suas condições para adotar</p>
+            </div>
+            <div class="cartao-passo">
+                <div class="numero-passo">3</div>
+                <i class="fas fa-clipboard-check"></i>
+                <h4 class="heading-corporate">Avaliação Criteriosa</h4>
+                <p class="text-corporate">Nossa equipe analisa seu perfil para garantir a compatibilidade com o pet</p>
+            </div>
+            <div class="cartao-passo">
+                <div class="numero-passo">4</div>
+                <i class="fas fa-file-signature"></i>
+                <h4 class="heading-corporate">Contrato Digital</h4>
+                <p class="text-corporate">Assinatura eletrônica do contrato de adoção com validade legal</p>
+            </div>
+        </div>
+        
+        <div class="grid-premium-2">
+            <div class="cartao-motivo cartao-premium">
+                <div class="status-indicator"></div>
+                <i class="fas fa-calendar-alt"></i>
+                <h4 class="heading-corporate">Gestão de Adoções</h4>
+                <p class="text-corporate-medium">Sistema completo de gestão de adoções com acompanhamento em tempo real do processo</p>
+                <div class="badge-corporate">Em Tempo Real</div>
+            </div>
+            <div class="cartao-motivo cartao-executivo">
+                <i class="fas fa-home"></i>
+                <h4 class="heading-corporate">Acompanhamento Pós-Adoção</h4>
+                <p class="text-corporate-medium">Sistema de notificações e acompanhamento para garantir o bem-estar do pet em seu novo lar</p>
+                <div class="badge-corporate">Suporte Contínuo</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Estatísticas Reais do Sistema -->
+<section class="secao-laranja">
+    <div class="container">
+        <h2 class="titulo-secao">Nosso Impacto</h2>
+        <p class="text-center mb-5" style="color: rgba(255,255,255,0.9); font-size: 1.1rem;">Dados reais da nossa plataforma em tempo real</p>
+        <div class="row" id="estatisticas-container">
+            <!-- As estatísticas serão carregadas dinamicamente via JavaScript -->
+            <div class="col-lg-3">
+                <div class="item-contador">
+                    <div class="numero-contador" id="pets-adotados">@Model.Statistics.PetsAdotadosTexto</div>
+                    <div class="texto-contador">Pets Adotados</div>
+                </div>
+            </div>
+            <div class="col-lg-3">
+                <div class="item-contador">
+                    <div class="numero-contador" id="pets-disponiveis">@Model.Statistics.PetsDisponiveisTexto</div>
+                    <div class="texto-contador">Pets Disponíveis</div>
+                </div>
+            </div>
+            <div class="col-lg-3">
+                <div class="item-contador">
+                    <div class="numero-contador" id="total-usuarios">@Model.Statistics.TotalUsuariosTexto</div>
+                    <div class="texto-contador">Famílias Cadastradas</div>
+                </div>
+            </div>
+            <div class="col-lg-3">
+                <div class="item-contador">
+                    <div class="numero-contador" id="formularios-processados">@Model.Statistics.FormulariosTexto</div>
+                    <div class="texto-contador">Formulários Processados</div>
+                </div>
+            </div>
+        </div>
+        
+    </div>
+</section>
+
+<!-- Tecnologia e Segurança -->
+<section class="secao-transparente">
+    <div class="container">
+        <h2 class="titulo-secao">Tecnologia e Segurança</h2>
+        <p class="text-center mb-5" style="color: rgba(255,255,255,0.8); font-size: 1.1rem;">Plataforma moderna construída com as melhores práticas</p>
+        <div class="row">
+            <div class="col-lg-4 mb-4">
+                <div class="cartao-motivo">
+                    <i class="fas fa-shield-alt"></i>
+                    <h4>Segurança de Dados</h4>
+                    <p>Protegemos suas informações com criptografia avançada e autenticação segura por cookies</p>
+                </div>
+            </div>
+            <div class="col-lg-4 mb-4">
+                <div class="cartao-motivo">
+                    <i class="fas fa-signature"></i>
+                    <h4>Contratos Digitais</h4>
+                    <p>Sistema de assinatura eletrônica com validade legal para formalizar as adoções</p>
+                </div>
+            </div>
+            <div class="col-lg-4 mb-4">
+                <div class="cartao-motivo">
+                    <i class="fas fa-bell"></i>
+                    <h4>Notificações em Tempo Real</h4>
+                    <p>Mantenha-se atualizado sobre o status da sua adoção com nosso sistema de notificações</p>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-lg-6 mb-4">
+                <div class="cartao-motivo">
+                    <i class="fas fa-database"></i>
+                    <h4>Plataforma Robusta</h4>
+                    <p>Construída com ASP.NET Core, SQL Server e Redis para máxima performance e confiabilidade</p>
+                </div>
+            </div>
+            <div class="col-lg-6 mb-4">
+                <div class="cartao-motivo">
+                    <i class="fas fa-mobile-alt"></i>
+                    <h4>Design Responsivo</h4>
+                    <p>Interface otimizada para todos os dispositivos, garantindo uma experiência perfeita</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Evolução da Plataforma -->
+<section class="secao-transparente">
+    <div class="container">
+        <h2 class="titulo-secao">Evolução da Plataforma</h2>
+        <p class="text-center mb-5" style="color: rgba(255,255,255,0.8); font-size: 1.1rem;">As principais funcionalidades que desenvolvemos</p>
+        <div class="row">
+            <div class="col-lg-6 mb-4">
+                <div class="cartao-motivo">
+                    <i class="fas fa-search"></i>
+                    <h4>Sistema de Busca</h4>
+                    <p>Catálogo inteligente de pets com filtros avançados por espécie, idade, porte e localização</p>
+                </div>
+            </div>
+            <div class="col-lg-6 mb-4">
+                <div class="cartao-motivo">
+                    <i class="fas fa-file-alt"></i>
+                    <h4>Formulários Digitais</h4>
+                    <p>Sistema completo de avaliação de candidatos com formulários detalhados e validação automática</p>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-lg-6 mb-4">
+                <div class="cartao-motivo">
+                    <i class="fas fa-signature"></i>
+                    <h4>Contratos Eletrônicos</h4>
+                    <p>Implementação de assinatura digital para contratos de adoção com validade legal</p>
+                </div>
+            </div>
+            <div class="col-lg-6 mb-4">
+                <div class="cartao-motivo">
+                    <i class="fas fa-calendar-alt"></i>
+                    <h4>Agendamento Inteligente</h4>
+                    <p>Sistema de gestão inteligente com notificações automáticas e acompanhamento completo</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Valores e Compromissos -->
+<section class="secao-transparente">
+    <div class="container">
+        <h2 class="titulo-secao">Nossos Valores</h2>
+        <p class="text-center mb-5" style="color: rgba(255,255,255,0.8); font-size: 1.1rem;">Os princípios que norteiam nossa plataforma</p>
+        <div class="row">
+            <div class="col-lg-4 mb-4">
+                <div class="cartao-motivo">
+                    <i class="fas fa-heart"></i>
+                    <h4>Adoção Responsável</h4>
+                    <p>Priorizamos o bem-estar dos pets através de avaliação criteriosa dos candidatos a adotantes</p>
+                </div>
+            </div>
+            <div class="col-lg-4 mb-4">
+                <div class="cartao-motivo">
+                    <i class="fas fa-eye"></i>
+                    <h4>Transparência</h4>
+                    <p>Processo claro e transparente em todas as etapas da adoção, com acompanhamento em tempo real</p>
+                </div>
+            </div>
+            <div class="col-lg-4 mb-4">
+                <div class="cartao-motivo">
+                    <i class="fas fa-shield-alt"></i>
+                    <h4>Segurança</h4>
+                    <p>Proteção de dados e contratos digitais com validade legal para garantir segurança jurídica</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<!-- Call to Action -->
+<section class="cta-section">
+    <div class="container">
+        <div class="text-center">
+            <h2 class="cta-title">Transforme uma Vida Hoje</h2>
+            <p class="cta-subtitle">
+                Conecte-se à maior plataforma digital de adoção responsável do Brasil.<br>
+                Mais de <strong>@Model.Statistics.PetsAdotadosTexto</strong> pets já encontraram sua família através da nossa tecnologia.
+            </p>
+            <div class="cta-buttons">
+                <a href="/usuario/pets/explorar" class="btn btn-primary btn-lg">
+                    <i class="fas fa-heart"></i>
+                    Encontrar Meu Companheiro
+                </a>
+                @if (User.Identity?.IsAuthenticated == true)
+                {
+                    <a href="/usuario/perfil" class="btn btn-outline-primary btn-lg">
+                        <i class="fas fa-user-cog"></i>
+                        Meu Perfil
+                    </a>
+                }
+                else
+                {
+                    <a href="/autenticacao/cadastro" class="btn btn-outline-primary btn-lg">
+                        <i class="fas fa-rocket"></i>
+                        Começar Gratuitamente
+                    </a>
+                }
+            </div>
+            <p class="cta-trust">
+                <i class="fas fa-shield-alt"></i>
+                Plataforma 100% segura • Contratos digitais • Processo transparente
+            </p>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            let animacaoExecutada = false;
+            
+            // Função para animar os contadores (otimizada)
+            function animarContadores() {
+                if (animacaoExecutada) return;
+                animacaoExecutada = true;
+                
+                const contadores = document.querySelectorAll('.numero-contador');
+                
+                contadores.forEach(contador => {
+                    const valorFinal = parseInt(contador.textContent);
+                    if (isNaN(valorFinal)) return;
+                    
+                    let valorAtual = 0;
+                    const incremento = Math.max(1, Math.floor(valorFinal / 15)); // Menos passos = menos lag
+                    
+                    contador.textContent = '0';
+                    
+                    const animar = () => {
+                        valorAtual += incremento;
+                        if (valorAtual >= valorFinal) {
+                            contador.textContent = valorFinal;
+                        } else {
+                            contador.textContent = valorAtual;
+                            requestAnimationFrame(animar); // Usar RAF em vez de setInterval
+                        }
+                    };
+                    
+                    requestAnimationFrame(animar);
+                });
+            }
+            
+            // Usar Intersection Observer para animar apenas quando visível
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting && !animacaoExecutada) {
+                        animarContadores();
+                        observer.unobserve(entry.target); // Parar de observar após animar
+                    }
+                });
+            }, { threshold: 0.3 });
+            
+            const estatisticasContainer = document.getElementById('estatisticas-container');
+            if (estatisticasContainer) {
+                observer.observe(estatisticasContainer);
+            }
+        });
+    </script>
+}

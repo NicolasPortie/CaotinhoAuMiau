@@ -1,0 +1,896 @@
+@model CaotinhoAuMiau.Models.ViewModels.Usuario.PetViewModel
+@using CaotinhoAuMiau.Models.Enums
+@using CaotinhoAuMiau.Utils
+
+@{
+    ViewData["Title"] = "Explorar Pets para Adoção - CaotinhoAuMiau";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    
+    var usuarioNome = User.ObterValorClaim(System.Security.Claims.ClaimTypes.Name);
+    var usuarioId = User.ObterIdUsuario();
+    var usuarioTipo = User.ObterValorClaim(System.Security.Claims.ClaimTypes.Role);
+    var usuarioCPF = User.ObterValorClaim("CPF");
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/usuario/usuario-explorar-pets.css" asp-append-version="true" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <style>
+        /* Estilos para banner de quarentena */
+        .quarentena-banner {
+            margin: 2rem auto;
+            padding: 2rem;
+            border-left: 5px solid #ff6b35;
+            background: linear-gradient(135deg, #fff3cd 0%, #fef8e6 100%);
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(255, 107, 53, 0.1);
+            max-width: 600px;
+            text-align: center;
+        }
+
+        .quarentena-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .quarentena-icon {
+            font-size: 3rem;
+            color: #ff6b35;
+            margin-bottom: 1rem;
+        }
+
+        .quarentena-info {
+            text-align: center;
+            width: 100%;
+        }
+
+        .quarentena-info h4 {
+            color: #d63031;
+            margin-bottom: 1rem;
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .quarentena-info p {
+            margin-bottom: 0.5rem;
+            color: #6c757d;
+            font-size: 1rem;
+            line-height: 1.5;
+        }
+
+        .quarentena-info p strong {
+            color: #495057;
+            font-weight: 600;
+        }
+
+        .quarentena-info small {
+            display: block;
+            margin-top: 1rem;
+            font-style: italic;
+            color: #6c757d;
+        }
+
+        /* Botão desabilitado */
+        .btn-adopt-overlay.disabled {
+            background: #6c757d !important;
+            cursor: not-allowed !important;
+            opacity: 0.6;
+        }
+
+        .btn-adopt-overlay.disabled:hover {
+            background: #6c757d !important;
+            transform: none !important;
+        }
+
+    </style>
+}
+
+<input type="hidden" id="usuarioId" value="@usuarioId" />
+<input type="hidden" id="usuarioCPF" value="@usuarioCPF" />
+
+<div id="alertaContainer" class="alerts-container"></div>
+
+<main class="main-content explore-pets-main">
+    <div id="carouselPets" class="carousel slide" data-bs-ride="carousel">
+        <div class="carousel-indicators">
+            <button type="button" data-bs-target="#carouselPets" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Slide 1"></button>
+            <button type="button" data-bs-target="#carouselPets" data-bs-slide-to="1" aria-label="Slide 2"></button>
+            <button type="button" data-bs-target="#carouselPets" data-bs-slide-to="2" aria-label="Slide 3"></button>
+            <button type="button" data-bs-target="#carouselPets" data-bs-slide-to="3" aria-label="Slide 4"></button>
+            <button type="button" data-bs-target="#carouselPets" data-bs-slide-to="4" aria-label="Slide 5"></button>
+            <button type="button" data-bs-target="#carouselPets" data-bs-slide-to="5" aria-label="Slide 6"></button>
+        </div>
+        
+        <div class="carousel-inner">
+            <div class="carousel-item active">
+                <div class="carousel-dual-images">
+                    <img src="/imagens/Imagens CaotinhoAuMiau/carrossel1.jpg" class="carousel-image-left" alt="Pets para adoção">
+                    <img src="/imagens/Imagens CaotinhoAuMiau/carrossel2.jpg" class="carousel-image-right" alt="Pets felizes">
+                </div>
+                <div class="carousel-caption">
+                    <h1>Encontre seu Companheiro</h1>
+                    <p>Dê uma nova chance de amor a um pet que precisa de um lar.</p>
+                </div>
+                <div class="carousel-progress-bar"></div>
+            </div>
+            <div class="carousel-item">
+                <div class="carousel-dual-images">
+                    <img src="/imagens/Imagens CaotinhoAuMiau/carrossel3.jpg" class="carousel-image-left" alt="Adoção responsável">
+                    <img src="/imagens/Imagens CaotinhoAuMiau/carrossel4.jpg" class="carousel-image-right" alt="Pets esperando adoção">
+                </div>
+                <div class="carousel-caption-right">
+                    <h1>Faça a Diferença</h1>
+                    <p>Adotar é um ato de amor que transforma vidas.</p>
+                </div>
+                <div class="carousel-progress-bar"></div>
+            </div>
+            <div class="carousel-item">
+                <div class="carousel-dual-images">
+                    <img src="/imagens/Imagens CaotinhoAuMiau/carrossel5.jpg" class="carousel-image-left" alt="Pets amorosos">
+                    <img src="/imagens/Imagens CaotinhoAuMiau/carrossel6.jpg" class="carousel-image-right" alt="Novos lares">
+                </div>
+                <div class="carousel-caption">
+                    <h1>Adoção Responsável</h1>
+                    <p>Cada pet merece um lar cheio de carinho e cuidados.</p>
+                </div>
+                <div class="carousel-progress-bar"></div>
+            </div>
+            <div class="carousel-item">
+                <div class="carousel-dual-images">
+                    <img src="/imagens/Imagens CaotinhoAuMiau/carrossel2.jpg" class="carousel-image-left" alt="Amor verdadeiro">
+                    <img src="/imagens/Imagens CaotinhoAuMiau/carrossel1.jpg" class="carousel-image-right" alt="Família feliz">
+                </div>
+                <div class="carousel-caption-right">
+                    <h1>Amor Incondicional</h1>
+                    <p>Pets resgatados oferecem o amor mais puro e verdadeiro.</p>
+                </div>
+                <div class="carousel-progress-bar"></div>
+            </div>
+            <div class="carousel-item">
+                <div class="carousel-dual-images">
+                    <img src="/imagens/Imagens CaotinhoAuMiau/carrossel4.jpg" class="carousel-image-left" alt="Segundo lar">
+                    <img src="/imagens/Imagens CaotinhoAuMiau/carrossel3.jpg" class="carousel-image-right" alt="Nova esperança">
+                </div>
+                <div class="carousel-caption">
+                    <h1>Segunda Chance</h1>
+                    <p>Todo pet merece uma segunda chance de ser feliz.</p>
+                </div>
+                <div class="carousel-progress-bar"></div>
+            </div>
+            <div class="carousel-item">
+                <div class="carousel-dual-images">
+                    <img src="/imagens/Imagens CaotinhoAuMiau/carrossel6.jpg" class="carousel-image-left" alt="Companheirismo">
+                    <img src="/imagens/Imagens CaotinhoAuMiau/carrossel5.jpg" class="carousel-image-right" alt="Lealdade">
+                </div>
+                <div class="carousel-caption-right">
+                    <h1>Companheiro para Vida</h1>
+                    <p>Adote hoje e ganhe um amigo leal para toda a vida.</p>
+                </div>
+                <div class="carousel-progress-bar"></div>
+            </div>
+        </div>
+        
+
+    </div>
+
+    <div class="filters-full-width">
+        <form method="get" class="filters-container" id="formFiltros" action="@Url.Action("ExplorarPets", "Pet", new { area = "Usuario" })">
+            <div class="filter-group">
+                <div class="form-group">
+                    <label for="filtroNome">Nome</label>
+                    <input type="text" id="filtroNome" name="filtroNome" class="form-control" placeholder="Buscar pet..." value="@Model.FiltroNome">
+                </div>
+                <div class="form-group">
+                    <label for="filtroEspecie">Espécie</label>
+                    <select id="filtroEspecie" name="filtroEspecie" class="form-control">
+                        <option value="">Todas</option>
+                        @foreach (var especie in Model.Especies)
+                        {
+                            <option value="@especie.Value" selected="@(Model.FiltroEspecie?.GetEnumMemberValue() == especie.Value)">@especie.Text</option>
+                        }
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="filtroSexo">Sexo</label>
+                    <select id="filtroSexo" name="filtroSexo" class="form-control">
+                        <option value="">Todos</option>
+                        @foreach (var sexo in Model.Sexos)
+                        {
+                            <option value="@sexo.Value" selected="@(Model.FiltroSexo?.GetEnumMemberValue() == sexo.Value)">@sexo.Text</option>
+                        }
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="filtroPorte">Porte</label>
+                    <select id="filtroPorte" name="filtroPorte" class="form-control">
+                        <option value="">Todos</option>
+                        @foreach (var porte in Model.Portes)
+                        {
+                            <option value="@porte.Value" selected="@(porte.Value == Model.FiltroPorte)">@porte.Text</option>
+                        }
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="filtroIdade">Idade</label>
+                    <select id="filtroIdade" name="filtroIdade" class="form-control">
+                        <option value="">Todas</option>
+                        @foreach (var idade in Model.FaixasEtarias)
+                        {
+                            <option value="@idade.Value" selected="@(idade.Value == Model.FiltroIdade)">@idade.Text</option>
+                        }
+                    </select>
+                </div>
+                
+                @if (false) 
+                {
+                    <div class="form-group">
+                        <label for="filtroRaca">Raça</label>
+                        <select id="filtroRaca" name="filtroRaca" class="form-control">
+                            <option value="">Todas</option>
+                        </select>
+                    </div>
+                }
+            </div>
+            
+            <div class="ordenacao-group">
+                <div class="form-group">
+                    <label for="filtroOrdem">Ordenar</label>
+                    <select id="filtroOrdem" name="filtroOrdem" class="form-control">
+                        <option value="recentes" selected="@(Model.FiltroOrdem == "recentes")">Mais recentes</option>
+                        <option value="antigos" selected="@(Model.FiltroOrdem == "antigos")">Mais antigos</option>
+                        <option value="nome" selected="@(Model.FiltroOrdem == "nome")">Nome (A-Z)</option>
+                        <option value="nome_desc" selected="@(Model.FiltroOrdem == "nome_desc")">Nome (Z-A)</option>
+                    </select>
+                </div>
+                
+                <input type="hidden" id="itensPorPagina" name="itensPorPagina" value="@Model.ItensPorPaginaSelecionado">
+                <input type="hidden" name="pagina" value="1">
+                <input type="hidden" name="fromForm" value="true">
+                
+                <div class="filter-actions">
+                    <button type="submit" class="filter-button"><i class="fas fa-filter"></i>Aplicar Filtros</button>
+                    <a href="javascript:void(0);" class="clear-button" id="btnLimparFiltros"><i class="fas fa-times-circle"></i>Limpar Filtros</a>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <section class="pets-container">
+        <div class="main-pets-container">
+            <div class="pets-grid">
+                @if ((bool?)ViewBag.EmQuarentena == true)
+                {
+                    string fimQuarentenaFormatada = ((DateTime)ViewBag.FimQuarentena).ToString("dd/MM/yyyy");
+                    <div style="grid-column: 1 / -1; display: flex; justify-content: center; align-items: center; min-height: 400px;">
+                        <div class="text-center py-5" style="max-width: 600px; padding: 2rem; margin: 0;">
+                            <div class="quarentena-icon">
+                                <i class="fa-solid fa-exclamation-triangle" style="font-size: 3rem; color: #ff6b35; margin-bottom: 1rem;"></i>
+                            </div>
+                            <div class="quarentena-info" style="width: 100%; text-align: center;">
+                                <h4 style="color: #d63031; margin-bottom: 1rem; font-size: 1.5rem; font-weight: 600;"><strong>Você está em Quarentena</strong></h4>
+                                <p><strong>Até:</strong> @fimQuarentenaFormatada</p>
+                                <p><strong>Dias restantes:</strong> @ViewBag.DiasRestantesQuarentena dia@(ViewBag.DiasRestantesQuarentena > 1 ? "s" : "")</p>
+                                <p><strong>Motivo:</strong> @ViewBag.MotivoQuarentena</p>
+                                <small style="display: block; margin-top: 1rem; font-style: italic;">Durante este período, você não pode adotar pets.</small>
+                            </div>
+                        </div>
+                    </div>
+                }
+                else if (Model.Pets.Any())
+                {
+                    foreach (var pet in Model.Pets)
+                    {
+                        <div class="pet-card" data-id="@pet.Id">
+                            <div class="pet-image">
+                                <img src="@(string.IsNullOrEmpty(pet.NomeArquivoImagem) ? "/imagens/pets/pet-placeholder.jpg" : $"/imagens/pets/{pet.NomeArquivoImagem}")" 
+                                     alt="@pet.Nome" 
+                                     onerror="this.src='/imagens/pets/pet-placeholder.jpg'"
+                                     loading="lazy">
+                                
+                                <div class="pet-tags">
+                                    <span class="tag-especie @(pet.Especie == Especie.Cao ? "cao" : "felino")">
+                                        <i class="fas @(pet.Especie == Especie.Cao ? "fa-dog" : "fa-cat")"></i>
+                                        @(pet.Especie == Especie.Cao ? "Cão" : "Felino")
+                                    </span>
+                                    <span class="tag-sexo @(pet.Sexo == SexoPet.Macho ? "macho" : "femea")">
+                                        <i class="fas @(pet.Sexo == SexoPet.Macho ? "fa-mars" : "fa-venus")"></i>
+                                        @(pet.Sexo == SexoPet.Macho ? "Macho" : "Fêmea")
+                                    </span>
+                                </div>
+                                
+                                <div class="pet-overlay">
+                                    <div class="pet-actions-overlay">
+                                        <button class="btn-detalhes-overlay" onclick="abrirModalDetalhes(@pet.Id)" type="button">
+                                            <i class="fas fa-info-circle"></i>
+                                            <span>Ver Detalhes</span>
+                                        </button>
+                                        <button class="btn-adopt-overlay" onclick="handleAdoptClick(@pet.Id)" type="button">
+                                            <i class="fas fa-heart"></i>
+                                            <span>Adotar agora</span>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="pet-content">
+                                <h3 class="pet-name">@pet.Nome</h3>
+                                
+                                <div class="pet-stats">
+                                    <div class="stat-item">
+                                        <i class="fas fa-paw"></i>
+                                        <span>@(pet.Porte ?? "Não informado")</span>
+                                    </div>
+                                    <div class="stat-item">
+                                        <i class="fas fa-birthday-cake"></i>
+                                        <span>
+                                            @{
+                                                int anos = pet.Anos;
+                                                int meses = pet.Meses;
+                                                
+                                                if (anos > 0)
+                                                {
+                                                    @($"{anos} {(anos == 1 ? "ano" : "anos")}")
+                                                    if (meses > 0)
+                                                    {
+                                                        @($" e {meses} {(meses == 1 ? "mês" : "meses")}")
+                                                    }
+                                                }
+                                                else if (meses > 0)
+                                                {
+                                                    @($"{meses} {(meses == 1 ? "mês" : "meses")}")
+                                                }
+                                                else
+                                                {
+                                                    @("Recém-nascido")
+                                                }
+                                            }
+                                        </span>
+                                    </div>
+                                    <div class="stat-item">
+                                        <i class="fas fa-tag"></i>
+                                        <span title="@(string.IsNullOrEmpty(pet.Raca) ? "Sem Raça Definida" : pet.Raca)">
+                                            @(string.IsNullOrEmpty(pet.Raca) ? "SRD" : pet.Raca)
+                                        </span>
+                                    </div>
+                                </div>
+                                
+                                @if (!string.IsNullOrWhiteSpace(pet.Descricao) && pet.Descricao.Length > 5)
+                                {
+                                    <div class="pet-description">
+                                        <p>@(pet.Descricao.Length > 80 ? pet.Descricao.Substring(0, 80) + "..." : pet.Descricao)</p>
+                                    </div>
+                                }
+
+
+                                @if (!pet.CadastroCompleto)
+                                {
+                                    <div class="pet-status">
+                                        <i class="fas fa-exclamation-triangle"></i>
+                                        <span>Cadastro incompleto</span>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div style="grid-column: 1 / -1; display: flex; justify-content: center; align-items: center; min-height: 300px;">
+                        <div class="text-center py-5">
+                            <i class="fas fa-paw fa-3x text-muted mb-3"></i>
+                            <h4>Nenhum pet encontrado</h4>
+                            <p class="text-muted">No momento não temos pets disponíveis para adoção que correspondam aos seus critérios de busca.</p>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </section>
+
+    <div class="paginacao">
+        <div class="container">
+            <div class="row g-2 align-items-center justify-content-center">
+                <div class="col-12 text-center mb-3">
+                    <div class="info-paginacao">
+                        <span class="badge contador-pets">
+                            <span class="icone-container">
+                                <i class="fas fa-paw" aria-hidden="true"></i>
+                            </span>
+                            <span class="contador-texto">
+                                <span>Exibindo</span>
+                                <strong>@Model.Pets.Count()</strong>
+                                <span>de</span>
+                                <strong>@Model.TotalItens</strong>
+                                <span>pets</span>
+                            </span>
+                        </span>
+                    </div>
+                </div>
+                    
+                    <div class="col-12">
+                        <nav aria-label="Navegação de páginas">
+                            <ul class="pagination justify-content-center flex-wrap">
+                                @if (Model.PaginaAtual > 1)
+                                {
+                                    <li class="page-item">
+                                        <a class="page-link" href="@Url.Action("ExplorarPets", "Pet", new { area = "Usuario", pagina = Model.PaginaAtual - 1, itensPorPagina = Model.ItensPorPaginaSelecionado, filtroNome = Model.FiltroNome, filtroEspecie = Model.FiltroEspecie, filtroSexo = Model.FiltroSexo, filtroPorte = Model.FiltroPorte, filtroIdade = Model.FiltroIdade, filtroOrdem = Model.FiltroOrdem })" data-pagina="@(Model.PaginaAtual - 1)">
+                                            <i class="fas fa-chevron-left"></i>
+                                        </a>
+                                    </li>
+                                }
+                                else
+                                {
+                                    <li class="page-item disabled">
+                                        <span class="page-link"><i class="fas fa-chevron-left"></i></span>
+                                    </li>
+                                }
+
+                                @{int inicio = Math.Max(1, Model.PaginaAtual - 2);
+                                  int fim = Math.Min(Model.TotalPaginas, Model.PaginaAtual + 2);
+                                  if (fim - inicio + 1 < 5 && Model.TotalPaginas >= 5)
+                                  {
+                                      if (Model.PaginaAtual <= 3)
+                                      {
+                                          fim = Math.Min(5, Model.TotalPaginas);
+                                      }
+                                      else
+                                      {
+                                          inicio = Math.Max(1, Model.TotalPaginas - 4);
+                                      }
+                                  }}
+                                @for (int i = inicio; i <= fim; i++)
+                                {
+                                    <li class="page-item @(i == Model.PaginaAtual ? "active" : "")">
+                                        <a class="page-link" href="@Url.Action("ExplorarPets", "Pet", new { area = "Usuario", pagina = i, itensPorPagina = Model.ItensPorPaginaSelecionado, filtroNome = Model.FiltroNome, filtroEspecie = Model.FiltroEspecie, filtroSexo = Model.FiltroSexo, filtroPorte = Model.FiltroPorte, filtroIdade = Model.FiltroIdade, filtroOrdem = Model.FiltroOrdem })" data-pagina="@i">@i</a>
+                                    </li>
+                                }
+
+                                @if (Model.PaginaAtual < Model.TotalPaginas)
+                                {
+                                    <li class="page-item">
+                                        <a class="page-link" href="@Url.Action("ExplorarPets", "Pet", new { area = "Usuario", pagina = Model.PaginaAtual + 1, itensPorPagina = Model.ItensPorPaginaSelecionado, filtroNome = Model.FiltroNome, filtroEspecie = Model.FiltroEspecie, filtroSexo = Model.FiltroSexo, filtroPorte = Model.FiltroPorte, filtroIdade = Model.FiltroIdade, filtroOrdem = Model.FiltroOrdem })" data-pagina="@(Model.PaginaAtual + 1)">
+                                            <i class="fas fa-chevron-right"></i>
+                                        </a>
+                                    </li>
+                                }
+                                else
+                                {
+                                    <li class="page-item disabled">
+                                        <span class="page-link"><i class="fas fa-chevron-right"></i></span>
+                                    </li>
+                                }
+                            </ul>
+                        </nav>
+                    </div>
+                    
+                    <div class="col-12 mt-3">
+                        <div class="paginacao-info d-flex justify-content-center align-items-center">
+                            <div class="itens-por-pagina">
+                                <label for="selectItensPorPagina">Itens por página:</label>
+                                <select id="selectItensPorPagina" class="form-select form-select-sm">
+                                    @{
+                                        var options = new[] { 12, 24, 36, 48 };
+                                        foreach (var option in options)
+                                        {
+                                            if (Model.ItensPorPaginaSelecionado == option)
+                                    {
+                                                <option value="@option" selected>@option</option>
+                                    }
+                                    else
+                                    {
+                                                <option value="@option">@option</option>
+                                    }
+                                        }
+                                    }
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <form id="formNavegacao" method="get" action="@Url.Action("ExplorarPets", "Pet", new { area = "Usuario" })">
+            <input type="hidden" name="filtroNome" id="filtroNomeNav" value="@Model.FiltroNome" />
+            <input type="hidden" name="filtroEspecie" id="filtroEspecieNav" value="@Model.FiltroEspecie" />
+            <input type="hidden" name="filtroSexo" id="filtroSexoNav" value="@Model.FiltroSexo" />
+            <input type="hidden" name="filtroPorte" id="filtroPorteNav" value="@Model.FiltroPorte" />
+            <input type="hidden" name="filtroIdade" id="filtroIdadeNav" value="@Model.FiltroIdade" />
+            <input type="hidden" name="filtroOrdem" id="filtroOrdemNav" value="@Model.FiltroOrdem" />
+            <input type="hidden" name="itensPorPagina" id="itensPorPaginaNav" value="@Model.ItensPorPaginaSelecionado" />
+            <input type="hidden" name="pagina" id="paginaAtual" value="@Model.PaginaAtual" />
+            <input type="hidden" name="fromForm" value="true" />
+        </form>
+
+        <!-- Script direto para garantir funcionamento da paginação -->
+        <script>
+            // Executar imediatamente para garantir que os links de paginação funcionem
+            (function() {
+                // Aplicar estilos diretamente para garantir visibilidade
+                document.querySelectorAll('.paginacao').forEach(function(el) {
+                    el.style.display = 'block';
+                    el.style.visibility = 'visible';
+                    el.style.opacity = '1';
+                });
+                
+                document.querySelectorAll('.pagination').forEach(function(el) {
+                    el.style.display = 'flex';
+                    el.style.visibility = 'visible';
+                    el.style.opacity = '1';
+                });
+                
+                // Adicionar eventos diretamente aos links de paginação
+                document.querySelectorAll('.pagination .page-link').forEach(function(link) {
+                    link.onclick = function(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        
+                        var pagina = this.getAttribute('data-pagina');
+                        console.log("Link de paginação clicado diretamente. Página:", pagina);
+                        
+                        if (pagina) {
+                            // Atualizar o campo oculto no formulário
+                            document.getElementById('paginaAtual').value = pagina;
+                            
+                            // Remover inputs de navegação anteriores
+                            document.querySelectorAll('#formNavegacao input[name="navegacaoPagina"]').forEach(function(input) {
+                                input.parentNode.removeChild(input);
+                            });
+                            
+                            // Adicionar um parâmetro para indicar que é uma navegação de página
+                            var inputNavegacao = document.createElement('input');
+                            inputNavegacao.type = 'hidden';
+                            inputNavegacao.name = 'navegacaoPagina';
+                            inputNavegacao.value = 'true';
+                            document.getElementById('formNavegacao').appendChild(inputNavegacao);
+                            
+                            // Submeter o formulário
+                            document.getElementById('formNavegacao').submit();
+                        }
+                        
+                        return false;
+                    };
+                });
+                
+                // Adicionar evento ao seletor de itens por página
+                document.getElementById('selectItensPorPagina').addEventListener('change', function() {
+                    const valor = parseInt(this.value, 10);
+                    if (!isNaN(valor)) {
+                        document.getElementById('itensPorPagina').value = valor;
+                        document.getElementById('itensPorPaginaNav').value = valor;
+                        document.getElementById('paginaAtual').value = 1;
+                        
+                        // Remover inputs de navegação anteriores
+                        document.querySelectorAll('#formNavegacao input[name="navegacaoPagina"]').forEach(function(input) {
+                            input.parentNode.removeChild(input);
+                        });
+                        
+                        // Adicionar um parâmetro para indicar que não é uma navegação de página
+                        var inputNavegacao = document.createElement('input');
+                        inputNavegacao.type = 'hidden';
+                        inputNavegacao.name = 'navegacaoPagina';
+                        inputNavegacao.value = 'false';
+                        document.getElementById('formNavegacao').appendChild(inputNavegacao);
+                        
+                        // Submeter o formulário
+                        document.getElementById('formNavegacao').submit();
+                    }
+                });
+            })();
+        </script>
+
+    <div class="sidebar-overlay"></div>
+</main>
+
+
+
+<div class="modal" id="modalCamposFaltantes" data-bs-backdrop="static">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 class="modal-title">Complete seu perfil</h3>
+            <button class="modal-close" onclick="fecharModal('modalCamposFaltantes')">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="modal-body">
+            <p>Para prosseguir com a adoção, você precisa completar algumas informações em seu perfil:</p>
+            <ul id="listaCamposFaltantes">
+            </ul>
+        </div>
+        <div class="modal-footer">
+            <button class="modal-button modal-button-secondary" onclick="fecharModal('modalCamposFaltantes')">Depois</button>
+            <a href="/Usuario/Perfil?returnUrl=/usuario/pets/explorar" class="modal-button modal-button-primary">Completar agora</a>
+        </div>
+    </div>
+</div>
+
+<div class="modal" id="modalAdminPrincipal" data-bs-backdrop="static">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 class="modal-title">Acesso Administrativo</h3>
+            <button class="modal-close" onclick="fecharModal('modalAdminPrincipal')">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="modal-body">
+            <p>Como administrador principal, você não pode adotar um pet diretamente. Esta funcionalidade existe apenas para usuários regulares.</p>
+            <p>Você pode:</p>
+            <ul>
+                <li>Visualizar o funcionamento da plataforma</li>
+                <li>Gerenciar pets e adoções pelo painel administrativo</li>
+                <li>Criar uma conta de usuário regular para testar o processo completo</li>
+            </ul>
+        </div>
+        <div class="modal-footer">
+            <button class="modal-button modal-button-primary" onclick="fecharModal('modalAdminPrincipal')">Entendi</button>
+        </div>
+    </div>
+</div>
+
+<div class="modal" id="modalLoginCadastro" data-bs-backdrop="static">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 class="modal-title">Acesso necessário</h3>
+            <button class="modal-close" onclick="fecharModal('modalLoginCadastro')">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="modal-body">
+            <div class="text-center mb-4">
+                <i class="fas fa-paw fa-3x text-primary"></i>
+            </div>
+            <p>Para prosseguir com a adoção deste pet, você precisa estar logado no sistema.</p>
+            <p>Isso é necessário para que possamos:</p>
+            <ul>
+                <li>Registrar sua solicitação de adoção</li>
+                <li>Comunicar sobre o andamento do processo</li>
+                <li>Verificar informações básicas para adoção responsável</li>
+            </ul>
+            <p class="mt-3">Você pode fazer login se já possui uma conta ou criar uma nova conta se ainda não é cadastrado.</p>
+            <input type="hidden" id="petIdAutenticacao" value="" />
+        </div>
+        <div class="modal-footer">
+            <button class="modal-button modal-button-secondary" onclick="redirecionarCadastro()">
+                <i class="fas fa-user-plus mr-2"></i> Criar uma conta
+            </button>
+            <button class="modal-button modal-button-primary" onclick="redirecionarLogin()">
+                <i class="fas fa-sign-in-alt mr-2"></i> Fazer login
+            </button>
+        </div>
+    </div>
+</div>
+
+<div class="modal" id="modalAdocaoPendente" data-bs-backdrop="static">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 class="modal-title">Processo de Adoção em Andamento</h3>
+            <button class="modal-close" onclick="fecharModal('modalAdocaoPendente')">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="modal-body">
+            <div class="text-center mb-4">
+                <i class="fas fa-exclamation-circle fa-3x text-warning"></i>
+            </div>
+            <p>Notamos que você já possui um processo de adoção em andamento.</p>
+            <p>Para garantir que cada adoção receba a atenção necessária e seja conduzida da melhor forma possível, é preciso aguardar a conclusão do processo atual antes de iniciar uma nova adoção.</p>
+            <p>Você pode:</p>
+            <ul>
+                <li>Acompanhar o status da sua adoção atual na página "Minhas Adoções"</li>
+                <li>Aguardar a conclusão do processo atual</li>
+                <li>Entrar em contato conosco se precisar de mais informações</li>
+            </ul>
+        </div>
+        <div class="modal-footer">
+            <a href="/usuario/adocoes" class="modal-button modal-button-primary">
+                <i class="fas fa-list-alt me-2"></i> Ver Minhas Adoções
+            </a>
+            <button class="modal-button modal-button-secondary" onclick="fecharModal('modalAdocaoPendente')">Fechar</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Detalhes do Pet - Novo -->
+<div id="modalDetalhesPet" class="modal-overlay" style="display: none;">
+    <div class="modal-container">
+        <div class="modal-header">
+            <div class="modal-title-section">
+                <div class="modal-icon">
+                    <i class="fas fa-paw"></i>
+                </div>
+                <div class="modal-title-text">
+                    <h3 id="modalDetalhesPetTitulo">Detalhes do Pet</h3>
+                    <p>Conheça mais sobre este companheiro</p>
+                </div>
+            </div>
+            <button class="modal-close-btn" onclick="fecharModal('modalDetalhesPet')">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+
+        <div class="modal-body" id="modalDetalhesPetBody">
+            <div class="loading-container">
+                <div class="loading-spinner">
+                    <i class="fas fa-spinner fa-spin"></i>
+                </div>
+                <p class="loading-text">Carregando detalhes...</p>
+            </div>
+        </div>
+
+        <div class="modal-footer" id="modalDetalhesPetFooter">
+            <button class="btn-secondary" onclick="fecharModal('modalDetalhesPet')">
+                <i class="fas fa-times"></i>
+                Fechar
+            </button>
+            <button class="btn-primary" id="btnAdotarModal" style="display: none;">
+                <i class="fas fa-heart"></i>
+                Quero Adotar
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Autenticação -->
+<div class="modal fade" id="modalAutenticacao" data-bs-backdrop="static" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content modal-auth">
+            <div class="modal-header modal-auth-header">
+                <div class="auth-header-content">
+                    <div class="auth-icon">
+                        <i class="fa-solid fa-heart"></i>
+                    </div>
+                    <div class="auth-text">
+                        <h5 class="modal-title">Que bom que você quer adotar!</h5>
+                        <p class="auth-subtitle">Para continuar, você precisa fazer login ou criar sua conta</p>
+                    </div>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+            </div>
+            <div class="modal-body modal-auth-body">
+                <div class="auth-message">
+                    <i class="fa-solid fa-paw auth-paw-icon"></i>
+                    <h6>Adoção é um ato de amor!</h6>
+                    <p>Para garantir a segurança dos nossos pets e facilitar o processo de adoção, você precisa ter uma conta em nosso sistema.</p>
+                </div>
+
+                <div class="auth-benefits">
+                    <h6><i class="fa-solid fa-star me-2"></i>Com sua conta você pode:</h6>
+                    <ul class="benefits-list">
+                        <li><i class="fa-solid fa-check"></i> Acompanhar suas adoções</li>
+                        <li><i class="fa-solid fa-check"></i> Salvar pets favoritos</li>
+                        <li><i class="fa-solid fa-check"></i> Receber atualizações</li>
+                        <li><i class="fa-solid fa-check"></i> Acessar seu histórico</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="modal-footer modal-auth-footer">
+                <div class="auth-actions">
+                    <a href="@Url.Action("Login", "Autenticacao")" class="btn btn-primary btn-auth">
+                        <i class="fa-solid fa-sign-in-alt me-2"></i>
+                        Já tenho uma conta
+                    </a>
+                    <a href="@Url.Action("Cadastro", "Autenticacao")" class="btn btn-outline-primary btn-auth">
+                        <i class="fa-solid fa-user-plus me-2"></i>
+                        Criar minha conta
+                    </a>
+                </div>
+                <div class="auth-footer-note">
+                    <small class="text-muted">
+                        <i class="fa-solid fa-shield-alt me-1"></i>
+                        Seus dados estão seguros conosco
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="dados-usuario"
+     data-usuario-logado="@User.Identity.IsAuthenticated.ToString().ToLower()"
+     data-usuario-id="@usuarioId"
+     data-usuario-nome="@usuarioNome"
+     data-usuario-tipo="@usuarioTipo"
+     style="display:none"></div>
+
+@section Scripts {
+    <script src="~/js/usuario/explorar-pets.js" asp-append-version="true"></script>
+    
+    @if (TempData["Erro"] != null || TempData["Sucesso"] != null)
+    {
+        <script>
+            window.temMensagensTempData = true;
+            window.mensagemErro = '@TempData["Erro"]';
+            window.mensagemSucesso = '@TempData["Sucesso"]';
+        </script>
+    }
+    
+        <script>
+        // Script adicional para garantir que a paginação seja sempre visível
+        $(document).ready(function() {
+            // Forçar exibição da paginação
+            $('.paginacao').css('display', 'block !important');
+            $('.pagination').css('display', 'flex !important');
+            $('.paginacao-info').css('display', 'flex !important');
+            $('.itens-por-pagina').css('display', 'flex !important');
+            
+            // Aplicar diretamente os estilos inline para garantir visibilidade
+            $('.paginacao').attr('style', 'display: block !important');
+            $('.pagination').attr('style', 'display: flex !important');
+            $('.paginacao-info').attr('style', 'display: flex !important');
+            $('.itens-por-pagina').attr('style', 'display: flex !important');
+            
+            // Remover todos os eventos de clique existentes nos links de paginação
+            $('.pagination .page-link').off('click');
+            
+            // Adicionar novos eventos de clique
+            $('.pagination .page-link').on('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                // Extrair o número da página do atributo data-pagina
+                var pagina = $(this).attr('data-pagina');
+                
+                if (pagina) {
+                    console.log("Navegando para a página: " + pagina);
+                    
+                    // Atualizar o campo oculto no formulário
+                    $('#paginaAtual').val(pagina);
+                    
+                    // Adicionar indicador de carregamento
+                    if (typeof mostrarIndicadorCarregamento === 'function') {
+                        mostrarIndicadorCarregamento();
+                    }
+                    
+                    // Adicionar um parâmetro para indicar que é uma navegação de página
+                    var inputNavegacao = $('<input>').attr({
+                        type: 'hidden',
+                        name: 'navegacaoPagina',
+                        value: 'true'
+                    });
+                    $('#formNavegacao').append(inputNavegacao);
+                    
+                    // Garantir que o valor de itens por página seja respeitado
+                    var valorSelecionado = parseInt($('#selectItensPorPagina').val(), 10) || 12;
+                    $('#itensPorPaginaNav').val(valorSelecionado);
+                    
+                    // Submeter o formulário
+                    $('#formNavegacao').submit();
+                }
+                
+                return false;
+            });
+            
+            // Configurar o combobox de itens por página para aplicação automática
+            $('#selectItensPorPagina').off('change').on('change', function() {
+                var valor = parseInt($(this).val(), 10);
+                if (!isNaN(valor)) {
+                if (typeof aplicarMudancaItensPorPagina === 'function') {
+                    aplicarMudancaItensPorPagina(valor);
+                } else {
+                    // Fallback caso a função não esteja disponível
+                    $('#itensPorPagina').val(valor);
+                    $('#itensPorPaginaNav').val(valor);
+                    $('#paginaAtual').val(1);
+                    $('#formNavegacao').submit();
+                    }
+                }
+            });
+            
+            // Garantir visibilidade da paginação apenas uma vez
+            $('.paginacao').attr('style', 'display: block !important');
+            $('.pagination').attr('style', 'display: flex !important');
+            $('.paginacao-info').attr('style', 'display: flex !important');
+            $('.itens-por-pagina').attr('style', 'display: flex !important');
+            
+            // Verificar se o seletor de itens por página está mostrando o valor correto
+            console.log("Valor atual do seletor:", $('#selectItensPorPagina').val());
+            console.log("Valor do modelo:", @Model.ItensPorPaginaSelecionado);
+            
+            // Forçar o valor correto no seletor
+            $('#selectItensPorPagina').val(@Model.ItensPorPaginaSelecionado);
+        });
+    </script>
+} 

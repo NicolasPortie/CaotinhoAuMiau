@@ -1,0 +1,2797 @@
+@using CaotinhoAuMiau.Models.Enums
+@using CaotinhoAuMiau.Utils
+@model CaotinhoAuMiau.Models.ViewModels.Admin.GerenciamentoAdocaoViewModel
+
+@{
+    ViewData["Title"] = "Gerenciamento de Adoções";
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/admin/admin-gerenciamento-adocoes.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/admin/admin-gerenciamento-pets.css" asp-append-version="true" />
+    <style>
+        /* Garantir que as badges do Bootstrap funcionem corretamente com alta especificidade */
+        .container-adocoes .status-contrato .badge,
+        .coluna-prazo .badge,
+        .badge,
+        .container-adocoes .badge,
+        .tabela-adocoes .badge,
+        .listagem-adocoes .badge,
+        table .badge {
+            display: inline-block !important;
+            padding: 0.35em 0.65em !important;
+            font-size: 0.75em !important;
+            font-weight: 700 !important;
+            line-height: 1 !important;
+            color: white !important;
+            text-align: center !important;
+            white-space: nowrap !important;
+            vertical-align: baseline !important;
+            border-radius: 0.25rem !important;
+            border: none !important;
+        }
+
+        .container-adocoes .badge.bg-primary,
+        .coluna-prazo .badge.bg-primary,
+        .status-contrato .badge.bg-primary,
+        .badge.bg-primary {
+            background-color: #0d6efd !important;
+            color: white !important;
+        }
+
+        .container-adocoes .badge.bg-secondary,
+        .coluna-prazo .badge.bg-secondary,
+        .status-contrato .badge.bg-secondary,
+        .badge.bg-secondary {
+            background-color: #6c757d !important;
+            color: white !important;
+        }
+
+        .container-adocoes .badge.bg-success,
+        .coluna-prazo .badge.bg-success,
+        .status-contrato .badge.bg-success,
+        .badge.bg-success {
+            background-color: #198754 !important;
+            color: white !important;
+        }
+
+        .container-adocoes .badge.bg-danger,
+        .coluna-prazo .badge.bg-danger,
+        .status-contrato .badge.bg-danger,
+        .badge.bg-danger {
+            background-color: #dc3545 !important;
+            color: white !important;
+        }
+
+        .container-adocoes .badge.bg-warning,
+        .coluna-prazo .badge.bg-warning,
+        .status-contrato .badge.bg-warning,
+        .tabela-adocoes .badge.bg-warning,
+        .listagem-adocoes .badge.bg-warning,
+        table .badge.bg-warning,
+        .badge.bg-warning {
+            background-color: #ffc107 !important;
+            color: white !important;
+        }
+
+        .container-adocoes .badge.bg-info,
+        .coluna-prazo .badge.bg-info,
+        .status-contrato .badge.bg-info,
+        .tabela-adocoes .badge.bg-info,
+        .listagem-adocoes .badge.bg-info,
+        table .badge.bg-info,
+        .badge.bg-info {
+            background-color: #0dcaf0 !important;
+            color: white !important;
+        }
+
+        .container-adocoes .badge.bg-light,
+        .coluna-prazo .badge.bg-light,
+        .status-contrato .badge.bg-light,
+        .tabela-adocoes .badge.bg-light,
+        .listagem-adocoes .badge.bg-light,
+        table .badge.bg-light,
+        .badge.bg-light {
+            background-color: #f8f9fa !important;
+            color: white !important;
+        }
+
+        .container-adocoes .badge.bg-dark,
+        .coluna-prazo .badge.bg-dark,
+        .status-contrato .badge.bg-dark,
+        .badge.bg-dark {
+            background-color: #212529 !important;
+            color: white !important;
+        }
+
+        /* FORÇA BRUTA: Garantir que TODAS as badges tenham fonte branca */
+        .badge, 
+        .badge.bg-warning,
+        .badge.bg-info, 
+        .badge.bg-light,
+        .badge.bg-primary,
+        .badge.bg-secondary,
+        .badge.bg-success,
+        .badge.bg-danger,
+        .badge.bg-dark,
+        span.badge,
+        div.badge,
+        .status,
+        .status-badge {
+            color: white !important;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.3) !important;
+        }
+
+        /* Estilos específicos para status */
+        .status-contrato .badge {
+            font-size: 0.8em !important;
+            padding: 0.4em 0.8em !important;
+        }
+
+        .status-contrato .badge i {
+            margin-right: 5px !important;
+        }
+
+        /* FORÇAR USO TOTAL DO ESPAÇO DISPONÍVEL */
+        body, html {
+            margin: 0 !important;
+            padding: 0 !important;
+            width: 100% !important;
+            overflow-x: hidden !important;
+        }
+        
+        .conteudo-principal {
+            padding: 0 !important;
+            margin: 0 !important;
+            width: calc(100vw - 280px) !important;
+            min-width: calc(100vw - 280px) !important;
+            max-width: none !important;
+            box-sizing: border-box !important;
+            margin-left: 280px !important;
+            position: absolute !important;
+            left: 0 !important;
+            top: 0 !important;
+            height: 100vh !important;
+        }
+        
+        .conteudo-principal.expandido {
+            width: calc(100vw - 80px) !important;
+            min-width: calc(100vw - 80px) !important;
+            margin-left: 80px !important;
+        }
+        
+        /* CONTAINERS EXPANDIDOS */
+        .cabecalho-painel,
+        .cartoes-status,
+        .secao-filtros,
+        .tabela-responsiva {
+            padding-left: 1.5rem !important;
+            padding-right: 3rem !important;
+            max-width: none !important;
+            width: 100% !important;
+            margin: 0 !important;
+            box-sizing: border-box !important;
+        }
+        
+        .cabecalho-painel {
+            padding-top: 1.5rem !important;
+        }
+        
+        /* Forçar a seção de filtros a usar todo o espaço */
+        .secao-filtros {
+            width: 100% !important;
+            max-width: none !important;
+            padding: var(--space-2) var(--space-3) !important;
+            margin: 0 !important;
+            box-sizing: border-box !important;
+        }
+        
+        .secao-filtros .row {
+            width: 100% !important;
+            max-width: none !important;
+            margin: 0 !important;
+        }
+        
+        .secao-filtros .col-md-5,
+        .secao-filtros .col-md-3,
+        .secao-filtros .col-md-4 {
+            max-width: none !important;
+            flex: none !important;
+        }
+        
+        .secao-filtros .col-md-5 {
+            width: 41.66666667% !important;
+        }
+        
+        .secao-filtros .col-md-3 {
+            width: 25% !important;
+        }
+        
+        .secao-filtros .col-md-4 {
+            width: 33.33333333% !important;
+        }
+        
+        .cabecalho-painel {
+            padding-top: 1.5rem !important;
+            padding-bottom: 1rem !important;
+        }
+        
+        .cartoes-status {
+            margin-bottom: 1.5rem !important;
+        }
+        
+        .secao-filtros {
+            margin-bottom: 1.5rem !important;
+        }
+        
+        /* Tabela responsiva - igual view de formulários */
+        .tabela-responsiva {
+            overflow-x: auto !important;
+            width: 100% !important;
+        }
+        
+        .tabela {
+            width: 100% !important;
+            min-width: 1000px !important;
+            table-layout: auto !important;
+        }
+
+        /* Distribuição das colunas */
+        .tabela th:nth-child(1) { width: 25%; } /* Pet */
+        .tabela th:nth-child(2) { width: 25%; } /* Adotante */
+        .tabela th:nth-child(3) { width: 20%; } /* Status */
+        .tabela th:nth-child(4) { width: 15%; } /* Data */
+        .tabela th:nth-child(5) { width: 15%; } /* Ações */
+
+        /* MELHORIAS DO MODAL DE DETALHES */
+        #modal-adoption-details .modal-dialog {
+            max-width: 900px !important;
+            width: 85vw !important;
+            margin: 1rem auto !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            min-height: calc(100vh - 2rem) !important;
+        }
+
+        #modal-adoption-details .modal-content {
+            height: 90vh !important;
+            max-height: 90vh !important;
+            display: flex !important;
+            flex-direction: column !important;
+        }
+
+        #modal-adoption-details .modal-body-pro {
+            padding: 0 !important;
+            overflow: hidden !important;
+            flex: 1 !important;
+            min-height: 0 !important;
+            display: flex !important;
+            flex-direction: column !important;
+        }
+
+        #modal-adoption-details .modal-header-pro {
+            flex-shrink: 0 !important;
+            border-bottom: 1px solid #e2e8f0 !important;
+            padding: 2rem 2rem 0 2rem !important;
+            min-height: 140px !important;
+            display: flex !important;
+            flex-direction: column !important;
+            justify-content: space-between !important;
+            margin-bottom: 0 !important;
+            position: relative !important;
+        }
+
+        #modal-adoption-details .modal-header-pro .header-content {
+            display: flex !important;
+            justify-content: flex-start !important;
+            align-items: center !important;
+            width: 100% !important;
+            flex-shrink: 0 !important;
+        }
+
+        #modal-adoption-details .btn-close-pro {
+            position: absolute !important;
+            top: 1rem !important;
+            right: 1rem !important;
+            background: none !important;
+            border: none !important;
+            font-size: 24px !important;
+            font-weight: bold !important;
+            color: #ffffff !important;
+            cursor: pointer !important;
+            padding: 0 !important;
+            line-height: 1 !important;
+            opacity: 0.8 !important;
+            transition: opacity 0.2s ease !important;
+            z-index: 10 !important;
+        }
+
+        #modal-adoption-details .btn-close-pro:hover {
+            opacity: 1 !important;
+        }
+
+        #modal-adoption-details .modal-footer-pro {
+            display: none !important;
+        }
+
+        #modal-adoption-details .btn-fechar-pro {
+            position: fixed !important;
+            bottom: 2rem !important;
+            right: 2rem !important;
+            background: #6b7280 !important;
+            color: white !important;
+            border: none !important;
+            padding: 12px 24px !important;
+            border-radius: 8px !important;
+            font-weight: 500 !important;
+            cursor: pointer !important;
+            transition: all 0.2s ease !important;
+            z-index: 1000 !important;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+        }
+
+        #modal-adoption-details .btn-fechar-pro:hover {
+            background: #374151 !important;
+            transform: translateY(-2px) !important;
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2) !important;
+        }
+
+        .btn-historico-adocoes {
+            background: #3b82f6 !important;
+            color: white !important;
+            border: none !important;
+            padding: 4px 8px !important;
+            border-radius: 4px !important;
+            font-size: 12px !important;
+            margin-left: 8px !important;
+            cursor: pointer !important;
+            transition: all 0.2s ease !important;
+        }
+
+        .btn-historico-adocoes:hover {
+            background: #2563eb !important;
+            transform: translateY(-1px) !important;
+        }
+
+        .historico-container-pro .sem-historico {
+            text-align: center !important;
+            color: #9ca3af !important;
+            font-style: italic !important;
+            padding: 20px !important;
+        }
+
+        .historico-lista {
+            display: flex !important;
+            flex-direction: column !important;
+            gap: 12px !important;
+        }
+
+        .historico-item {
+            display: flex !important;
+            align-items: center !important;
+            justify-content: space-between !important;
+            padding: 12px 16px !important;
+            background: white !important;
+            border: 1px solid #e5e7eb !important;
+            border-radius: 8px !important;
+            transition: all 0.2s ease !important;
+        }
+
+        .historico-item:hover {
+            border-color: #3b82f6 !important;
+            box-shadow: 0 2px 8px rgba(59, 130, 246, 0.15) !important;
+        }
+
+        .historico-pet {
+            display: flex !important;
+            flex-direction: column !important;
+            flex: 1 !important;
+        }
+
+        .historico-pet strong {
+            color: #1f2937 !important;
+            font-size: 14px !important;
+            margin-bottom: 2px !important;
+        }
+
+        .historico-especie {
+            color: #6b7280 !important;
+            font-size: 12px !important;
+        }
+
+        .historico-data {
+            color: #4b5563 !important;
+            font-size: 13px !important;
+            min-width: 100px !important;
+            text-align: center !important;
+        }
+
+        .historico-status {
+            padding: 4px 8px !important;
+            border-radius: 4px !important;
+            font-size: 12px !important;
+            font-weight: 500 !important;
+            min-width: 80px !important;
+            text-align: center !important;
+        }
+
+        .historico-status.finalizada {
+            background: #dcfce7 !important;
+            color: #166534 !important;
+        }
+
+        .coluna-prazo {
+            text-align: center !important;
+        }
+
+        .prazo-restante {
+            background: #e0f2fe !important;
+            color: #0277bd !important;
+            padding: 4px 8px !important;
+            border-radius: 4px !important;
+            font-size: 12px !important;
+            font-weight: 500 !important;
+        }
+
+        .prazo-restante.dias-1,
+        .prazo-restante.dias-2 {
+            background: #fff3e0 !important;
+            color: #f57c00 !important;
+        }
+
+        .prazo-hoje {
+            background: #ffebee !important;
+            color: #c62828 !important;
+            padding: 4px 8px !important;
+            border-radius: 4px !important;
+            font-size: 12px !important;
+            font-weight: 600 !important;
+            animation: pulse 2s infinite !important;
+        }
+
+        .prazo-vencido {
+            background: #ffcdd2 !important;
+            color: #b71c1c !important;
+            padding: 4px 8px !important;
+            border-radius: 4px !important;
+            font-size: 12px !important;
+            font-weight: 600 !important;
+        }
+
+        .sem-prazo {
+            color: #9e9e9e !important;
+            font-style: italic !important;
+        }
+
+        .data-limite {
+            display: block !important;
+            font-size: 14px !important;
+            opacity: 1 !important;
+            margin-top: 3px !important;
+            font-weight: 500 !important;
+        }
+
+        @@keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        #modal-adoption-details .navbar-section {
+            padding: 0 !important;
+            margin: 0 -2rem 0 -2rem !important;
+            background-color: #f8fafc !important;
+            width: calc(100% + 4rem) !important;
+            height: 48px !important;
+            overflow: hidden !important;
+        }
+
+        #modal-adoption-details .nav-container {
+            width: 100% !important;
+            padding: 0 !important;
+            margin: 0 !important;
+            height: 48px !important;
+        }
+
+        /* ===== SISTEMA DE TABS MODERNO E MELHORADO ===== */
+        .modal-tabs {
+            background: transparent;
+            border-bottom: 1px solid #e2e8f0;
+            padding: 0;
+            border-radius: 0;
+        }
+
+        .tab-navigation {
+            display: flex;
+            position: relative;
+            width: 100%;
+            background: transparent;
+            border-radius: 0;
+            padding: 0;
+            box-shadow: none;
+        }
+
+        .tab-button {
+            flex: 1;
+            background: #ffffff;
+            border: 1px solid #f0f0f0;
+            padding: 14px 24px;
+            font-size: 15px;
+            font-weight: 600;
+            color: #64748b;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            z-index: 3;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 52px;
+            border-radius: 0;
+            outline: none;
+            user-select: none;
+        }
+
+        .tab-button:focus {
+            outline: 2px solid #3b82f6;
+            outline-offset: -2px;
+        }
+
+        .tab-button:hover:not(.active) {
+            color: #64748b;
+            background: #ffffff;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .tab-button.active {
+            color: #ffffff;
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            border: 1px solid #3b82f6;
+            box-shadow: none;
+            transform: none;
+            border-radius: 0;
+        }
+
+
+        .tab-button span {
+            font-weight: inherit;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+
+        /* Responsividade das tabs */
+        @@media (max-width: 768px) {
+            .tab-button {
+                padding: 12px 16px;
+                font-size: 13px;
+                min-height: 48px;
+            }
+
+            .tab-button span {
+                font-size: 12px;
+            }
+        }
+
+        @@media (max-width: 576px) {
+            .tab-navigation {
+                flex-direction: column;
+            }
+
+            .tab-button {
+                border-radius: 0;
+                border-bottom: 1px solid #e2e8f0;
+            }
+
+            .tab-button:last-child {
+                border-bottom: none;
+            }
+
+            .tab-button.active {
+                box-shadow: inset 4px 0 0 #3b82f6;
+                background: rgba(59, 130, 246, 0.1);
+                color: #3b82f6;
+            }
+        }
+
+        #modal-adoption-details .modal-body-pro {
+            padding: 0 !important;
+            overflow: hidden !important;
+            flex: 1 !important;
+            min-height: 0 !important;
+            display: flex !important;
+            flex-direction: column !important;
+            margin: 0 !important;
+            gap: 0 !important;
+        }
+
+        #modal-adoption-details .tab-content-pro {
+            padding: 2rem !important;
+            overflow-y: auto !important;
+            flex: 1 !important;
+            min-height: 0 !important;
+            display: none !important;
+        }
+
+        #modal-adoption-details .tab-content-pro.active {
+            display: block !important;
+        }
+
+        #modal-adoption-details .detalhes-grid-melhorada {
+            display: grid !important;
+            grid-template-columns: 1fr 1fr !important;
+            gap: 2rem !important;
+            width: 100% !important;
+        }
+
+        #modal-adoption-details .detalhes-card-melhorado {
+            background: white !important;
+            border-radius: 16px !important;
+            padding: 2rem !important;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1) !important;
+            border: 1px solid #e5e7eb !important;
+        }
+
+        #modal-adoption-details .pet-showcase,
+        #modal-adoption-details .adotante-showcase {
+            display: flex !important;
+            gap: 1.5rem !important;
+            margin-bottom: 1.5rem !important;
+        }
+
+        #modal-adoption-details .pet-image-container,
+        #modal-adoption-details .adotante-avatar-container {
+            width: 120px !important;
+            height: 120px !important;
+            border-radius: 16px !important;
+            overflow: hidden !important;
+            flex-shrink: 0 !important;
+        }
+
+        #modal-adoption-details .info-grid-melhorada {
+            display: grid !important;
+            grid-template-columns: 1fr 1fr !important;
+            gap: 1rem !important;
+        }
+
+        #modal-adoption-details .info-item-melhorada {
+            background: #f8fafc !important;
+            padding: 1rem !important;
+            border-radius: 12px !important;
+            border: 1px solid #e2e8f0 !important;
+        }
+
+        #modal-adoption-details .info-content .info-label {
+            font-size: 0.875rem !important;
+            color: #6b7280 !important;
+            margin-bottom: 0.25rem !important;
+        }
+
+        #modal-adoption-details .info-content .info-value {
+            font-weight: 600 !important;
+            color: #1f2937 !important;
+            font-size: 1rem !important;
+        }
+
+        /* Remove bolinha dos títulos das seções do formulário */
+        #modal-adoption-details .section-title,
+        #modal-adoption-details .section-title::before,
+        #modal-adoption-details .section-title::after,
+        #modal-adoption-details h5.section-title,
+        #modal-adoption-details h5.section-title::before,
+        #modal-adoption-details h5.section-title::after {
+            list-style: none !important;
+            list-style-type: none !important;
+            content: none !important;
+            position: static !important;
+        }
+
+        #modal-adoption-details .formulario-section .section-title {
+            list-style: none !important;
+            list-style-type: none !important;
+            padding-left: 0 !important;
+            margin-left: 0 !important;
+        }
+
+
+    </style>
+    <style>
+        @@media (max-width: 1200px) {
+            #modal-adoption-details .detalhes-grid-melhorada {
+                grid-template-columns: 1fr !important;
+            }
+        }
+
+        @@media (max-width: 768px) {
+            #modal-adoption-details .modal-dialog {
+                max-width: 95vw !important;
+                width: 95vw !important;
+                margin: 0.5rem auto !important;
+            }
+            
+            #modal-adoption-details .info-grid-melhorada {
+                grid-template-columns: 1fr !important;
+            }
+        }
+
+        /* Timeline simples */
+        .timeline {
+            position: relative;
+            padding-left: 30px;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 15px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: #e9ecef;
+        }
+
+        .timeline-item {
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        .timeline-marker {
+            position: absolute;
+            left: -23px;
+            top: 5px;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            border: 3px solid #fff;
+            box-shadow: 0 0 0 3px #e9ecef;
+        }
+
+        .timeline-content h6 {
+            margin: 0 0 5px 0;
+            font-weight: 600;
+        }
+
+    </style>
+}
+
+@Html.AntiForgeryToken()
+        <div class="cabecalho-painel">
+            <h1 class="titulo-pagina">Gerenciamento de Adoções</h1>
+        </div>
+
+        @Html.AntiForgeryToken()
+
+        
+        <div class="cartoes-status" style="grid-template-columns: repeat(5, 1fr);">
+            <div class="cartao-status total">
+                <div class="conteudo-cartao-status">
+                    <div class="icone">
+                        <i class="fas fa-heart"></i>
+                    </div>
+                    <div>
+                        <div class="rotulo">Total</div>
+                        <div class="numero">@Model.Statistics.TotalAdocoes</div>
+                    </div>
+                </div>
+            </div>
+            <div class="cartao-status contratos-pendentes">
+                <div class="conteudo-cartao-status">
+                    <div class="icone">
+                        <i class="fas fa-file-contract"></i>
+                    </div>
+                    <div>
+                        <div class="rotulo">Contratos P.</div>
+                        <div class="numero">@Model.Statistics.ContratoPendente</div>
+                    </div>
+                </div>
+            </div>
+            <div class="cartao-status contratos-assinados">
+                <div class="conteudo-cartao-status">
+                    <div class="icone">
+                        <i class="fas fa-file-signature"></i>
+                    </div>
+                    <div>
+                        <div class="rotulo">Assinados</div>
+                        <div class="numero">@Model.Statistics.ContratoAssinado</div>
+                    </div>
+                </div>
+            </div>
+            <div class="cartao-status aguardando-buscar">
+                <div class="conteudo-cartao-status">
+                    <div class="icone">
+                        <i class="fas fa-hand-holding-heart"></i>
+                    </div>
+                    <div>
+                        <div class="rotulo">Aguardando buscar</div>
+                        <div class="numero">@Model.Statistics.AguardandoBusca</div>
+                    </div>
+                </div>
+            </div>
+            <div class="cartao-status finalizadas">
+                <div class="conteudo-cartao-status">
+                    <div class="icone">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <div>
+                        <div class="rotulo">Finalizadas</div>
+                        <div class="numero">@Model.Statistics.AdocoesFinalizadas</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="secao-filtros">
+            <div class="row align-items-center">
+                <div class="col-md-5 mb-2 mb-md-0">
+                    <div class="caixa-pesquisa">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="search-input" class="form-control" placeholder="Pesquisar por nome, email ou endereço..." style="height: 40px; padding-left: 35px;">
+                    </div>
+                </div>
+                <div class="col-md-3 mb-2 mb-md-0">
+                    <select id="filter-status" class="form-select" style="height: 40px; padding: 0.375rem 0.75rem; text-align: left;">
+                        <option value="">Todos os Status</option>
+                        <option value="pendente">Em Análise</option>
+                        <option value="aprovado">Aprovado</option>
+                        <option value="contrato pendente">Contrato Pendente</option>
+                        <option value="contrato assinado">Contrato Assinado</option>
+                        <option value="aguardando buscar">Aguardando Busca</option>
+                        <option value="finalizada">Finalizada</option>
+                        <option value="rejeitado">Rejeitado</option>
+                        <option value="cancelada">Cancelada</option>
+                        <option value="expirada">Expirado - Prazo vencido</option>
+                    </select>
+                </div>
+                <div class="col-md-4 d-flex align-items-center">
+                    <div class="flex-grow-1 me-2">
+                        <select id="filter-data" class="form-select" style="height: 40px;">
+                            <option value="">Todas as datas</option>
+                            <option value="hoje">Hoje</option>
+                            <option value="7dias">Últimos 7 dias</option>
+                            <option value="30dias">Últimos 30 dias</option>
+                        </select>
+                    </div>
+                    <button type="button" class="botao-primario me-2" data-action="filtrar">
+                        <i class="fas fa-search me-1"></i> Filtrar
+                    </button>
+                    <button type="button" class="botao-secundario" data-action="limpar-filtros" style="margin-right: 1rem;">
+                        <i class="fas fa-undo me-1"></i> Limpar
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        
+        <div class="tabela-responsiva">
+            @if (Model.Adocoes.Any())
+            {
+                <table class="tabela tabela-adocoes">
+                    <thead>
+                        <tr>
+                            <th>Pet</th>
+                            <th>Adotante</th>
+                            <th>Status</th>
+                            <th>Data</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                            @foreach (var adocao in Model.Adocoes)
+                            {
+                                
+                                <tr class="linha-adocao" data-id="@adocao.Id" data-status="@adocao.StatusCssClass" data-pet-id="@adocao.PetId">
+                                    <td class="coluna-dados">
+                                        <div class="coluna-pet">
+                                            <div class="imagem-container">
+                                                <img src="@adocao.PetImagemUrl" alt="@adocao.PetNome" class="miniatura-imagem-pet">
+                                            </div>
+                                            <div class="info-pet">
+                                                <span class="nome">@adocao.PetNome</span>
+                                                <span class="detalhes">@adocao.PetEspecie.GetEnumMemberValue() @adocao.PetRaca</span>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="coluna-dados">
+                                        <div class="coluna-adotante">
+                                            <div class="avatar-container">
+                                                <div class="avatar-sem-foto">
+                                                    @(adocao.UsuarioNome.Length > 0 ? adocao.UsuarioNome.Substring(0, 1).ToUpper() : "?")
+                                                </div>
+                                            </div>
+                                            <div class="info-usuario">
+                                                <span class="nome">@adocao.UsuarioNome</span>
+                                                <span class="email">@adocao.UsuarioEmail</span>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="coluna-dados">
+                                        <div class="coluna-status">
+                                            <div class="coluna-status">
+                                            <span class="status @adocao.StatusCssClass" style="min-width: 180px;">@adocao.StatusTexto</span>
+                                        </div>
+                                        </div>
+                                    </td>
+                                    <td class="coluna-dados">
+                                        <div class="coluna-prazo">
+                                            @if (adocao.TemPrazoAssinatura && !string.IsNullOrEmpty(adocao.TextoPrazoAssinatura))
+                                            {
+                                                <span class="prazo-assinatura @(adocao.DiasRestantesParaAssinar <= 0 ? "prazo-vencido" : adocao.DiasRestantesParaAssinar <= 1 ? "prazo-urgente" : "prazo-normal")">
+                                                    @adocao.TextoPrazoAssinatura
+                                                </span>
+                                            }
+                                            else if (adocao.Status == "Contrato Assinado" || adocao.Status == "Aguardando Buscar" || adocao.Status == "Aguardando buscar")
+                                            {
+                                                @if (adocao.DiasRestantes > 0)
+                                                {
+                                                    <span class="prazo-restante dias-@adocao.DiasRestantes">
+                                                        @adocao.DiasRestantes dia@(adocao.DiasRestantes == 1 ? "" : "s") restante@(adocao.DiasRestantes == 1 ? "" : "s")
+                                                        @if (adocao.DataLimiteRetirada.HasValue)
+                                                        {
+                                                            <span class="data-limite">até @adocao.DataLimiteRetirada.Value.ToString("dd/MM/yyyy")</span>
+                                                        }
+                                                    </span>
+                                                }
+                                                else if (adocao.PrazoVencido)
+                                                {
+                                                    <span class="prazo-vencido">
+                                                        Prazo vencido
+                                                        @if (adocao.DataLimiteRetirada.HasValue)
+                                                        {
+                                                            <span class="data-limite">@adocao.DataLimiteRetirada.Value.ToString("dd/MM/yyyy")</span>
+                                                        }
+                                                    </span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="prazo-hoje">
+                                                        Vence hoje!
+                                                        @if (adocao.DataLimiteRetirada.HasValue)
+                                                        {
+                                                            <span class="data-limite">@adocao.DataLimiteRetirada.Value.ToString("dd/MM/yyyy")</span>
+                                                        }
+                                                    </span>
+                                                }
+                                            }
+                                        </div>
+                                    </td>
+                                    <td class="coluna-dados">
+                                        <div class="coluna-acoes">
+                                            <button class="botao-acao visualizar btn-visualizar-adocao" data-adocao-id="@adocao.Id" title="Ver detalhes">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                            
+                                            @if (adocao.PodeAprovar)
+                                            {
+                                                <form method="post" asp-action="AprovarAdocaoAsync" asp-route-id="@adocao.Id" style="display: inline;">
+                                                    @Html.AntiForgeryToken()
+                                                    <button type="submit" class="botao-acao aprovar" title="Aprovar adoção e gerar contrato" 
+                                                            data-action="confirmar-aprovacao" data-adocao-id="@adocao.Id">
+                                                        <i class="fas fa-check"></i>
+                                                    </button>
+                                                </form>
+                                                
+                                                <button class="botao-acao rejeitar btn-rejeitar-adocao" data-adocao-id="@adocao.Id" title="Rejeitar adoção">
+                                                    <i class="fas fa-times"></i>
+                                                </button>
+                                            }
+                                            
+                                            @if (adocao.PodeGerarContrato)
+                                            {
+                                                <button class="botao-acao contrato btn-ver-contrato" data-adocao-id="@adocao.Id" title="Visualizar contrato">
+                                                    <i class="fas fa-file-contract"></i>
+                                                </button>
+                                            }
+                                            
+                                            
+                                            @if (adocao.PodeFinalizar)
+                                            {
+                                                <button class="botao-acao finalizar btn-finalizar-adocao" data-bs-toggle="modal" data-bs-target="#modalFinalizarAdocao" data-adocao-id="@adocao.Id" title="Marcar pet como buscado">
+                                                    <i class="fas fa-check-circle"></i>
+                                                </button>
+                                            }
+                                            
+                                            @if (adocao.Status == "Finalizada")
+                                            {
+                                                <button class="botao-acao violacao btn-cancelar-violacao" data-adocao-id="@adocao.Id" title="Cancelar por violação de termos">
+                                                    <i class="fas fa-exclamation-triangle"></i>
+                                                </button>
+                                            }
+                                            
+                                            @if (adocao.PodeCancelar && !adocao.Status.Contains("Cancelado - Prazo vencido"))
+                                            {
+                                                <button class="botao-acao cancelar btn-cancelar-adocao" data-bs-toggle="modal" data-bs-target="#modalCancelarAdocao" data-adocao-id="@adocao.Id" title="Cancelar processo de adoção">
+                                                    <i class="fas fa-ban"></i>
+                                                </button>
+                                            }
+                                            
+                                            @if (adocao.Status.Contains("Cancelado - Prazo vencido"))
+                                            {
+                                                <button class="botao-acao reativar" data-action="mostrar-modal-reativar" data-adocao-id="@adocao.Id" title="Reativar adoção (decisão administrativa)">
+                                                    <i class="fas fa-undo"></i>
+                                                </button>
+                                            }
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                
+                @if (Model.Pagination.TotalPaginas > 0)
+                {
+                    <div class="paginacao-container w-100">
+                        <div class="paginacao mt-4">
+                            <nav aria-label="Navegação de páginas">
+                                <ul class="pagination justify-content-center flex-wrap">
+                                    @if (Model.Pagination.PaginaAtual > 1)
+                                    {
+                                        <li class="page-item">
+                                            <a class="page-link" href="@Url.Action("ListarAsync", new { 
+                                                filtroStatus = Model.FiltroStatus, 
+                                                filtroData = Model.FiltroData, 
+                                                pesquisa = Model.Pesquisa,
+                                                ordenarPor = Model.OrdenarPor,
+                                                direcaoOrdem = Model.DirecaoOrdem,
+                                                pagina = Model.Pagination.PaginaAtual - 1, 
+                                                itensPorPagina = Model.Pagination.ItensPorPagina 
+                                            })">
+                                                <i class="fas fa-chevron-left"></i>
+                                            </a>
+                                        </li>
+                                    }
+                                    else
+                                    {
+                                        <li class="page-item disabled">
+                                            <span class="page-link"><i class="fas fa-chevron-left"></i></span>
+                                        </li>
+                                    }
+
+                                    @for (int i = Math.Max(1, Model.Pagination.PaginaAtual - 2); i <= Math.Min(Model.Pagination.TotalPaginas, Model.Pagination.PaginaAtual + 2); i++)
+                                    {
+                                        <li class="page-item @(i == Model.Pagination.PaginaAtual ? "active" : "")">
+                                            <a class="page-link" href="@Url.Action("ListarAsync", new { 
+                                                filtroStatus = Model.FiltroStatus, 
+                                                filtroData = Model.FiltroData, 
+                                                pesquisa = Model.Pesquisa,
+                                                ordenarPor = Model.OrdenarPor,
+                                                direcaoOrdem = Model.DirecaoOrdem,
+                                                pagina = i, 
+                                                itensPorPagina = Model.Pagination.ItensPorPagina 
+                                            })">@i</a>
+                                        </li>
+                                    }
+
+                                    @if (Model.Pagination.PaginaAtual < Model.Pagination.TotalPaginas)
+                                    {
+                                        <li class="page-item">
+                                            <a class="page-link" href="@Url.Action("ListarAsync", new { 
+                                                filtroStatus = Model.FiltroStatus, 
+                                                filtroData = Model.FiltroData, 
+                                                pesquisa = Model.Pesquisa,
+                                                ordenarPor = Model.OrdenarPor,
+                                                direcaoOrdem = Model.DirecaoOrdem,
+                                                pagina = Model.Pagination.PaginaAtual + 1, 
+                                                itensPorPagina = Model.Pagination.ItensPorPagina 
+                                            })">
+                                                <i class="fas fa-chevron-right"></i>
+                                            </a>
+                                        </li>
+                                    }
+                                    else
+                                    {
+                                        <li class="page-item disabled">
+                                            <span class="page-link"><i class="fas fa-chevron-right"></i></span>
+                                        </li>
+                                    }
+                                </ul>
+                            </nav>
+                        </div>
+
+                        <div class="paginacao-info mt-3 d-flex justify-content-between align-items-center">
+                            <div class="info-paginacao">
+                                Exibindo <span>@Model.Adocoes.Count</span> de <span>@Model.Pagination.TotalItens</span> adoções
+                            </div>
+                            <div class="itens-por-pagina">
+                                <label for="selectItensPorPagina">Itens por página:</label>
+                                <select id="selectItensPorPagina" class="form-select form-select-sm">
+                                    @foreach (var opcao in new[] { 10, 20, 50 })
+                                    {
+                                        <option value="@opcao" selected="@(Model.Pagination.ItensPorPagina == opcao)">@opcao</option>
+                                    }
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="estado-vazio">
+                    <div class="icone-vazio">
+                        <i class="fas fa-file-alt"></i>
+                    </div>
+                    <h3 class="titulo-sem-adocoes">Não há adoções em andamento no momento.</h3>
+                    <p class="texto-sem-adocoes">Quando houver adoções em andamento, elas aparecerão aqui.</p>
+                </div>
+            }
+        </div>
+    </div>
+
+    @if (TempData["Sucesso"] != null)
+    {
+        <div class="d-none" data-tempdata-sucesso>@TempData["Sucesso"]</div>
+    }
+    @if (TempData["Erro"] != null)
+    {
+        <div class="d-none" data-tempdata-erro>@TempData["Erro"]</div>
+    }
+    @if (TempData["Aviso"] != null)
+    {
+        <div class="d-none" data-tempdata-aviso>@TempData["Aviso"]</div>
+    }
+
+    <div class="modal fade" id="modal-rejeitar-adocao" data-bs-backdrop="static" tabindex="-1" aria-labelledby="modalRejeitarLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <form method="post" id="form-rejeitar-adocao">
+                    @Html.AntiForgeryToken()
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="modalRejeitarLabel">Rejeitar Adoção</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p>Informe o motivo da rejeição desta adoção:</p>
+                        <div class="mb-3">
+                            <label for="motivoRejeicao" class="form-label">Motivo da rejeição <span class="text-danger">*</span></label>
+                            <textarea class="form-control" id="motivoRejeicao" name="motivo" rows="3" required 
+                                      placeholder="Explique o motivo da rejeição..."></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-danger">Rejeitar Adoção</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="modal fade" id="modalAcaoAdocao" data-bs-backdrop="static" tabindex="-1" aria-labelledby="modalAcaoAdocaoLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header" id="modalAcaoHeader">
+                    <h5 class="modal-title" id="tituloModalAcaoAdocao">Confirmar Ação</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="idAdocaoAcao" value="">
+                    <input type="hidden" id="tipoAcao" value="">
+                    
+                    <p id="textoConfirmacaoAcao">Você está prestes a realizar uma ação. Deseja continuar?</p>
+                    
+                    <div class="mb-3" id="campoObservacao">
+                        <label for="observacaoAcao" class="form-label">Motivo / Observações:</label>
+                        <textarea class="form-control" id="observacaoAcao" rows="3" placeholder="Informe o motivo ou observações adicionais..."></textarea>
+                        <div id="erroObservacao" class="texto-erro" style="display: none;">Este campo é obrigatório.</div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="botao-cancelar" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="botao-confirmar" id="botaoConfirmarAcao" data-action="executar-acao">Confirmar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    
+<div class="modal fade" id="modal-adoption-details" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable" id="modalDetalhesDialog">
+        <div class="modal-content modal-profissional">
+            
+            <div class="modal-header-pro">
+                <div class="header-content">
+                    <h3 class="modal-title-pro">Detalhes da Adoção</h3>
+                    <div class="adocao-id-badge" style="display: none;">
+                        <span class="badge-label">ID:</span>
+                        <span class="badge-number" id="adocaoId">-</span>
+                    </div>
+                </div>
+                <button type="button" class="btn-close-pro" id="btnCloseModal">✕</button>
+
+                <!-- Nova estrutura de tabs -->
+                <div class="modal-tabs">
+                    <nav class="tab-navigation" role="tablist" aria-label="Navegação de detalhes da adoção">
+                        <button class="tab-button active"
+                                data-tab="detalhes"
+                                type="button"
+                                role="tab"
+                                aria-controls="tab-detalhes"
+                                aria-selected="true"
+                                tabindex="0"
+                                onclick="
+                                    // Remove active class from all tabs
+                                    document.querySelectorAll('.tab-button').forEach(btn => {
+                                        btn.classList.remove('active');
+                                        btn.setAttribute('aria-selected', 'false');
+                                    });
+                                    // Add active to this tab
+                                    this.classList.add('active');
+                                    this.setAttribute('aria-selected', 'true');
+                                    // Hide all contents
+                                    document.querySelectorAll('.tab-content-pro').forEach(content => {
+                                        content.classList.remove('active');
+                                        content.setAttribute('aria-hidden', 'true');
+                                    });
+                                    // Show detalhes content
+                                    const target = document.getElementById('tab-detalhes');
+                                    if (target) {
+                                        target.classList.add('active');
+                                        target.setAttribute('aria-hidden', 'false');
+                                    }
+                                ">
+                            <span>Detalhes da Adoção</span>
+                        </button>
+                        <button class="tab-button"
+                                data-tab="formulario"
+                                type="button"
+                                role="tab"
+                                aria-controls="tab-formulario"
+                                aria-selected="false"
+                                tabindex="-1"
+                                onclick="
+                                    // Remove active class from all tabs
+                                    document.querySelectorAll('.tab-button').forEach(btn => {
+                                        btn.classList.remove('active');
+                                        btn.setAttribute('aria-selected', 'false');
+                                    });
+                                    // Add active to this tab
+                                    this.classList.add('active');
+                                    this.setAttribute('aria-selected', 'true');
+                                    // Hide all contents
+                                    document.querySelectorAll('.tab-content-pro').forEach(content => {
+                                        content.classList.remove('active');
+                                        content.setAttribute('aria-hidden', 'true');
+                                    });
+                                    // Show formulario content
+                                    const target = document.getElementById('tab-formulario');
+                                    if (target) {
+                                        target.classList.add('active');
+                                        target.setAttribute('aria-hidden', 'false');
+                                        console.log('Tab formulário ativada:', target);
+                                    } else {
+                                        console.error('Elemento tab-formulario não encontrado');
+                                    }
+                                ">
+                            <span>Formulário</span>
+                        </button>
+                    </nav>
+                </div>
+
+            </div>
+
+            <div class="modal-body-pro">
+
+                <div class="tab-content-pro active"
+                     id="tab-detalhes"
+                     role="tabpanel"
+                     aria-labelledby="detalhes-tab"
+                     aria-hidden="false">
+                
+                <div class="secao-principal">
+                    <div class="row g-4">
+                        
+                        <div class="col-md-6">
+                            <div class="info-card-pro pet-info">
+                                <div class="card-header-pro">
+                                    <h4 class="card-title-pro">Informações do Pet</h4>
+                                </div>
+                                <div class="card-body-pro">
+                                    <div class="pet-display">
+                                        <div class="pet-photo">
+                                            <img id="detalhesPetImagem" src="/imagens/pets/placeholder.jpg" 
+                                                 alt="Pet" class="pet-image">
+                                        </div>
+                                        <div class="pet-details">
+                                            <h5 id="detalhesNomePet" class="pet-name">Nome do Pet</h5>
+                                            <div class="pet-attributes">
+                                                <div class="attribute-row">
+                                                    <span class="attr-label">Espécie:</span>
+                                                    <span class="attr-value" id="detalhesEspeciePet">-</span>
+                                                </div>
+                                                <div class="attribute-row">
+                                                    <span class="attr-label">Raça:</span>
+                                                    <span class="attr-value" id="detalhesRacaPet">-</span>
+                                                </div>
+                                                <div class="attribute-row">
+                                                    <span class="attr-label">Porte:</span>
+                                                    <span class="attr-value" id="detalhesPortePet">-</span>
+                                                </div>
+                                                <div class="attribute-row">
+                                                    <span class="attr-label">Sexo:</span>
+                                                    <span class="attr-value" id="detalhesSexoPet">-</span>
+                                                </div>
+                                                <div class="attribute-row">
+                                                    <span class="attr-label">Idade:</span>
+                                                    <span class="attr-value" id="detalhesIdadePet">-</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="info-card-pro adotante-info">
+                                <div class="card-header-pro">
+                                    <h4 class="card-title-pro">Informações do Adotante</h4>
+                                </div>
+                                <div class="card-body-pro">
+                                    <div class="adotante-display">
+                                        <div class="adotante-avatar">
+                                            <div id="detalhesAdotanteAvatar" class="avatar-inicial">A</div>
+                                        </div>
+                                        <div class="adotante-details">
+                                            <h5 id="detalhesNomeAdotante" class="adotante-name">Nome do Adotante</h5>
+                                            <div class="contact-info-pro">
+                                                <div class="contact-row">
+                                                    <span class="contact-label">Email:</span>
+                                                    <span class="contact-value" id="detalhesEmailAdotante">email@exemplo.com</span>
+                                                </div>
+                                                <div class="contact-row">
+                                                    <span class="contact-label">Telefone:</span>
+                                                    <span class="contact-value" id="detalhesTelefoneAdotante">(00) 00000-0000</span>
+                                                </div>
+                                                <div class="contact-row">
+                                                    <span class="contact-label">CPF:</span>
+                                                    <span class="contact-value" id="detalhesCpfAdotante">000.000.000-00</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <div class="secao-timeline">
+                    <div class="timeline-header-pro">
+                        <h4 class="timeline-title-pro">Timeline do Processo</h4>
+                        <div class="timeline-subtitle">Acompanhe todas as etapas da adoção</div>
+                    </div>
+                    <div class="timeline-container-pro" id="timelineContainer">
+                    </div>
+                </div>
+
+                <div class="secao-historico-adotante">
+                    <div class="timeline-header-pro">
+                        <h4 class="timeline-title-pro">Histórico de Adoções do Adotante</h4>
+                        <div class="timeline-subtitle">Adoções anteriores realizadas por este usuário</div>
+                    </div>
+                    <div class="historico-container-pro" id="historicoAdotanteContainer">
+                        <div class="sem-historico">Carregando histórico...</div>
+                    </div>
+                </div>
+
+                <!-- SEÇÃO CONTRATO DIGITAL -->
+                <div class="secao-principal mt-4">
+                    <div class="contrato-container">
+                        <div class="contrato-header">
+                            <div class="contrato-title-section">
+                                <h4 class="contrato-title">Contrato Digital de Adoção</h4>
+                                <span class="contrato-subtitle" id="contratoStatusText">Documento legal digital</span>
+                            </div>
+                            <div class="contrato-actions" id="contratoActions" style="display: none;">
+                                <button class="btn-contrato-action btn-download" id="btnDownloadContrato" style="display: none;">
+                                    <span class="action-text">Download PDF</span>
+                                </button>
+                                <button class="btn-contrato-action btn-visualizar" id="btnVisualizarContrato" style="display: none;">
+                                    <span class="action-text">Visualizar PDF</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="contrato-status-content" id="contratoStatusInfo">
+                            <div class="status-message">
+                                <i class="fas fa-file-contract"></i>
+                                <span>Verificando status do contrato...</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                </div>
+
+                <div class="tab-content-pro"
+                     id="tab-formulario"
+                     role="tabpanel"
+                     aria-labelledby="formulario-tab"
+                     aria-hidden="true">
+                    <div class="formulario-container">
+                        <div class="formulario-header">
+                            <div class="formulario-title-section">
+                                <h4 class="formulario-title">Formulário de Adoção</h4>
+                                <p class="formulario-subtitle">Respostas fornecidas pelo candidato</p>
+                            </div>
+                        </div>
+
+                        <div class="formulario-content">
+                            
+                            <!-- INFORMAÇÕES PESSOAIS -->
+                            <div class="formulario-section">
+                                <h5 class="section-title">Informações Pessoais</h5>
+                                <div class="info-grid">
+                                    <div class="info-item">
+                                        <label class="info-label">Renda Mensal:</label>
+                                        <span class="info-value" id="formulario-renda">-</span>
+                                    </div>
+                                    <div class="info-item">
+                                        <label class="info-label">Número de Moradores:</label>
+                                        <span class="info-value" id="formulario-moradores">-</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- MORADIA -->
+                            <div class="formulario-section">
+                                <h5 class="section-title">Sobre a Moradia</h5>
+                                <div class="info-item-full">
+                                    <label class="info-label">Descrição da Moradia:</label>
+                                    <div class="info-value-text" id="formulario-descricao-moradia">-</div>
+                                </div>
+                                <div class="info-item-full">
+                                    <label class="info-label">Espaço Adequado:</label>
+                                    <div class="info-value-text" id="formulario-espaco-adequado">-</div>
+                                </div>
+                            </div>
+
+                            <!-- EXPERIÊNCIA -->
+                            <div class="formulario-section">
+                                <h5 class="section-title">Experiência com Animais</h5>
+                                <div class="info-item-full">
+                                    <label class="info-label">Experiência com Pets:</label>
+                                    <div class="info-value-text" id="formulario-experiencia">-</div>
+                                </div>
+                                <div class="info-grid">
+                                    <div class="info-item">
+                                        <label class="info-label">Tempo Disponível:</label>
+                                        <span class="info-value" id="formulario-tempo-disponivel">-</span>
+                                    </div>
+                                    <div class="info-item">
+                                        <label class="info-label">Já Teve Pet:</label>
+                                        <span class="info-value" id="formulario-teve-pet">-</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- MOTIVAÇÃO -->
+                            <div class="formulario-section">
+                                <h5 class="section-title">Motivação e Compromisso</h5>
+                                <div class="info-item-full">
+                                    <label class="info-label">Motivação para Adoção:</label>
+                                    <div class="info-value-text" id="formulario-motivacao">-</div>
+                                </div>
+                                <div class="info-item-full">
+                                    <label class="info-label">Condições Financeiras:</label>
+                                    <div class="info-value-text" id="formulario-condicoes-financeiras">-</div>
+                                </div>
+                                <div class="info-item-full">
+                                    <label class="info-label">Planejamento para Viagens:</label>
+                                    <div class="info-value-text" id="formulario-planejamento-viagens">-</div>
+                                </div>
+                            </div>
+
+                            <!-- OBSERVAÇÕES ADMINISTRATIVAS -->
+                            <div class="formulario-section" id="secao-observacoes-admin" style="display: none;">
+                                <h5 class="section-title">Observações Administrativas</h5>
+                                <div class="info-item-full">
+                                    <label class="info-label">Observações do Administrador:</label>
+                                    <div class="info-value-text observacao-admin" id="formulario-observacao-admin">-</div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div> <!-- Fim tab-formulario -->
+
+            </div>
+
+            <!-- FOOTER PROFISSIONAL -->
+            <div class="modal-footer-pro">
+                <button type="button" class="btn-fechar-pro" id="btnFecharModal">Fechar</button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- MODAL FINALIZAR ADOÇÃO -->
+<div class="modal fade" id="modalFinalizarAdocao" data-bs-backdrop="static" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title">
+                    Finalizar Adoção
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-info">
+                    Você está prestes a finalizar esta adoção. Esta ação indica que o pet foi entregue ao adotante com sucesso.
+                </div>
+                <form id="formFinalizarAdocao">
+                    <input type="hidden" id="adocaoIdFinalizar" name="adocaoId">
+                    <div class="mb-3">
+                        <label for="observacoesFinalizacao" class="form-label">Observações (opcional)</label>
+                        <textarea class="form-control" id="observacoesFinalizacao" name="observacoes" rows="3"
+                                  placeholder="Adicione observações sobre a finalização da adoção..."></textarea>
+                    </div>
+                    <div class="form-check" style="padding: 15px 20px;">
+                        <input class="form-check-input" type="checkbox" id="confirmFinalizacao" required style="transform: scale(1.5);">
+                        <label class="form-check-label fw-bold" for="confirmFinalizacao" style="font-size: 16px; margin-left: 8px;">
+                            <strong>Confirmo que o pet foi entregue ao adotante</strong>
+                        </label>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-success" id="confirmarFinalizacao">
+                    Finalizar Adoção
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL CANCELAR ADOÇÃO -->
+<div class="modal fade" id="modalCancelarAdocao" data-bs-backdrop="static" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">
+                    Cancelar Adoção
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    <strong>Atenção:</strong> Você está cancelando esta adoção. Esta ação não pode ser desfeita.
+                </div>
+                <form id="formCancelarAdocao">
+                    <input type="hidden" id="adocaoIdCancelar" name="adocaoId">
+                    <div class="mb-3">
+                        <label for="motivoCancelamento" class="form-label">Motivo do Cancelamento <span class="text-danger">*</span></label>
+                        <select class="form-select" id="motivoCancelamento" name="motivo" required>
+                            <option value="">Selecione o motivo</option>
+                            <option value="Desistência do adotante">Desistência do adotante</option>
+                            <option value="Não comparecimento">Não comparecimento</option>
+                            <option value="Incompatibilidade detectada">Incompatibilidade detectada</option>
+                            <option value="Decisão administrativa">Decisão administrativa</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="observacoesCancelamento" class="form-label">Observações Detalhadas <span class="text-danger">*</span></label>
+                        <textarea class="form-control" id="observacoesCancelamento" name="observacoes" rows="4" 
+                                  placeholder="Descreva detalhadamente o motivo do cancelamento..." required></textarea>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="confirmCancelamento" required>
+                        <label class="form-check-label" for="confirmCancelamento">
+                            <strong>Confirmo que desejo cancelar esta adoção</strong>
+                        </label>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Voltar</button>
+                <button type="button" class="btn btn-danger" id="confirmarCancelamento">
+                    Cancelar Adoção
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+    
+
+
+<!-- Modal para Reativar Adoção -->
+<div class="modal fade" id="modalReativar" data-bs-backdrop="static" tabindex="-1" aria-labelledby="modalReativarLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-warning text-dark">
+                <h5 class="modal-title" id="modalReativarLabel">
+                    <i class="fas fa-undo"></i> Reativar Adoção
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <strong>Decisão Administrativa:</strong> Você está reativando uma adoção que foi cancelada por não comparecimento.
+                </div>
+                <form id="formReativar">
+                    <input type="hidden" id="adocaoIdReativar">
+                    <div class="mb-3">
+                        <label for="motivoReativacao" class="form-label">Motivo da Reativação <span class="text-danger">*</span></label>
+                        <textarea class="form-control" id="motivoReativacao" rows="3" required 
+                                  placeholder="Explique o motivo da reativação desta adoção..."></textarea>
+                        <div class="form-text">Informe o motivo administrativo para reativar esta adoção.</div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-warning" data-action="confirmar-reativacao">
+                    <i class="fas fa-undo me-1"></i>Reativar Adoção
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // MOSTRAR NOTIFICAÇÕES DO TEMPDATA (MVC)
+            const sucessoMsg = document.querySelector('[data-tempdata-sucesso]')?.textContent;
+            const erroMsg = document.querySelector('[data-tempdata-erro]')?.textContent;
+            const avisoMsg = document.querySelector('[data-tempdata-aviso]')?.textContent;
+            
+            if (typeof toastr !== 'undefined') {
+                if (sucessoMsg) toastr.success(sucessoMsg);
+                if (erroMsg) toastr.error(erroMsg);
+                if (avisoMsg) toastr.warning(avisoMsg);
+            }
+
+            // CONFIGURAR MODAL DE REJEIÇÃO (MVC)
+            const botoesRejeitar = document.querySelectorAll('.btn-rejeitar-adocao');
+            const modalRejeitar = document.getElementById('modal-rejeitar-adocao');
+            const formRejeitar = document.getElementById('form-rejeitar-adocao');
+            
+            botoesRejeitar.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const adocaoId = this.dataset.adocaoId;
+                    formRejeitar.action = `/admin/adocoes/rejeitar/${adocaoId}`;
+                    
+                    if (typeof bootstrap !== 'undefined') {
+                        const modal = new bootstrap.Modal(modalRejeitar);
+                        modal.show();
+                    }
+                });
+            });
+
+            // CONFIGURAR VISUALIZAÇÃO DE DETALHES (MODAL) com tratamento de erro
+            try {
+                const botoesVisualizar = document.querySelectorAll('.btn-visualizar-adocao');
+                botoesVisualizar.forEach(btn => {
+                    btn.addEventListener('click', function(event) {
+                        event.preventDefault();
+                        event.stopPropagation();
+                        
+                        try {
+                            const adocaoId = this.dataset.adocaoId;
+                            if (adocaoId) {
+                                mostrarDetalhesAdocao(adocaoId);
+                            } else {
+                                console.error('ID da adoção não encontrado no botão');
+                                toastr.error('Erro: ID da adoção não encontrado');
+                            }
+                        } catch (error) {
+                            console.error('Erro ao processar clique no botão detalhes:', error);
+                            toastr.error('Erro ao abrir detalhes da adoção');
+                        }
+                    });
+                });
+            } catch (error) {
+                console.error('Erro ao configurar event listeners dos detalhes:', error);
+            }
+
+            // Função para mostrar detalhes da adoção no modal
+            function mostrarDetalhesAdocao(adocaoId) {
+                const modal = document.getElementById('modal-adoption-details');
+
+                // Debug: adicionar logs detalhados
+                console.log('=== INICIANDO ABERTURA DO MODAL ===');
+                console.log('Modal encontrado:', modal);
+                console.log('Adoção ID:', adocaoId);
+
+                // Limpar estados anteriores
+                if (window.allowModalClose) {
+                    window.allowModalClose();
+                }
+
+                // Criar nova instância do modal e abrir
+                const modalInstance = new bootstrap.Modal(modal, {
+                    backdrop: 'static',
+                    keyboard: false
+                });
+
+                // Adicionar listeners de debug
+                modal.addEventListener('show.bs.modal', function() {
+                    console.log('Modal começando a abrir');
+                });
+
+                modal.addEventListener('shown.bs.modal', function() {
+                    console.log('Modal totalmente aberto');
+                });
+
+                modal.addEventListener('hide.bs.modal', function(e) {
+                    console.log('Tentativa de fechamento detectada:', e);
+                });
+
+                modal.addEventListener('hidden.bs.modal', function() {
+                    console.log('Modal fechado completamente');
+                });
+
+                modalInstance.show();
+                console.log('Comando show() executado');
+
+                // Buscar dados via AJAX
+                fetch(`/admin/adocoes/detalhes/${adocaoId}`, {
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data && data.sucesso) {
+                        preencherDetalhesModal(data.dados);
+                    } else {
+                        throw new Error(data?.mensagem || 'Erro ao carregar detalhes da adoção');
+                    }
+                })
+                .catch(error => {
+                    console.error('Erro ao carregar detalhes:', error);
+                    toastr.error(error.message || 'Erro ao carregar detalhes');
+                    bootstrap.Modal.getInstance(modal).hide();
+                });
+            }
+
+            // Função para preencher o modal com os dados
+            function preencherDetalhesModal(dados) {
+                console.log('Preenchendo modal com dados:', dados);
+                
+                // Armazenar dados globalmente para uso nas abas
+                window.currentAdocaoData = dados;
+                
+                // Definir ID da adoção no header
+                if (dados.id) {
+                    document.getElementById('adocaoId').textContent = dados.id;
+                }
+                
+                // Preencher informações do pet
+                if (dados.pet) {
+                    document.getElementById('detalhesNomePet').textContent = dados.pet.nome || '-';
+                    document.getElementById('detalhesEspeciePet').textContent = dados.pet.especie || '-';
+                    document.getElementById('detalhesRacaPet').textContent = dados.pet.raca || '-';
+                    document.getElementById('detalhesPortePet').textContent = dados.pet.porte || '-';
+                    document.getElementById('detalhesSexoPet').textContent = dados.pet.sexo || '-';
+                    document.getElementById('detalhesIdadePet').textContent = dados.pet.idade ? `${dados.pet.idade} anos` : '-';
+                    
+                    // Imagem do pet
+                    const petImg = document.getElementById('detalhesPetImagem');
+                    if (dados.pet.imagem) {
+                        petImg.src = `/imagens/pets/${dados.pet.imagem}`;
+                        petImg.alt = dados.pet.nome;
+                        petImg.onerror = function() {
+                            this.src = '/imagens/pets/placeholder.jpg';
+                        };
+                    }
+                }
+
+                // Preencher informações do adotante
+                if (dados.usuario) {
+                    document.getElementById('detalhesNomeAdotante').textContent = dados.usuario.nome || '-';
+                    document.getElementById('detalhesEmailAdotante').textContent = dados.usuario.email || '-';
+                    document.getElementById('detalhesTelefoneAdotante').textContent = dados.usuario.telefone || '-';
+                    document.getElementById('detalhesCpfAdotante').textContent = dados.usuario.cpf || '-';
+
+                    // Avatar do adotante
+                    const avatarElement = document.getElementById('detalhesAdotanteAvatar');
+                    const inicial = dados.usuario.nome ? dados.usuario.nome.charAt(0).toUpperCase() : 'A';
+                    avatarElement.textContent = inicial;
+
+                    // Carregar histórico de adoções do adotante
+                    if (dados.usuario.id) {
+                        carregarHistoricoAdotante(dados.usuario.id);
+                    }
+                }
+                
+                // Criar timeline simples
+                criarTimelineSimples(dados);
+
+                // Preencher dados do formulário
+                preencherDadosFormulario(dados);
+                
+                // Configurar botões
+                configurarBotoesModal(dados);
+
+                // Configurar contratos
+                configurarContratoSimples(dados);
+            }
+
+            // Função para preencher dados do formulário
+            function preencherDadosFormulario(dados) {
+                if (dados.formulario) {
+                    const formulario = dados.formulario;
+                    
+                    // Informações pessoais
+                    document.getElementById('formulario-renda').textContent = 
+                        formulario.rendaMensal ? `R$ ${parseFloat(formulario.rendaMensal).toLocaleString('pt-BR', {minimumFractionDigits: 2})}` : '-';
+                    document.getElementById('formulario-moradores').textContent = formulario.numeroMoradores || '-';
+                    
+                    // Moradia
+                    document.getElementById('formulario-descricao-moradia').textContent = formulario.descricaoMoradia || '-';
+                    document.getElementById('formulario-espaco-adequado').textContent = formulario.espacoAdequado || '-';
+                    
+                    // Campos separados - agora diretos do banco de dados
+                    document.getElementById('formulario-tempo-disponivel').textContent = 
+                        formulario.tempoDisponivel ? `${formulario.tempoDisponivel}h por dia` : '-';
+                    document.getElementById('formulario-teve-pet').textContent = 
+                        formulario.tevePetAnterior || '-';
+                    
+                    // Experiência
+                    document.getElementById('formulario-experiencia').textContent = formulario.experienciaAnterior || '-';
+                    
+                    // Motivação e compromisso
+                    document.getElementById('formulario-motivacao').textContent = formulario.motivacaoAdocao || '-';
+                    document.getElementById('formulario-condicoes-financeiras').textContent = formulario.condicoesFinanceiras || '-';
+                    document.getElementById('formulario-planejamento-viagens').textContent = formulario.planejamentoViagens || '-';
+                    
+                    // Observações administrativas (se existirem)
+                    const observacaoAdmin = formulario.observacaoAdmin || formulario.observacaoAdminFormulario;
+                    if (observacaoAdmin) {
+                        document.getElementById('formulario-observacao-admin').textContent = observacaoAdmin;
+                        document.getElementById('secao-observacoes-admin').style.display = 'block';
+                    } else {
+                        document.getElementById('secao-observacoes-admin').style.display = 'none';
+                    }
+                } else {
+                    // Limpar campos se não houver dados
+                    const campos = [
+                        'formulario-renda', 'formulario-moradores', 'formulario-descricao-moradia',
+                        'formulario-espaco-adequado', 'formulario-experiencia', 'formulario-motivacao',
+                        'formulario-condicoes-financeiras', 'formulario-planejamento-viagens',
+                        'formulario-observacao-admin', 'formulario-tempo-disponivel', 'formulario-teve-pet'
+                    ];
+                    
+                    campos.forEach(campo => {
+                        const elemento = document.getElementById(campo);
+                        if (elemento) elemento.textContent = '-';
+                    });
+                    
+                    document.getElementById('secao-observacoes-admin').style.display = 'none';
+                }
+            }
+
+            // Função para carregar histórico de adoções do adotante
+            function carregarHistoricoAdotante(usuarioId) {
+                const container = document.getElementById('historicoAdotanteContainer');
+                
+                // Fazer requisição real para buscar histórico
+                fetch(`/admin/adocoes/HistoricoUsuario/${usuarioId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success && data.historico && data.historico.length > 0) {
+                            let html = '<div class="historico-lista">';
+                            data.historico.forEach(adocao => {
+                                html += `
+                                    <div class="historico-item">
+                                        <div class="historico-pet">
+                                            <strong>${adocao.petNome}</strong>
+                                            <span class="historico-especie">${adocao.petEspecie}</span>
+                                        </div>
+                                        <div class="historico-data">${new Date(adocao.dataAdocao).toLocaleDateString('pt-BR')}</div>
+                                        <div class="historico-status ${adocao.statusCss}">${adocao.status}</div>
+                                    </div>
+                                `;
+                            });
+                            html += '</div>';
+                            container.innerHTML = html;
+                        } else {
+                            container.innerHTML = '<div class="sem-historico">Nenhuma adoção anterior encontrada</div>';
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Erro ao carregar histórico:', error);
+                        container.innerHTML = '<div class="sem-historico">Nenhuma adoção anterior encontrada</div>';
+                    });
+            }
+
+            // Função para criar timeline profissional
+            function criarTimelineSimples(dados) {
+                const timelineContainer = document.getElementById('timelineContainer');
+                const statusTexto = dados.status || dados.statusAdocaoTexto;
+                
+                // Determinar etapa atual baseada no status
+                let etapaAtual = 1;
+                console.log('Status da adoção:', statusTexto, 'Contrato assinado:', dados.contratoAssinado);
+                
+                if (statusTexto === 'Finalizado') {
+                    etapaAtual = 6;
+                } else if (statusTexto === 'Aguardando Buscar') {
+                    etapaAtual = 5;
+                } else if (dados.contratoAssinado === true) {
+                    etapaAtual = 4;
+                } else if (statusTexto === 'Aguardando Contrato') {
+                    // Se está aguardando contrato, significa que foi aprovado mas ainda não assinou
+                    etapaAtual = 3;
+                } else if (statusTexto?.includes('Cancelad')) {
+                    // Se foi cancelado, mostrar só até onde chegou
+                    if (dados.contratoAssinado) etapaAtual = 4;
+                    else if (statusTexto?.includes('Aguardando Contrato')) etapaAtual = 3;
+                    else etapaAtual = 1;
+                } else {
+                    // Status padrão ou desconhecido - provavelmente ainda em análise
+                    etapaAtual = 1;
+                }
+                
+                // Definir passos da timeline profissional
+                const passos = [
+                    { nome: 'Formulário Enviado', descricao: 'Solicitação de adoção registrada', etapa: 1, data: dados.dataEnvio },
+                    { nome: 'Em Análise', descricao: 'Avaliação da documentação pela equipe', etapa: 2, data: null },
+                    { nome: 'Aguardando Contrato', descricao: 'Aprovado - aguardando assinatura do contrato', etapa: 3, data: dados.dataResposta },
+                    { nome: 'Contrato Assinado', descricao: 'Documento legal assinado pelo adotante', etapa: 4, data: dados.contrato?.dataAssinatura },
+                    { nome: 'Aguardando Buscar', descricao: 'Pet pronto para ser buscado pelo adotante', etapa: 5, data: null },
+                    { nome: 'Finalizado', descricao: 'Adoção concluída com sucesso', etapa: 6, data: dados.dataFinalizacao }
+                ];
+
+                timelineContainer.innerHTML = '';
+                
+                passos.forEach((passo, index) => {
+                    const isCompleted = passo.etapa <= etapaAtual;
+                    const isCurrent = passo.etapa === etapaAtual;
+                    const dataTexto = passo.data ? formatarData(passo.data) : '';
+                    
+                    const item = document.createElement('div');
+                    item.className = `timeline-item-pro ${isCompleted ? 'completed' : 'pending'} ${isCurrent ? 'current' : ''}`;
+                    
+                    item.innerHTML = `
+                        <div class="timeline-step-pro">
+                            <div class="step-number">${passo.etapa}</div>
+                            <div class="step-connector ${index === passos.length - 1 ? 'last' : ''}"></div>
+                        </div>
+                        <div class="timeline-content-pro">
+                            <div class="step-header">
+                                <h6 class="step-title">${passo.nome}</h6>
+                                <span class="step-status ${isCompleted ? 'status-completed' : isCurrent ? 'status-current' : 'status-pending'}">${isCompleted ? 'Concluído' : isCurrent ? 'Em andamento' : 'Pendente'}</span>
+                            </div>
+                            <p class="step-description">${passo.descricao}</p>
+                            ${dataTexto ? `<div class="step-date">${dataTexto}</div>` : ''}
+                        </div>
+                    `;
+                    timelineContainer.appendChild(item);
+                });
+            }
+
+            // Função auxiliar para formatar data
+            function formatarData(dataString) {
+                if (!dataString) return 'Pendente';
+                const data = new Date(dataString);
+                return data.toLocaleDateString('pt-BR') + ' às ' + data.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+            }
+
+            // Função para configurar botões do modal
+            function configurarBotoesModal(dados) {
+                // Sistema de Abas
+
+                // Botões de acesso rápido removidos
+
+                // Sistema de abas configurado acima
+                // Botões de ação agora estão na listagem principal
+            }
+
+
+            function configurarBotoesContrato() {
+                setTimeout(() => {
+                    const btnDownload = document.getElementById('btnDownloadContrato');
+                    const btnPrint = document.getElementById('btnPrintContrato');
+                    const contratoFrame = document.getElementById('contratoFrame');
+                    const adocaoIdElement = document.getElementById('adocaoId');
+                    
+                    // Verificar se elementos existem
+                    if (!adocaoIdElement) {
+                        console.error('Elemento adocaoId não encontrado');
+                        return;
+                    }
+                    
+                    const adocaoId = adocaoIdElement.textContent;
+                    
+                    console.log('Configurando botões contrato:', { btnDownload, btnPrint, contratoFrame });
+                    
+                    // Verificar status completo do contrato usando dados do modal
+                    const dadosModal = window.currentAdocaoData;
+                    if (dadosModal && dadosModal.contrato) {
+                        const contrato = dadosModal.contrato;
+                        
+                        // Verificar as 3 condições necessárias
+                        const contratoExiste = contrato.temContrato;
+                        const estaAssinado = contrato.estaAssinado;
+                        const temPDF = contrato.caminhoArquivoPdf && contrato.caminhoArquivoPdf.trim() !== '';
+                        
+                        console.log('Status do contrato:', { contratoExiste, estaAssinado, temPDF, contrato });
+                        console.log('Caminho PDF:', contrato.caminhoArquivoPdf);
+
+                        // Lógica mais flexível - mostrar se tem contrato assinado, mesmo sem PDF explícito
+                        const podeVisualizarContrato = contratoExiste && estaAssinado;
+
+                        if (!podeVisualizarContrato) {
+                            // Determinar mensagem específica
+                            let mensagem = '';
+                            let icone = '';
+
+                            if (!contratoExiste) {
+                                icone = '<div class="status-icon">!</div>';
+                                mensagem = 'Contrato ainda não foi gerado.<br><small>O contrato é criado automaticamente quando a adoção é aprovada.</small>';
+                            } else if (!estaAssinado) {
+                                icone = '<div class="status-icon">?</div>';
+                                mensagem = 'Contrato aguardando assinatura do adotante.<br><small>O usuário precisa assinar o contrato digitalmente.</small>';
+                            }
+                            
+                            // Desabilitar botões
+                            if (btnDownload) {
+                                btnDownload.disabled = true;
+                                btnDownload.innerHTML = '<span class="action-text">PDF Indisponível</span>';
+                                btnDownload.style.opacity = '0.5';
+                                btnDownload.style.cursor = 'not-allowed';
+                            }
+                            if (btnPrint) {
+                                btnPrint.disabled = true;
+                                btnPrint.innerHTML = '<span class="action-text">Impressão Indisponível</span>';
+                                btnPrint.style.opacity = '0.5';
+                                btnPrint.style.cursor = 'not-allowed';
+                            }
+                            
+                            // Mostrar mensagem específica no iframe
+                            if (contratoFrame) {
+                                contratoFrame.style.display = 'none';
+                            }
+                            const loading = document.getElementById('pdfLoading');
+                            if (loading) {
+                                loading.style.display = 'flex';
+                                loading.innerHTML = `
+                                    <div style="text-align: center; color: #64748b; max-width: 400px;">
+                                        ${icone}
+                                        <h4 style="color: #1e293b; margin-bottom: 16px;">Contrato Não Disponível</h4>
+                                        <p style="line-height: 1.6; margin: 0;">${mensagem}</p>
+                                    </div>
+                                `;
+                            }
+                            return;
+                        }
+                        
+                        // Contrato OK - habilitar funcionalidades normais
+                        console.log('Contrato disponível para visualização e download');
+
+                        // Verificar se contrato tem PDF no banco de dados
+                        const contratoId = contrato.id;
+                        const temPdfNoBanco = contrato.caminhoArquivoPdf && contrato.caminhoArquivoPdf.trim() !== '';
+
+                        console.log('Status do contrato no BD:', { contratoId, temPdfNoBanco, caminho: contrato.caminhoArquivoPdf });
+
+                        if (contratoFrame) {
+                            const contratoUrl = `/admin/adocoes/VisualizarContrato/${adocaoId}`;
+
+                            // PREVENIR FECHAMENTO DO MODAL DURANTE CARREGAMENTO
+                            const modal = document.getElementById('modal-adoption-details');
+                            console.log('Prevenindo fechamento automático do modal...');
+
+                            // Bloquear fechamento temporariamente
+                            if (modal) {
+                                modal.setAttribute('data-bs-backdrop', 'static');
+                                modal.setAttribute('data-bs-keyboard', 'false');
+
+                                // Remover todos os event listeners existentes de fechamento
+                                const newModal = modal.cloneNode(true);
+                                modal.parentNode.replaceChild(newModal, modal);
+
+                                // Criar nova instância do modal Bootstrap
+                                const modalInstance = new bootstrap.Modal(newModal, {
+                                    backdrop: 'static',
+                                    keyboard: false
+                                });
+
+                                // Adicionar event listener específico para prevenir fechamento
+                                let allowClose = false;
+                                newModal.addEventListener('hide.bs.modal', function(e) {
+                                    if (!allowClose) {
+                                        console.log('Tentativa de fechamento bloqueada durante carregamento PDF');
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                        return false;
+                                    }
+                                });
+
+                                // Função para permitir fechamento
+                                window.allowModalClose = function() {
+                                    allowClose = true;
+                                    console.log('Modal liberado para fechamento');
+                                };
+
+                                // Função para forçar fechamento se necessário
+                                window.forceCloseModal = function() {
+                                    allowClose = true;
+                                    modalInstance.hide();
+                                };
+                            }
+
+                            // Carregar PDF automaticamente ao abrir a aba
+                            const loading = document.getElementById('pdfLoading');
+                            if (loading) {
+                                loading.style.display = 'flex';
+                                loading.innerHTML = `
+                                    <div class="loading-spinner"></div>
+                                    <span>${temPdfNoBanco ? 'Carregando PDF...' : 'Gerando PDF...'}</span>
+                                `;
+                            }
+
+                            console.log('Iniciando carregamento do PDF:', contratoUrl);
+
+                            // Carregar PDF automaticamente
+                            contratoFrame.src = contratoUrl;
+                            contratoFrame.style.display = 'block';
+
+                            // Sistema de timeout para garantir que o loading seja removido
+                            let pdfLoadTimeout = setTimeout(() => {
+                                console.log('Timeout do PDF - assumindo carregamento completo após 3 segundos');
+                                finalizarCarregamentoPDF();
+                            }, 3000);
+
+                            function finalizarCarregamentoPDF() {
+                                clearTimeout(pdfLoadTimeout);
+
+                                console.log('Finalizando carregamento do PDF');
+                                if (loading) {
+                                    loading.style.display = 'none';
+                                }
+
+                                // REMOVER PROTEÇÃO APÓS CARREGAMENTO usando função global
+                                if (window.allowModalClose) {
+                                    setTimeout(() => {
+                                        window.allowModalClose();
+                                    }, 500);
+                                }
+
+                                // Habilitar botão de impressão após carregar
+                                if (btnPrint) {
+                                    btnPrint.disabled = false;
+                                    btnPrint.innerHTML = '<span class="action-text">Imprimir</span>';
+                                    btnPrint.style.opacity = '1';
+                                    btnPrint.style.cursor = 'pointer';
+                                    btnPrint.onclick = () => {
+                                        try {
+                                            contratoFrame.contentWindow.print();
+                                        } catch (e) {
+                                            window.open(contratoUrl, '_blank');
+                                        }
+                                    };
+                                }
+                            }
+
+                            // Múltiplos eventos para garantir detecção de carregamento
+                            contratoFrame.onload = finalizarCarregamentoPDF;
+                            contratoFrame.addEventListener('load', finalizarCarregamentoPDF);
+
+                            // Verificação adicional para PDFs que podem não disparar onload
+                            setTimeout(() => {
+                                try {
+                                    if (contratoFrame.contentDocument || contratoFrame.contentWindow) {
+                                        console.log('PDF provavelmente carregado - verificação por timeout');
+                                        finalizarCarregamentoPDF();
+                                    }
+                                } catch (e) {
+                                    // Cross-origin ou outras restrições - assumir carregado
+                                    finalizarCarregamentoPDF();
+                                }
+                            }, 2000);
+
+                            contratoFrame.onerror = function() {
+                                console.error('Erro ao carregar PDF automaticamente - liberando modal para fechamento');
+
+                                clearTimeout(pdfLoadTimeout);
+
+                                // Permitir fechamento do modal em caso de erro
+                                if (window.allowModalClose) {
+                                    window.allowModalClose();
+                                }
+
+                                if (loading) {
+                                    loading.innerHTML = `
+                                        <div style="text-align: center; color: #64748b; padding: 40px;">
+                                            <div style="font-size: 48px; margin-bottom: 20px;">!</div>
+                                            <h4 style="color: #dc2626; margin-bottom: 16px;">Erro ao Carregar PDF</h4>
+                                            <p style="line-height: 1.6; margin: 0;">Não foi possível carregar o PDF automaticamente.</p>
+                                        </div>
+                                    `;
+                                }
+                            };
+
+                            // Atualizar link de fallback
+                            const contratoLink = document.getElementById('contratoLink');
+                            if (contratoLink) {
+                                contratoLink.href = contratoUrl;
+                            }
+
+                            // Configurar botão de Download PDF (simples download)
+                            if (btnDownload) {
+                                btnDownload.disabled = false;
+                                btnDownload.style.opacity = '1';
+                                btnDownload.style.cursor = 'pointer';
+                                btnDownload.onclick = function() {
+                                    console.log('Fazendo download do PDF...');
+                                    window.open(contratoUrl, '_blank');
+                                };
+                            }
+
+                            // Botão de impressão inicialmente desabilitado (será habilitado após carregar)
+                            if (btnPrint) {
+                                btnPrint.disabled = true;
+                                btnPrint.innerHTML = '<span class="action-text">Carregando...</span>';
+                                btnPrint.style.opacity = '0.5';
+                                btnPrint.style.cursor = 'not-allowed';
+                            }
+                        }
+                    } else {
+                        console.log('Dados do contrato não encontrados no modal');
+                        
+                        // Mostrar mensagem de contrato não disponível
+                        if (contratoFrame) {
+                            contratoFrame.style.display = 'none';
+                        }
+                        const loading = document.getElementById('pdfLoading');
+                        if (loading) {
+                            loading.style.display = 'flex';
+                            loading.innerHTML = `
+                                <div style="text-align: center; color: #64748b; max-width: 400px;">
+                                    <div class="status-icon">?</div>
+                                    <h4 style="color: #1e293b; margin-bottom: 16px;">Dados do Contrato Indisponíveis</h4>
+                                    <p style="line-height: 1.6; margin: 0;">Não foi possível carregar as informações do contrato para esta adoção.</p>
+                                </div>
+                            `;
+                        }
+                        return;
+                    }
+                    
+                    if (btnDownload && !btnDownload.hasAttribute('data-configured')) {
+                        btnDownload.setAttribute('data-configured', 'true');
+                        btnDownload.addEventListener('click', function() {
+                            const adocaoId = document.getElementById('adocaoId').textContent;
+                            console.log('Tentando download para adoção ID:', adocaoId);
+                            
+                            // Verificar primeiro se o contrato existe e está assinado
+                            fetch(`/admin/adocoes/VisualizarContrato/${adocaoId}`)
+                                .then(response => {
+                                    if (response.ok) {
+                                        // Contrato existe, tentar download
+                                        const downloadUrl = `/admin/adocoes/DownloadContrato/${adocaoId}`;
+                                        const link = document.createElement('a');
+                                        link.href = downloadUrl;
+                                        link.target = '_blank';
+                                        document.body.appendChild(link);
+                                        link.click();
+                                        document.body.removeChild(link);
+                                        console.log('Download iniciado');
+                                    } else {
+                                        alert('Contrato não disponível para download.\n\nMotivos possíveis:\n• Contrato ainda não foi assinado\n• PDF ainda não foi gerado\n• Adoção ainda está em processamento');
+                                    }
+                                })
+                                .catch(error => {
+                                    console.log('Erro ao verificar contrato:', error);
+                                    alert('Não foi possível verificar o contrato.\n\nTente novamente ou entre em contato com o suporte.');
+                                });
+                        });
+                        console.log('Botão download configurado');
+                    }
+                    
+                    if (btnPrint && !btnPrint.hasAttribute('data-configured')) {
+                        btnPrint.setAttribute('data-configured', 'true');
+                        btnPrint.addEventListener('click', function() {
+                            console.log('Tentando imprimir...');
+                            if (contratoFrame && contratoFrame.contentDocument) {
+                                contratoFrame.contentWindow.print();
+                            } else {
+                                const adocaoId = document.getElementById('adocaoId').textContent;
+                                const printUrl = `/admin/adocoes/VisualizarContrato/${adocaoId}`;
+                                window.open(printUrl, '_blank');
+                            }
+                        });
+                        console.log('Botão print configurado');
+                    }
+                }, 100);
+            }
+
+            // Nova função simples para contratos com estilo original
+            function configurarContratoSimples(dados) {
+                const contratoStatusInfo = document.getElementById('contratoStatusInfo');
+                const contratoStatusText = document.getElementById('contratoStatusText');
+                const contratoActions = document.getElementById('contratoActions');
+                const btnDownloadContrato = document.getElementById('btnDownloadContrato');
+                const btnVisualizarContrato = document.getElementById('btnVisualizarContrato');
+
+                if (!contratoStatusInfo || !contratoActions) return;
+
+                console.log('Configurando contrato simples:', dados.contrato);
+
+                if (dados.contrato && dados.contrato.temContrato && dados.contrato.estaAssinado) {
+                    // Contrato disponível
+                    const adocaoId = document.getElementById('adocaoId').textContent;
+                    const contratoUrl = `/admin/adocoes/VisualizarContrato/${adocaoId}`;
+
+                    // Atualizar subtitle
+                    if (contratoStatusText) {
+                        contratoStatusText.textContent = 'Contrato assinado e disponível';
+                        contratoStatusText.style.color = '#28a745';
+                    }
+
+                    // Limpar status - sem texto
+                    contratoStatusInfo.innerHTML = '';
+
+                    // Mostrar e configurar botões
+                    contratoActions.style.display = 'flex';
+
+                    if (btnDownloadContrato) {
+                        btnDownloadContrato.style.display = 'block';
+                        btnDownloadContrato.onclick = function() {
+                            console.log('Fazendo download do contrato PDF por baixo dos panos...');
+
+                            // Mostrar loading no botão
+                            const originalText = btnDownloadContrato.innerHTML;
+                            btnDownloadContrato.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Baixando...';
+                            btnDownloadContrato.disabled = true;
+
+                            // Fazer download via fetch
+                            fetch(contratoUrl)
+                                .then(response => {
+                                    if (!response.ok) {
+                                        throw new Error(`Erro ao baixar PDF: ${response.status}`);
+                                    }
+                                    return response.blob();
+                                })
+                                .then(blob => {
+                                    // Criar link temporário para download
+                                    const url = window.URL.createObjectURL(blob);
+                                    const link = document.createElement('a');
+                                    link.href = url;
+                                    link.download = `Contrato_Adocao_${adocaoId}.pdf`;
+                                    document.body.appendChild(link);
+                                    link.click();
+                                    document.body.removeChild(link);
+                                    window.URL.revokeObjectURL(url);
+
+                                    // Mostrar mensagem de sucesso
+                                    if (typeof toastr !== 'undefined') {
+                                        toastr.success('PDF baixado com sucesso!');
+                                    }
+                                })
+                                .catch(error => {
+                                    console.error('Erro ao baixar PDF:', error);
+                                    if (typeof toastr !== 'undefined') {
+                                        toastr.error('Erro ao baixar PDF: ' + error.message);
+                                    } else {
+                                        alert('Erro ao baixar PDF: ' + error.message);
+                                    }
+                                })
+                                .finally(() => {
+                                    // Restaurar botão
+                                    btnDownloadContrato.innerHTML = originalText;
+                                    btnDownloadContrato.disabled = false;
+                                });
+                        };
+                    }
+
+                    if (btnVisualizarContrato) {
+                        btnVisualizarContrato.style.display = 'block';
+                        btnVisualizarContrato.onclick = function() {
+                            console.log('Visualizando contrato PDF em nova aba...');
+                            window.open(contratoUrl, '_blank');
+                        };
+                    }
+
+                } else if (dados.contrato && dados.contrato.temContrato && !dados.contrato.estaAssinado) {
+                    // Contrato não assinado
+                    if (contratoStatusText) {
+                        contratoStatusText.textContent = 'Aguardando assinatura do adotante';
+                        contratoStatusText.style.color = '#ffc107';
+                    }
+
+                    contratoStatusInfo.innerHTML = `
+                        <div style="text-align: center; padding: 40px;">
+                            <div style="font-size: 48px; margin-bottom: 20px; color: #ffc107;">⏳</div>
+                            <h4 style="color: #ffc107; margin-bottom: 16px;">Aguardando Assinatura</h4>
+                            <p style="line-height: 1.6; margin: 0; color: #666;">O contrato foi gerado e enviado para o adotante. Aguardando assinatura digital.</p>
+                        </div>
+                    `;
+                } else {
+                    // Contrato não disponível
+                    if (contratoStatusText) {
+                        contratoStatusText.textContent = 'Contrato ainda não foi gerado';
+                        contratoStatusText.style.color = '#6c757d';
+                    }
+
+                    contratoStatusInfo.innerHTML = `
+                        <div style="text-align: center; padding: 40px;">
+                            <div style="font-size: 48px; margin-bottom: 20px; color: #6c757d;">📄</div>
+                            <h4 style="color: #6c757d; margin-bottom: 16px;">Contrato Não Disponível</h4>
+                            <p style="line-height: 1.6; margin: 0; color: #666;">O contrato será gerado automaticamente quando a adoção for aprovada.</p>
+                        </div>
+                    `;
+                }
+            }
+
+
+            // Função removida - botões de ação agora estão na listagem principal
+
+            // Função para finalizar adoção
+            function finalizarAdocao(adocaoId, observacoes) {
+                const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+                const btnFinalizar = document.getElementById('confirmarFinalizacao');
+
+                // Obter data e hora atuais
+                const agora = new Date();
+                const dataFinalizacao = agora.toISOString();
+
+                fetch(`/admin/adocoes/finalizar/${adocaoId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'RequestVerificationToken': token
+                    },
+                    body: JSON.stringify({
+                        observacoes: observacoes,
+                        dataFinalizacao: dataFinalizacao
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    // Reabilitar botão
+                    if (btnFinalizar) {
+                        btnFinalizar.disabled = false;
+                        btnFinalizar.textContent = 'Finalizar Adoção';
+                    }
+
+                    if (data.sucesso) {
+                        // Fechar modal de finalizar de forma segura
+                        const modalFinalizar = document.getElementById('modalFinalizarAdocao');
+                        if (modalFinalizar) {
+                            let modalInstance = bootstrap.Modal.getInstance(modalFinalizar);
+                            if (!modalInstance) {
+                                modalInstance = new bootstrap.Modal(modalFinalizar);
+                            }
+                            modalInstance.hide();
+                        }
+
+                        // Fechar modal de detalhes de forma segura
+                        const modalDetalhes = document.getElementById('modal-adoption-details');
+                        if (modalDetalhes) {
+                            let modalInstance = bootstrap.Modal.getInstance(modalDetalhes);
+                            if (!modalInstance) {
+                                modalInstance = new bootstrap.Modal(modalDetalhes);
+                            }
+                            modalInstance.hide();
+                        }
+
+                        toastr.success(data.mensagem || 'Adoção finalizada com sucesso!');
+                        setTimeout(() => window.location.reload(), 1500);
+                    } else {
+                        toastr.error(data.mensagem || 'Erro ao finalizar adoção.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Erro:', error);
+                    // Reabilitar botão em caso de erro
+                    if (btnFinalizar) {
+                        btnFinalizar.disabled = false;
+                        btnFinalizar.textContent = 'Finalizar Adoção';
+                    }
+                    toastr.error('Erro ao processar solicitação.');
+                });
+            }
+
+            // Função para cancelar adoção
+            function cancelarAdocao(adocaoId, motivo, observacoes) {
+                const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+                
+                fetch(`/admin/adocoes/cancelar/${adocaoId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'RequestVerificationToken': token
+                    },
+                    body: JSON.stringify({ motivo: motivo, observacoes: observacoes })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    bootstrap.Modal.getInstance(document.getElementById('modalCancelarAdocao')).hide();
+                    bootstrap.Modal.getInstance(document.getElementById('modal-adoption-details')).hide();
+                    
+                    if (data.sucesso) {
+                        toastr.success(data.mensagem || 'Adoção cancelada com sucesso!');
+                        setTimeout(() => window.location.reload(), 1500);
+                    } else {
+                        toastr.error(data.mensagem || 'Erro ao cancelar adoção.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Erro:', error);
+                    toastr.error('Erro ao processar solicitação.');
+                });
+            }
+
+            // Handler global para erros não capturados e prevenir erros de canal assíncrono
+            window.addEventListener('error', function(event) {
+                if (event.error && event.error.message.includes('message channel closed')) {
+                    // Silenciar erros de extensão do browser
+                    event.preventDefault();
+                    return;
+                }
+                console.error('Erro global capturado:', event.error);
+            });
+
+            window.addEventListener('unhandledrejection', function(event) {
+                if (event.reason && event.reason.message && event.reason.message.includes('message channel closed')) {
+                    // Silenciar erros de extensão do browser
+                    event.preventDefault();
+                    return;
+                }
+                console.error('Promise rejeitada não tratada:', event.reason);
+            });
+
+            // As abas agora usam Bootstrap nativo, não precisamos de JS customizado
+
+            // BOTÕES FINALIZAR E CANCELAR AGORA USAM MODAIS (configurados acima)
+
+            // Botões de cancelamento por violação
+            const botoesViolacao = document.querySelectorAll('.btn-cancelar-violacao');
+            botoesViolacao.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const adocaoId = this.dataset.adocaoId;
+                    
+                    // Confirmar ação crítica
+                    if (!confirm('ATENÇÃO: Você está prestes a cancelar uma adoção finalizada por violação de termos.\n\nEsta ação é IRREVERSÍVEL e muito séria.\n\nTem certeza que deseja continuar?')) {
+                        return;
+                    }
+                    
+                    const motivo = prompt('Descreva detalhadamente a violação que motivou este cancelamento:\n\n(Esta informação será registrada no sistema e enviada ao adotante)');
+                    
+                    if (motivo && motivo.trim().length > 10) {
+                        // Criar form dinamicamente e submeter
+                        const form = document.createElement('form');
+                        form.method = 'POST';
+                        form.action = `/admin/adocoes/cancelar-por-violacao/${adocaoId}`;
+                        
+                        const motivoInput = document.createElement('input');
+                        motivoInput.type = 'hidden';
+                        motivoInput.name = 'motivo';
+                        motivoInput.value = motivo;
+                        form.appendChild(motivoInput);
+                        
+                        const token = document.querySelector('input[name="__RequestVerificationToken"]');
+                        if (token) {
+                            const tokenInput = document.createElement('input');
+                            tokenInput.type = 'hidden';
+                            tokenInput.name = '__RequestVerificationToken';
+                            tokenInput.value = token.value;
+                            form.appendChild(tokenInput);
+                        }
+                        
+                        document.body.appendChild(form);
+                        form.submit();
+                    } else if (motivo !== null) {
+                        alert('É obrigatório fornecer uma descrição detalhada da violação (mínimo 10 caracteres).');
+                    }
+                });
+            });
+
+            // CONFIGURAR TOASTR
+            if (typeof toastr !== 'undefined') {
+                toastr.options = {
+                    "closeButton": true,
+                    "progressBar": true,
+                    "positionClass": "toast-top-right",
+                    "timeOut": "5000",
+                    "preventDuplicates": true
+                };
+            }
+
+            // Configurar eventos dos modais para capturar ID da adoção
+            const modalFinalizar = document.getElementById('modalFinalizarAdocao');
+            if (modalFinalizar) {
+                modalFinalizar.addEventListener('show.bs.modal', function(event) {
+                    const button = event.relatedTarget; // Botão que acionou o modal
+                    const adocaoId = button.getAttribute('data-adocao-id');
+                    
+                    // Definir o ID da adoção no modal
+                    document.getElementById('adocaoIdFinalizar').value = adocaoId;
+                    
+                    // Limpar campos
+                    document.getElementById('observacoesFinalizacao').value = '';
+                    document.getElementById('confirmFinalizacao').checked = false;
+                });
+            }
+
+            const modalCancelar = document.getElementById('modalCancelarAdocao');
+            if (modalCancelar) {
+                modalCancelar.addEventListener('show.bs.modal', function(event) {
+                    const button = event.relatedTarget; // Botão que acionou o modal
+                    const adocaoId = button.getAttribute('data-adocao-id');
+                    
+                    // Definir o ID da adoção no modal
+                    document.getElementById('adocaoIdCancelar').value = adocaoId;
+                    
+                    // Limpar campos
+                    document.getElementById('motivoCancelamento').value = '';
+                    document.getElementById('observacoesCancelamento').value = '';
+                    document.getElementById('confirmCancelamento').checked = false;
+                });
+            }
+
+            // CONFIGURAR BOTÕES CUSTOMIZADOS DO MODAL DE DETALHES
+            const btnCloseModal = document.getElementById('btnCloseModal');
+            const btnFecharModal = document.getElementById('btnFecharModal');
+
+            if (btnCloseModal) {
+                btnCloseModal.addEventListener('click', function() {
+                    console.log('Botão X clicado - tentando fechar modal');
+
+                    // Sempre permitir fechar
+                    const modal = document.getElementById('modal-adoption-details');
+                    if (modal) {
+                        const modalInstance = bootstrap.Modal.getInstance(modal);
+                        if (modalInstance) {
+                            modalInstance.hide();
+                        }
+                    }
+                });
+            }
+
+            if (btnFecharModal) {
+                btnFecharModal.addEventListener('click', function() {
+                    console.log('Botão Fechar clicado - tentando fechar modal');
+
+                    // Sempre permitir fechar
+                    const modal = document.getElementById('modal-adoption-details');
+                    if (modal) {
+                        const modalInstance = bootstrap.Modal.getInstance(modal);
+                        if (modalInstance) {
+                            modalInstance.hide();
+                        }
+                    }
+                });
+            }
+
+            // Event listener para botão Finalizar Adoção
+            const btnFinalizarAdocao = document.getElementById('confirmarFinalizacao');
+            if (btnFinalizarAdocao) {
+                btnFinalizarAdocao.addEventListener('click', function() {
+                    console.log('Botão Finalizar Adoção clicado');
+
+                    // Verificar se o checkbox está marcado
+                    const checkbox = document.getElementById('confirmFinalizacao');
+                    if (!checkbox || !checkbox.checked) {
+                        alert('Por favor, confirme que o pet foi entregue ao adotante.');
+                        return;
+                    }
+
+                    // Obter dados
+                    const adocaoId = document.getElementById('adocaoIdFinalizar')?.value;
+                    const observacoes = document.getElementById('observacoesFinalizacao')?.value || '';
+
+                    if (!adocaoId) {
+                        console.error('ID da adoção não encontrado');
+                        alert('Erro: ID da adoção não encontrado.');
+                        return;
+                    }
+
+                    console.log('Finalizando adoção:', adocaoId, 'Observações:', observacoes);
+
+                    // Desabilitar botão para evitar duplo clique
+                    this.disabled = true;
+                    this.textContent = 'Finalizando...';
+
+                    // Chamar função de finalizar
+                    finalizarAdocao(adocaoId, observacoes);
+                });
+            }
+
+            // Event listener para botão Cancelar Adoção
+            const btnCancelarAdocao = document.getElementById('confirmarCancelamento');
+            if (btnCancelarAdocao) {
+                btnCancelarAdocao.addEventListener('click', function() {
+                    console.log('Botão Cancelar Adoção clicado');
+
+                    // Verificar se o checkbox está marcado
+                    const checkbox = document.getElementById('confirmCancelamento');
+                    if (!checkbox || !checkbox.checked) {
+                        alert('Por favor, confirme que deseja cancelar esta adoção.');
+                        return;
+                    }
+
+                    // Obter dados
+                    const adocaoId = document.getElementById('adocaoIdCancelar')?.value;
+                    const motivo = document.getElementById('motivoCancelamento')?.value || '';
+                    const observacoes = document.getElementById('observacoesCancelamento')?.value || '';
+
+                    if (!adocaoId) {
+                        console.error('ID da adoção não encontrado');
+                        alert('Erro: ID da adoção não encontrado.');
+                        return;
+                    }
+
+                    if (!motivo.trim()) {
+                        alert('Por favor, selecione um motivo para o cancelamento.');
+                        return;
+                    }
+
+                    console.log('Cancelando adoção:', adocaoId, 'Motivo:', motivo, 'Observações:', observacoes);
+
+                    // Desabilitar botão para evitar duplo clique
+                    this.disabled = true;
+                    this.textContent = 'Cancelando...';
+
+                    // Chamar função de cancelar
+                    cancelarAdocao(adocaoId, motivo, observacoes);
+                });
+            }
+        });
+
+
+        // Funções de filtro igual à view de formulários
+        function filtrarAdocoes() {
+            const searchTerm = document.getElementById('search-input').value.toLowerCase();
+            const statusFilter = document.getElementById('filter-status').value.toLowerCase();
+            const dataFilter = document.getElementById('filter-data').value;
+            
+            const rows = document.querySelectorAll('.tabela tbody tr');
+            
+            rows.forEach(row => {
+                const nomeAdotante = row.querySelector('.nome')?.textContent.toLowerCase() || '';
+                const emailAdotante = row.querySelector('.email')?.textContent.toLowerCase() || '';
+                const nomePet = row.querySelector('.info-pet .nome')?.textContent.toLowerCase() || '';
+                const status = row.dataset.status?.toLowerCase() || '';
+                
+                const matchesSearch = nomeAdotante.includes(searchTerm) || 
+                                    emailAdotante.includes(searchTerm) || 
+                                    nomePet.includes(searchTerm);
+                
+                const matchesStatus = !statusFilter || status.includes(statusFilter);
+                
+                // Filtro de data seria implementado baseado na DataEnvio
+                const matchesData = true; // Simplificado para agora
+                
+                if (matchesSearch && matchesStatus && matchesData) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        }
+        
+        function limparFiltros() {
+            document.getElementById('search-input').value = '';
+            document.getElementById('filter-status').value = '';
+            document.getElementById('filter-data').value = '';
+            
+            const rows = document.querySelectorAll('.tabela tbody tr');
+            rows.forEach(row => {
+                row.style.display = '';
+            });
+        }
+    </script>
+}

@@ -1,0 +1,1196 @@
+@using CaotinhoAuMiau.Models
+@using System.Linq
+@using CaotinhoAuMiau.Models.ViewModels.Usuario
+@using CaotinhoAuMiau.Models.Enums
+@using CaotinhoAuMiau.Utils
+@using CaotinhoAuMiau.Data
+@using Microsoft.Extensions.DependencyInjection
+@model AdocaoListaViewModel
+@inject Microsoft.AspNetCore.Antiforgery.IAntiforgery antiforgery
+
+@{
+    ViewData["Title"] = "Dashboard do Usuário";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var requestToken = antiforgery.GetAndStoreTokens(Context).RequestToken;
+    var usuarioId = User.ObterIdUsuario();
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/usuario/usuario-adocoes.css" asp-append-version="true" />
+}
+
+<input type="hidden" id="userId" value="@usuarioId" />
+<input type="hidden" id="userCpf" value="@ViewBag.UsuarioCPF" />
+
+<!-- DASHBOARD PRINCIPAL FULL-WIDTH -->
+<div class="main-dashboard">
+    <!-- HEADER DO DASHBOARD -->
+    <header class="dashboard-top">
+        <div class="dashboard-welcome">
+            <div class="welcome-avatar">
+                @if (!string.IsNullOrEmpty(Model.FotoPerfilUsuario))
+                {
+                    <img src="~/imagens/perfil/@Model.FotoPerfilUsuario" alt="Foto de perfil" class="avatar-image" />
+                }
+                else
+                {
+                    <span class="avatar-letter">@((!string.IsNullOrEmpty(Model.UsuarioNome) && Model.UsuarioNome.Length > 0) ? Model.UsuarioNome.Substring(0, 1).ToUpper() : "U")</span>
+                }
+            </div>
+            <div class="welcome-content">
+                <h1 class="welcome-title">Olá, @Model.UsuarioNome!</h1>
+                <p class="welcome-subtitle">Acompanhe o status das suas solicitações de adoção</p>
+            </div>
+        </div>
+        
+        <!-- TÍTULO DA SEÇÃO -->
+        <div class="page-title">
+            <h2 class="section-title">
+                <i class="fas fa-heart"></i>
+                Minhas Adoções
+                <span class="count-badge">@Model.Statistics.TotalSolicitacoes</span>
+            </h2>
+        </div>
+        
+    </header>
+
+    <!-- CONTEÚDO PRINCIPAL -->
+    <main class="dashboard-content">
+        <!-- SEÇÃO ADOÇÕES -->
+            <!-- ESTATÍSTICAS -->
+            <div class="stats-grid">
+                <div class="stat-card stat-card--primary">
+                    <div class="stat-icon">
+                        <i class="fas fa-file-alt"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 class="stat-number">@Model.Statistics.TotalSolicitacoes</h3>
+                        <p class="stat-label">Total de Solicitações</p>
+                    </div>
+                </div>
+                
+                <div class="stat-card stat-card--warning">
+                    <div class="stat-icon">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 class="stat-number">@Model.Statistics.EmAnalise</h3>
+                        <p class="stat-label">Em Análise</p>
+                    </div>
+                </div>
+                
+                <div class="stat-card stat-card--success">
+                    <div class="stat-icon">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 class="stat-number">@Model.Statistics.Aprovadas</h3>
+                        <p class="stat-label">Aprovadas</p>
+                    </div>
+                </div>
+                
+                <div class="stat-card stat-card--accent">
+                    <div class="stat-icon">
+                        <i class="fas fa-heart"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 class="stat-number">@Model.Statistics.Concluidas</h3>
+                        <p class="stat-label">Concluídas</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- CONTROLES -->
+            <div class="section-controls">
+                <form method="get" action="/usuario/adocoes" class="filters-form">
+                    <div class="filter-buttons">
+                        <a href="/usuario/adocoes?pesquisa=@Model.Pesquisa&ordenarPor=@Model.OrdenarPor&direcaoOrdem=@Model.DirecaoOrdem" 
+                           class="filter-btn @(string.IsNullOrEmpty(Model.FiltroStatus) ? "active" : "")">
+                            Todos (@Model.Statistics.TotalSolicitacoes)
+                        </a>
+                        <a href="/usuario/adocoes?filtroStatus=Pendente&pesquisa=@Model.Pesquisa&ordenarPor=@Model.OrdenarPor&direcaoOrdem=@Model.DirecaoOrdem" 
+                           class="filter-btn @(Model.FiltroStatus == "Pendente" ? "active" : "")">
+                            Em Análise (@Model.Statistics.EmAnalise)
+                        </a>
+                        <a href="/usuario/adocoes?filtroStatus=Aprovado&pesquisa=@Model.Pesquisa&ordenarPor=@Model.OrdenarPor&direcaoOrdem=@Model.DirecaoOrdem" 
+                           class="filter-btn @(Model.FiltroStatus == "Aprovado" ? "active" : "")">
+                            Aprovados (@Model.Statistics.Aprovadas)
+                        </a>
+                        <a href="/usuario/adocoes?filtroStatus=Finalizada&pesquisa=@Model.Pesquisa&ordenarPor=@Model.OrdenarPor&direcaoOrdem=@Model.DirecaoOrdem" 
+                           class="filter-btn @(Model.FiltroStatus == "Finalizada" ? "active" : "")">
+                            Concluídas (@Model.Statistics.Concluidas)
+                        </a>
+                    </div>
+                    
+                    <div class="search-sort">
+                        <div class="search-container">
+                            <i class="fas fa-search"></i>
+                            <input type="text" name="pesquisa" value="@Model.Pesquisa" placeholder="Buscar pet..." onchange="submitFormWithSearch(this)">
+                            <input type="hidden" name="filtroStatus" value="@Model.FiltroStatus">
+                            <input type="hidden" name="direcaoOrdem" value="@Model.DirecaoOrdem">
+                        </div>
+                        <select name="ordenarPor" onchange="submitFormWithOrder(this)">
+                            @foreach (var opcao in Model.FilterOptions.OrdenacaoOptions)
+                            {
+                                <option value="@opcao.Value" selected="@(Model.OrdenarPor == opcao.Value)">@opcao.Text</option>
+                            }
+                        </select>
+                    </div>
+                </form>
+            </div>
+
+            <!-- GRID DE ADOÇÕES -->
+        @if (Model.Adocoes.Any())
+        {
+            <div class="adoptions-grid" id="petsGrid">
+                @foreach (var adocao in Model.Adocoes)
+                {
+                    <article class="adoption-card" data-id="@adocao.Id" data-status="@adocao.Status" data-pet-name="@adocao.PetNome.ToLower()">
+                        <div class="card-image">
+                            <img src="@adocao.PetImagemUrl" 
+                                 alt="Foto de @adocao.PetNome"
+                                 class="pet-photo">
+                            @if (adocao.StatusTexto == "Finalizado")
+                            {
+                                <div class="status-badge" title="Finalizado" style="background-color: #28a745;">
+                                    <i class="fas fa-check-circle"></i>
+                                    <span>Finalizado</span>
+                                </div>
+                            }
+                            else if (adocao.StatusTexto == "Aguardando Assinar Contrato")
+                            {
+                                <div class="status-badge" title="Aguardando Assinar Contrato" style="background-color: #ffc107 !important; color: white !important;">
+                                    <i class="fas fa-file-signature" style="color: white !important;"></i>
+                                    <span>Aguard. Assinar</span>
+                                </div>
+                            }
+                            else if (adocao.StatusTexto == "Aguardando Buscar")
+                            {
+                                <div class="status-badge" title="Aguardando Buscar" style="background-color: #17a2b8 !important;">
+                                    <i class="fas fa-hand-paper"></i>
+                                    <span>Aguard. Buscar</span>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="status-badge status-@adocao.StatusClass" title="@adocao.StatusTexto">
+                                    <i class="@adocao.StatusIcon"></i>
+                                    <span>@adocao.StatusTexto</span>
+                                </div>
+                            }
+                        </div>
+                        
+                        <div class="card-body">
+                            <header class="card-header">
+                                <h3 class="pet-name">@adocao.PetNome</h3>
+                                <div class="pet-info">
+                                    <span class="info-item">
+                                        <i class="fas fa-birthday-cake"></i>
+                                        @adocao.PetIdadeTexto
+                                    </span>
+                                    <span class="info-item">
+                                        <i class="fas @adocao.PetSexoIcon"></i>
+                                        @adocao.PetSexoTexto
+                                    </span>
+                                    <span class="info-item">
+                                        <i class="fas fa-paw"></i>
+                                        @adocao.PetRaca
+                                    </span>
+                                </div>
+                            </header>
+                            
+                            <div class="card-info">
+                                <div class="info-row">
+                                    <span class="info-label">
+                                        <i class="fas fa-calendar"></i>
+                                        Solicitado em:
+                                    </span>
+                                    <span class="info-value">@adocao.DataEnvio.ToString("dd/MM/yyyy")</span>
+                                </div>
+                                
+                                @if (adocao.DataResposta.HasValue && adocao.Status != "Pendente")
+                                {
+                                    <div class="info-row">
+                                        <span class="info-label">
+                                            <i class="fas fa-reply"></i>
+                                            Respondido em:
+                                        </span>
+                                        <span class="info-value">@adocao.DataResposta.Value.ToString("dd/MM/yyyy")</span>
+                                    </div>
+                                }
+                                
+                                @if (!string.IsNullOrEmpty(adocao.TextoPrazo))
+                                {
+                                    <div class="info-row prazo-row">
+                                        <span class="info-label">
+                                            <i class="fas fa-clock"></i>
+                                            Prazo:
+                                        </span>
+                                        <span class="info-value prazo-value">@adocao.TextoPrazo</span>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                        
+                        <footer class="card-footer">
+                            <div class="card-footer-content">
+                                <div class="card-footer-actions">
+                                    @if (adocao.PodeVerDetalhes)
+                                    {
+                                        <button type="button" 
+                                                class="btn btn--info btn--sm btn-ver-detalhes"
+                                                data-adocao-id="@adocao.Id">
+                                            <i class="fas fa-list-alt"></i>
+                                            Ver Detalhes
+                                        </button>
+                                    }
+                                    
+                                    @if (adocao.PodeCancelar)
+                                    {
+                                        <button class="btn btn--outline-danger btn--sm" onclick="abrirModalCancelar(@adocao.Id, '@adocao.PetNome', '@adocao.DataEnvio.ToString("dd/MM/yyyy")', '@(adocao.PetImagem ?? "pet-placeholder.jpg")')">
+                                            <i class="fas fa-times"></i>
+                                            Cancelar
+                                        </button>
+                                    }
+                                    
+                                    @if (adocao.PodeAssinarContrato)
+                                    {
+                                        <a href="/usuario/adocao/contrato/@(adocao.AdocaoId ?? adocao.Id)" class="btn btn--primary btn--sm">
+                                            <i class="fas fa-file-signature"></i>
+                                            Assinar Contrato
+                                        </a>
+                                    }
+                                </div>
+                            </div>
+                        </footer>
+                    </article>
+                }
+            </div>
+            
+            <!-- PAGINAÇÃO -->
+            @if (Model.Pagination.TotalPaginas > 1)
+            {
+                <div class="paginacao">
+                    <div class="container">
+                        <div class="row g-2 align-items-center justify-content-center">
+                            <div class="col-12 text-center mb-3">
+                                <div class="info-paginacao">
+                                    <span class="badge contador-pets">
+                                        <span class="icone-container">
+                                            <i class="fas fa-heart" aria-hidden="true"></i>
+                                        </span>
+                                        <span class="contador-texto">
+                                            <span>Exibindo</span>
+                                            <strong>@Model.Adocoes.Count()</strong>
+                                            <span>de</span>
+                                            <strong>@Model.Pagination.TotalItens</strong>
+                                            <span>adoções</span>
+                                        </span>
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div class="col-12">
+                                <nav aria-label="Navegação de páginas">
+                                    <ul class="pagination justify-content-center flex-wrap">
+                                        @if (Model.Pagination.TemPaginaAnterior)
+                                        {
+                                            <li class="page-item">
+                                                <a class="page-link" href="/usuario/adocoes?filtroStatus=@Model.FiltroStatus&pesquisa=@Model.Pesquisa&ordenarPor=@Model.OrdenarPor&direcaoOrdem=@Model.DirecaoOrdem&pagina=@Model.Pagination.PaginaAnterior" data-pagina="@Model.Pagination.PaginaAnterior">
+                                                    <i class="fas fa-chevron-left"></i>
+                                                </a>
+                                            </li>
+                                        }
+                                        else
+                                        {
+                                            <li class="page-item disabled">
+                                                <span class="page-link"><i class="fas fa-chevron-left"></i></span>
+                                            </li>
+                                        }
+
+                                        @foreach (var numeroPagina in Model.Pagination.PaginasVisiveis)
+                                        {
+                                            <li class="page-item @(numeroPagina == Model.Pagination.PaginaAtual ? "active" : "")">
+                                                <a class="page-link" href="/usuario/adocoes?filtroStatus=@Model.FiltroStatus&pesquisa=@Model.Pesquisa&ordenarPor=@Model.OrdenarPor&direcaoOrdem=@Model.DirecaoOrdem&pagina=@numeroPagina" data-pagina="@numeroPagina">
+                                                    @numeroPagina
+                                                </a>
+                                            </li>
+                                        }
+
+                                        @if (Model.Pagination.TemProximaPagina)
+                                        {
+                                            <li class="page-item">
+                                                <a class="page-link" href="/usuario/adocoes?filtroStatus=@Model.FiltroStatus&pesquisa=@Model.Pesquisa&ordenarPor=@Model.OrdenarPor&direcaoOrdem=@Model.DirecaoOrdem&pagina=@Model.Pagination.ProximaPagina" data-pagina="@Model.Pagination.ProximaPagina">
+                                                    <i class="fas fa-chevron-right"></i>
+                                                </a>
+                                            </li>
+                                        }
+                                        else
+                                        {
+                                            <li class="page-item disabled">
+                                                <span class="page-link"><i class="fas fa-chevron-right"></i></span>
+                                            </li>
+                                        }
+                                    </ul>
+                                </nav>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="empty-state">
+                <div class="empty-illustration">
+                    <i class="fas fa-heart-broken"></i>
+                </div>
+                <h3 class="empty-title">Nenhuma adoção encontrada</h3>
+                <p class="empty-description">Você ainda não possui solicitações de adoção. Que tal conhecer nossos pets disponíveis e encontrar seu novo melhor amigo?</p>
+                <div class="empty-actions">
+                    <a href="/usuario/pets/explorar" class="btn btn--primary btn-rounded">
+                        <i class="fas fa-search"></i>
+                        Explorar Pets Disponíveis
+                    </a>
+                </div>
+            </div>
+        }
+    </main>
+</div>
+
+<!-- MODAL DE CANCELAMENTO -->
+<div id="modalCancelar" class="modal-overlay">
+    <div class="modal-container">
+        <header class="modal-header">
+            <h3 class="modal-title">
+                <i class="fas fa-exclamation-triangle"></i>
+                Cancelar Solicitação de Adoção
+            </h3>
+            <button class="modal-close" onclick="fecharModalCancelar()" type="button">
+                <i class="fas fa-times"></i>
+            </button>
+        </header>
+        
+        <div class="modal-body">
+            <div class="warning-box">
+                <i class="fas fa-info-circle"></i>
+                <div class="warning-content">
+                    <p><strong>Atenção!</strong> Você está prestes a cancelar sua solicitação de adoção.</p>
+                    <p>Esta ação não pode ser desfeita e você precisará enviar uma nova solicitação caso mude de ideia.</p>
+                </div>
+            </div>
+            
+            <div class="pet-summary">
+                <img id="cancelPetImage" src="" alt="Pet" class="pet-avatar">
+                <div class="pet-details">
+                    <h4 id="cancelPetName" class="pet-name-modal"></h4>
+                    <p class="pet-date">Solicitação enviada em: <span id="cancelDate"></span></p>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="cancelReason" class="form-label">Motivo do cancelamento (opcional)</label>
+                <textarea id="cancelReason" class="form-textarea" placeholder="Nos ajude a melhorar contando o motivo do cancelamento..." maxlength="300"></textarea>
+                <div class="char-limit">
+                    <span id="charCounter">0/300 caracteres</span>
+                </div>
+            </div>
+        </div>
+        
+        <footer class="modal-footer">
+            <button class="btn btn--secondary" onclick="fecharModalCancelar()" type="button">
+                <i class="fas fa-arrow-left"></i>
+                Voltar
+            </button>
+            <form id="formCancelamento" method="post" action="/usuario/adocao/cancelar" style="display: inline;">
+                <input type="hidden" id="cancelMotivo" name="motivoCancelamento" value="">
+                @Html.AntiForgeryToken()
+                <button class="btn btn--danger" type="submit">
+                    <i class="fas fa-times-circle"></i>
+                    Confirmar Cancelamento
+                </button>
+            </form>
+        </footer>
+    </div>
+</div>
+
+
+<!-- MODAL DE DETALHES COMPLETOS -->
+<div id="modalDetalhes" class="modal-overlay">
+    <div class="modal-container modal-extra-large">
+        <header class="modal-header">
+            <h3 class="modal-title">
+                <i class="fas fa-list-alt"></i>
+                Detalhes Completos da Adoção
+            </h3>
+            <button class="modal-close" onclick="fecharModalDetalhes()" type="button">
+                <i class="fas fa-times"></i>
+            </button>
+        </header>
+        
+        <div class="modal-body" id="detalhesModalContent">
+            <div class="detalhes-grid">
+                <!-- Informações Completas do Pet -->
+                <div class="pet-details-section">
+                    <h4 class="section-title">
+                        <i class="fas fa-paw"></i>
+                        Informações do Pet
+                    </h4>
+                    
+                    <div class="pet-profile">
+                        <div class="pet-image-container">
+                            <img id="detalhesPetImage" src="" alt="Pet" class="pet-image-detail">
+                            <div class="pet-status-overlay">
+                                <span id="detalhesPetStatus" class="status-overlay-text">--</span>
+                            </div>
+                        </div>
+                        
+                        <div class="pet-info-detail">
+                            <h5 id="detalhesPetNome" class="pet-name-detail">--</h5>
+                            
+                            <div class="pet-characteristics">
+                                <div class="characteristic-item">
+                                    <i class="fas fa-birthday-cake"></i>
+                                    <div class="char-info">
+                                        <span class="char-label">Idade</span>
+                                        <span id="detalhesPetIdade" class="char-value">--</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="characteristic-item">
+                                    <i class="fas fa-venus-mars"></i>
+                                    <div class="char-info">
+                                        <span class="char-label">Sexo</span>
+                                        <span id="detalhesPetSexo" class="char-value">--</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="characteristic-item">
+                                    <i class="fas fa-paw"></i>
+                                    <div class="char-info">
+                                        <span class="char-label">Raça</span>
+                                        <span id="detalhesPetRaca" class="char-value">--</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="characteristic-item">
+                                    <i class="fas fa-weight"></i>
+                                    <div class="char-info">
+                                        <span class="char-label">Porte</span>
+                                        <span id="detalhesPetPorte" class="char-value">--</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="characteristic-item">
+                                    <i class="fas fa-palette"></i>
+                                    <div class="char-info">
+                                        <span class="char-label">Cor</span>
+                                        <span id="detalhesPetCor" class="char-value">--</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="characteristic-item">
+                                    <i class="fas fa-heart"></i>
+                                    <div class="char-info">
+                                        <span class="char-label">Temperamento</span>
+                                        <span id="detalhesPetTemperamento" class="char-value">--</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="pet-description">
+                                <h6 class="description-title">Sobre o Pet</h6>
+                                <p id="detalhesPetDescricao" class="description-text">--</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Timeline Completa do Processo -->
+                <div class="timeline-details-section">
+                    <h4 class="section-title">
+                        <i class="fas fa-history"></i>
+                        Histórico do Processo
+                    </h4>
+                    
+                    <div class="timeline-complete">
+                        <div class="timeline-item-detail">
+                            <div class="timeline-icon pending">
+                                <i class="fas fa-paper-plane"></i>
+                            </div>
+                            <div class="timeline-content">
+                                <h6 class="timeline-title">Solicitação de Adoção Enviada</h6>
+                                <p class="timeline-description">Você enviou uma solicitação para adotar este pet</p>
+                                <span id="dataEnvio" class="timeline-timestamp">--</span>
+                            </div>
+                        </div>
+                        
+                        <div class="timeline-item-detail">
+                            <div class="timeline-icon processing">
+                                <i class="fas fa-search"></i>
+                            </div>
+                            <div class="timeline-content">
+                                <h6 class="timeline-title">Análise em Andamento</h6>
+                                <p class="timeline-description">Nossa equipe está avaliando sua solicitação</p>
+                                <span id="dataAnalise" class="timeline-timestamp">--</span>
+                            </div>
+                        </div>
+                        
+                        <div class="timeline-item-detail" id="itemAprovacao" style="display: none;">
+                            <div class="timeline-icon approved">
+                                <i class="fas fa-check-circle"></i>
+                            </div>
+                            <div class="timeline-content">
+                                <h6 class="timeline-title">Solicitação Aprovada</h6>
+                                <p class="timeline-description">Parabéns! Sua solicitação foi aprovada</p>
+                                <span id="dataAprovacao" class="timeline-timestamp">--</span>
+                            </div>
+                        </div>
+                        
+                        <div class="timeline-item-detail" id="itemContrato" style="display: none;">
+                            <div class="timeline-icon signed">
+                                <i class="fas fa-file-signature"></i>
+                            </div>
+                            <div class="timeline-content">
+                                <h6 class="timeline-title">Contrato Digital Assinado</h6>
+                                <p class="timeline-description">Você assinou o contrato de adoção digitalmente</p>
+                                <span id="dataAssinatura" class="timeline-timestamp">--</span>
+                            </div>
+                        </div>
+                        
+                        <div class="timeline-item-detail" id="itemPrazo" style="display: none;">
+                            <div class="timeline-icon scheduled">
+                                <i class="fas fa-clock"></i>
+                            </div>
+                            <div class="timeline-content">
+                                <h6 class="timeline-title">Prazo para Retirada</h6>
+                                <p class="timeline-description">Você tem 5 dias úteis para buscar o pet</p>
+                                <span id="dataPrazo" class="timeline-timestamp">--</span>
+                            </div>
+                        </div>
+                        
+                        <div class="timeline-item-detail" id="itemFinalizacao" style="display: none;">
+                            <div class="timeline-icon completed">
+                                <i class="fas fa-heart"></i>
+                            </div>
+                            <div class="timeline-content">
+                                <h6 class="timeline-title">Adoção Finalizada</h6>
+                                <p class="timeline-description">Adoção concluída com sucesso!</p>
+                                <span id="dataFinalizacao" class="timeline-timestamp">--</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Informações de Prazo (quando aplicável) -->
+            <div id="localHorarioSection" class="local-horario-section" style="display: none;">
+                <h4 class="section-title">
+                    <i class="fas fa-clock"></i>
+                    Prazo para Retirada
+                </h4>
+                
+                <div class="location-datetime-grid">
+                    <div class="datetime-card">
+                        <div class="card-icon">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                        <div class="card-content">
+                            <h6 class="card-title">Prazo de Retirada</h6>
+                            <div class="datetime-info">
+                                <div class="date-info">
+                                    <span class="date-label">Prazo:</span>
+                                    <span id="detalhesPrazoData" class="date-value">--</span>
+                                </div>
+                                <div class="time-info">
+                                    <span class="time-label">Status:</span>
+                                    <span id="detalhesPrazoStatus" class="time-value">--</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="location-card">
+                        <div class="card-icon">
+                            <i class="fas fa-map-marker-alt"></i>
+                        </div>
+                        <div class="card-content">
+                            <h6 class="card-title">Local de Retirada</h6>
+                            <p class="location-name">CaotinhoAuMiau</p>
+                            <p class="location-address">Centro de Adoção Animal</p>
+                            <p class="location-note">Endereço será informado via e-mail</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="instructions-section">
+                    <h6 class="instructions-title">
+                        <i class="fas fa-info-circle"></i>
+                        Instruções Importantes
+                    </h6>
+                    <div class="instructions-grid">
+                        <div class="instruction-item-compact">
+                            <i class="fas fa-id-card"></i>
+                            <div class="instruction-text">
+                                <strong>Documentos:</strong> RG, CPF e comprovante de residência
+                            </div>
+                        </div>
+                        <div class="instruction-item-compact">
+                            <i class="fas fa-shopping-bag"></i>
+                            <div class="instruction-text">
+                                <strong>Itens:</strong> Coleira, guia e caixa de transporte
+                            </div>
+                        </div>
+                        <div class="instruction-item-compact">
+                            <i class="fas fa-clock"></i>
+                            <div class="instruction-text">
+                                <strong>Pontualidade:</strong> Chegue 15 min antes
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Informações Adicionais -->
+            <div class="additional-info-section">
+                <h4 class="section-title">
+                    <i class="fas fa-info-circle"></i>
+                    Informações do Processo
+                </h4>
+                
+                <div class="info-cards-grid">
+                    <div class="info-card">
+                        <div class="info-card-icon">
+                            <i class="fas fa-hashtag"></i>
+                        </div>
+                        <div class="info-card-content">
+                            <span class="info-card-label">ID da Solicitação</span>
+                            <span id="detalhesAdocaoId" class="info-card-value">--</span>
+                        </div>
+                    </div>
+                    
+                    <div class="info-card">
+                        <div class="info-card-icon">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <div class="info-card-content">
+                            <span class="info-card-label">Responsável</span>
+                            <span id="detalhesResponsavel" class="info-card-value">--</span>
+                        </div>
+                    </div>
+                    
+                    <div class="info-card">
+                        <div class="info-card-icon">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                        <div class="info-card-content">
+                            <span class="info-card-label">Tempo de Processo</span>
+                            <span id="detalhesTempoProcesso" class="info-card-value">--</span>
+                        </div>
+                    </div>
+                    
+                    <div class="info-card">
+                        <div class="info-card-icon">
+                            <i class="fas fa-flag"></i>
+                        </div>
+                        <div class="info-card-content">
+                            <span class="info-card-label">Status Atual</span>
+                            <span id="detalhesStatusAtual" class="info-card-value">--</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Seção de Observações -->
+            <div id="observacoesSection" class="observacoes-section" style="display: none;">
+                <h4 class="section-title">
+                    <i class="fas fa-comment-alt"></i>
+                    Observações
+                </h4>
+                
+                <div class="observacoes-container">
+                    <!-- Observação da Empresa -->
+                    <div id="observacaoEmpresa" class="observacao-card" style="display: none;">
+                        <div class="observacao-header">
+                            <div class="observacao-icon">
+                                <i class="fas fa-building"></i>
+                            </div>
+                            <div class="observacao-info">
+                                <h6 class="observacao-titulo">Observação da Equipe</h6>
+                                <span class="observacao-tipo">Análise do formulário</span>
+                            </div>
+                        </div>
+                        <div class="observacao-content">
+                            <p id="textoObservacaoEmpresa" class="observacao-texto">--</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Observação de Cancelamento -->
+                    <div id="observacaoCancelamento" class="observacao-card observacao-cancelamento" style="display: none;">
+                        <div class="observacao-header">
+                            <div class="observacao-icon">
+                                <i class="fas fa-user"></i>
+                            </div>
+                            <div class="observacao-info">
+                                <h6 class="observacao-titulo">Motivo do Cancelamento</h6>
+                                <span class="observacao-tipo">Informado pelo adotante</span>
+                            </div>
+                        </div>
+                        <div class="observacao-content">
+                            <p id="textoObservacaoCancelamento" class="observacao-texto">--</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Observação do Prazo -->
+                    <div id="observacaoPrazo" class="observacao-card observacao-prazo" style="display: none;">
+                        <div class="observacao-header">
+                            <div class="observacao-icon">
+                                <i class="fas fa-clock"></i>
+                            </div>
+                            <div class="observacao-info">
+                                <h6 class="observacao-titulo">Observações do Prazo</h6>
+                                <span class="observacao-tipo">Informações adicionais</span>
+                            </div>
+                        </div>
+                        <div class="observacao-content">
+                            <p id="textoObservacaoPrazo" class="observacao-texto">--</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <footer class="modal-footer">
+            <div class="footer-actions-left">
+                <button class="btn btn--secondary" onclick="fecharModalDetalhes()" type="button">
+                    <i class="fas fa-arrow-left"></i>
+                    Voltar
+                </button>
+            </div>
+            
+            <div class="footer-actions-right">
+                <!-- Botão de cancelamento condicional -->
+                <button id="btnCancelarModal" class="btn btn--outline-danger" onclick="abrirModalCancelarDetalhes()" type="button" style="display: none;">
+                    <i class="fas fa-times-circle"></i>
+                    Cancelar Solicitação
+                </button>
+            </div>
+        </footer>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/usuario/adocoes.js" asp-append-version="true"></script>
+    <script>
+        // Modal controls - filtros agora são server-side
+        document.addEventListener('DOMContentLoaded', function() {
+            // Controles do modal apenas - filtros são server-side
+        });
+        
+        // MODAL DE DETALHES COM MVC PATTERN
+        document.addEventListener('DOMContentLoaded', function() {
+            const modalDetalhes = document.getElementById('modalDetalhes');
+            
+            modalDetalhes.addEventListener('show.bs.modal', function (event) {
+                const button = event.relatedTarget;
+                const url = button.getAttribute('href');
+                
+                if (url) {
+                    event.preventDefault();
+                    
+                    // Mostrar loading
+                    document.getElementById('detalhesModalContent').innerHTML = `
+                        <div class="text-center">
+                            <div class="spinner-border" role="status">
+                                <span class="visually-hidden">Carregando...</span>
+                            </div>
+                        </div>
+                    `;
+                    
+                    // Carregar conteúdo via MVC
+                    fetch(url)
+                        .then(response => response.text())
+                        .then(html => {
+                            document.getElementById('detalhesModalContent').innerHTML = html;
+                        })
+                        .catch(error => {
+                            document.getElementById('detalhesModalContent').innerHTML = `
+                                <div class="alert alert-danger">
+                                    Erro ao carregar detalhes da adoção.
+                                </div>
+                            `;
+                        });
+                }
+            });
+            
+            // Limpar conteúdo quando modal fechar
+            modalDetalhes.addEventListener('hidden.bs.modal', function () {
+                document.getElementById('detalhesModalContent').innerHTML = '';
+            });
+        });
+        
+        function preencherModalDetalhes(data, status) {
+            
+            // Preencher informações do pet
+            const petImagem = data.pet.imagem ? 
+                (data.pet.imagem.startsWith('/') ? data.pet.imagem : '/imagens/pets/' + data.pet.imagem) : 
+                '/imagens/pets/pet-placeholder.jpg';
+            
+            document.getElementById('detalhesPetImage').src = petImagem;
+            document.getElementById('detalhesPetStatus').textContent = status;
+            document.getElementById('detalhesPetNome').textContent = data.pet.nome || '--';
+            // Formatação da idade incluindo anos e meses
+            let idadeTexto = '--';
+            if (data.pet.anos > 0 && data.pet.meses > 0) {
+                idadeTexto = `${data.pet.anos} ${data.pet.anos === 1 ? 'ano' : 'anos'} e ${data.pet.meses} ${data.pet.meses === 1 ? 'mês' : 'meses'}`;
+            } else if (data.pet.anos > 0) {
+                idadeTexto = `${data.pet.anos} ${data.pet.anos === 1 ? 'ano' : 'anos'}`;
+            } else if (data.pet.meses > 0) {
+                idadeTexto = `${data.pet.meses} ${data.pet.meses === 1 ? 'mês' : 'meses'}`;
+            }
+            document.getElementById('detalhesPetIdade').textContent = idadeTexto;
+            document.getElementById('detalhesPetSexo').textContent = data.pet.sexo || '--';
+            document.getElementById('detalhesPetRaca').textContent = data.pet.raca || 'SRD';
+            document.getElementById('detalhesPetPorte').textContent = data.pet.porte || '--';
+            document.getElementById('detalhesPetCor').textContent = data.pet.cor || '--';
+            document.getElementById('detalhesPetTemperamento').textContent = data.pet.temperamento || '--';
+            document.getElementById('detalhesPetDescricao').textContent = data.pet.descricao || 'Não informado';
+            
+            // Preencher timeline com dados reais
+            document.getElementById('dataEnvio').textContent = data.processo.dataEnvio || '--';
+            document.getElementById('dataAnalise').textContent = data.processo.dataResposta || '--';
+            
+            // Controlar timeline baseado nos dados reais, não apenas no status
+            
+            // 1. Solicitação sempre existe (foi enviada)
+            // Já preenchido acima
+            
+            // 2. Análise - atualizar apenas o texto da data (elemento sempre visível)
+            if (data.processo.dataResposta) {
+                document.getElementById('dataAnalise').textContent = data.processo.dataResposta;
+            } else if (data.processo.status !== 'Pendente') {
+                // Se não é pendente mas não tem data de resposta, mostrar "Em análise"
+                document.getElementById('dataAnalise').textContent = 'Em análise...';
+            } else {
+                document.getElementById('dataAnalise').textContent = 'Aguardando...';
+            }
+            
+            // 3. Aprovação - mostrar se foi aprovado
+            if (data.processo.dataAprovacao) {
+                document.getElementById('itemAprovacao').style.display = 'flex';
+                document.getElementById('dataAprovacao').textContent = data.processo.dataAprovacao;
+            } else {
+                document.getElementById('itemAprovacao').style.display = 'none';
+            }
+            
+            // 4. Contrato assinado - só mostrar se realmente foi assinado
+            if (data.processo.dataAssinatura) {
+                document.getElementById('itemContrato').style.display = 'flex';
+                document.getElementById('dataAssinatura').textContent = data.processo.dataAssinatura;
+            } else {
+                document.getElementById('itemContrato').style.display = 'none';
+            }
+            
+            // 5. Prazo - mostrar se contrato foi assinado
+            if (data.processo.dataAssinatura) {
+                document.getElementById('itemPrazo').style.display = 'flex';
+                // Calcular data limite (5 dias úteis após assinatura)
+                const dataAssinatura = new Date(data.processo.dataAssinatura);
+                // Nota: Cálculo real de 5 dias úteis é feito no backend
+                const dataLimite = new Date(dataAssinatura.getTime() + (5 * 24 * 60 * 60 * 1000));
+                const diasRestantes = Math.ceil((dataLimite - new Date()) / (1000 * 60 * 60 * 24));
+                
+                if (diasRestantes > 0) {
+                    document.getElementById('dataPrazo').textContent = `Até ${dataLimite.toLocaleDateString('pt-BR')} (${diasRestantes} dias restantes)`;
+                } else {
+                    document.getElementById('dataPrazo').textContent = `Prazo vencido em ${dataLimite.toLocaleDateString('pt-BR')}`;
+                }
+            } else {
+                document.getElementById('itemPrazo').style.display = 'none';
+            }
+            
+            // 6. Finalização - só mostrar se realmente foi finalizado
+            if (data.processo.dataFinalizacao) {
+                document.getElementById('itemFinalizacao').style.display = 'flex';
+                document.getElementById('dataFinalizacao').textContent = data.processo.dataFinalizacao;
+            } else {
+                document.getElementById('itemFinalizacao').style.display = 'none';
+            }
+            
+            // Mostrar seção de prazo se contrato foi assinado
+            if (data.processo.dataAssinatura) {
+                document.getElementById('localHorarioSection').style.display = 'block';
+                
+                // Calcular prazo
+                const dataAssinatura = new Date(data.processo.dataAssinatura);
+                const dataLimite = new Date(dataAssinatura.getTime() + (7 * 24 * 60 * 60 * 1000));
+                const diasRestantes = Math.ceil((dataLimite - new Date()) / (1000 * 60 * 60 * 24));
+                
+                document.getElementById('detalhesPrazoData').textContent = dataLimite.toLocaleDateString('pt-BR');
+                
+                if (diasRestantes > 0) {
+                    document.getElementById('detalhesPrazoStatus').textContent = `${diasRestantes} dias restantes`;
+                } else {
+                    document.getElementById('detalhesPrazoStatus').textContent = 'Prazo vencido';
+                }
+            } else {
+                document.getElementById('localHorarioSection').style.display = 'none';
+            }
+            
+            // Preencher informações do processo
+            document.getElementById('detalhesAdocaoId').textContent = '#' + data.processo.id;
+            document.getElementById('detalhesResponsavel').textContent = data.processo.responsavel;
+            document.getElementById('detalhesTempoProcesso').textContent = data.processo.tempoProcesso;
+            document.getElementById('detalhesStatusAtual').textContent = status;
+            
+            // Gerenciar observações
+            let temObservacoes = false;
+            
+            // Observação da empresa
+            if (data.processo.observacaoFormulario) {
+                document.getElementById('observacaoEmpresa').style.display = 'block';
+                document.getElementById('textoObservacaoEmpresa').textContent = data.processo.observacaoFormulario;
+                temObservacoes = true;
+            } else {
+                document.getElementById('observacaoEmpresa').style.display = 'none';
+            }
+            
+            // Observação de cancelamento
+            if (data.processo.observacoesCancelamento) {
+                document.getElementById('observacaoCancelamento').style.display = 'block';
+                document.getElementById('textoObservacaoCancelamento').textContent = data.processo.observacoesCancelamento;
+                temObservacoes = true;
+            } else {
+                document.getElementById('observacaoCancelamento').style.display = 'none';
+            }
+            
+            // Observação do prazo (agendamento)
+            if (data.processo.observacoesAgendamento) {
+                document.getElementById('observacaoPrazo').style.display = 'block';
+                document.getElementById('textoObservacaoPrazo').textContent = data.processo.observacoesAgendamento;
+                temObservacoes = true;
+            } else {
+                document.getElementById('observacaoPrazo').style.display = 'none';
+            }
+            
+            // Mostrar seção de observações apenas se houver alguma
+            if (temObservacoes) {
+                document.getElementById('observacoesSection').style.display = 'block';
+            } else {
+                document.getElementById('observacoesSection').style.display = 'none';
+            }
+            
+            // Controlar botão de cancelamento
+            // Pode cancelar apenas se status for "Pendente" ou "Aprovado" (antes de assinar contrato)
+            const podeCancel = (data.processo.status === 'Pendente' || 
+                              (data.processo.status === 'Aprovado' && !data.processo.contratoAssinado));
+            
+            if (podeCancel) {
+                document.getElementById('btnCancelarModal').style.display = 'inline-flex';
+                // Armazenar dados para cancelamento
+                window.dadosCancelamentoModal = {
+                    id: data.processo.id,
+                    petNome: data.pet.nome,
+                    petImagem: data.pet.imagem,
+                    dataEnvio: data.processo.dataEnvio
+                };
+            } else {
+                document.getElementById('btnCancelarModal').style.display = 'none';
+            }
+            
+            // Mostrar modal
+            document.getElementById('modalDetalhes').style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+        };
+
+        window.abrirModalDetalhes = function(adocaoId) {
+            const modal = document.getElementById('modalDetalhes');
+            modal.style.display = 'flex';
+            modal.dataset.adocaoId = adocaoId || '';
+            document.body.style.overflow = 'hidden';
+        };
+        
+        window.fecharModalDetalhes = function() {
+            document.getElementById('modalDetalhes').style.display = 'none';
+            document.body.style.overflow = 'auto';
+            
+            // Limpar timeline
+            document.getElementById('itemAprovacao').style.display = 'none';
+            document.getElementById('itemContrato').style.display = 'none';
+            document.getElementById('itemPrazo').style.display = 'none';
+            document.getElementById('itemFinalizacao').style.display = 'none';
+            document.getElementById('localHorarioSection').style.display = 'none';
+            
+            // Limpar observações
+            document.getElementById('observacoesSection').style.display = 'none';
+            document.getElementById('observacaoEmpresa').style.display = 'none';
+            document.getElementById('observacaoCancelamento').style.display = 'none';
+            document.getElementById('observacaoPrazo').style.display = 'none';
+            
+            // Limpar botão de cancelamento
+            document.getElementById('btnCancelarModal').style.display = 'none';
+        };
+        
+        // Função para abrir modal de cancelamento diretamente com dados
+        window.abrirModalCancelarDireto = function(adocaoId, petNome, dataEnvio, petImagem) {
+            console.log('abrirModalCancelarDireto chamada com:', { adocaoId, petNome, dataEnvio, petImagem });
+            abrirModalCancelar(adocaoId, petNome, dataEnvio, petImagem);
+            fecharModalDetalhes(); // Fechar modal de detalhes
+        };
+        
+        // Funções de cancelamento usando MVC
+        window.abrirModalCancelar = function(adocaoId, petNome, dataEnvio, petImagem) {
+            console.log('abrirModalCancelar chamada com:', { adocaoId, petNome, dataEnvio, petImagem });
+
+            // Definir a action do formulário com o ID na URL
+            document.getElementById('formCancelamento').action = `/usuario/adocao/cancelar/${adocaoId}`;
+
+            document.getElementById('cancelPetName').textContent = petNome;
+            document.getElementById('cancelDate').textContent = dataEnvio;
+            document.getElementById('cancelPetImage').src = petImagem.startsWith('/') ? petImagem : '/imagens/pets/' + petImagem;
+            document.getElementById('cancelReason').value = '';
+            document.getElementById('charCounter').textContent = '0/300 caracteres';
+            
+            const modal = document.getElementById('modalCancelar');
+            modal.style.display = 'flex';
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+            
+            console.log('Modal de cancelamento aberto');
+        };
+
+        window.fecharModalCancelar = function() {
+            document.getElementById('modalCancelar').style.display = 'none';
+            document.body.style.overflow = 'auto';
+        };
+
+        // Função para abrir modal de cancelamento a partir do modal de detalhes
+        window.abrirModalCancelarDetalhes = function() {
+            console.log('Função abrirModalCancelarDetalhes chamada');
+            
+            // Aguardar um momento para garantir que o DOM está carregado
+            setTimeout(() => {
+                // Buscar dados diretamente do DOM do modal de detalhes
+                const petNomeEl = document.getElementById('detalhesPetNome');
+                const petImagemEl = document.getElementById('detalhesPetImage');
+                const adocaoIdEl = document.getElementById('detalhesAdocaoId');
+                const dataEnvioEl = document.getElementById('dataEnvio');
+                
+                console.log('Elementos encontrados:', { petNomeEl, petImagemEl, adocaoIdEl, dataEnvioEl });
+                
+                if (!petNomeEl || !adocaoIdEl) {
+                    console.error('Elementos não encontrados no DOM');
+                    alert('Erro: Não foi possível carregar os dados para cancelamento. Tente reabrir o modal de detalhes.');
+                    return;
+                }
+                
+                const petNome = petNomeEl.textContent || '--';
+                const petImagem = petImagemEl?.src || '/imagens/pets/pet-placeholder.jpg';
+                const adocaoId = adocaoIdEl.textContent?.replace('#', '') || '';
+                const dataEnvio = dataEnvioEl?.textContent || '--';
+                
+                console.log('Dados extraídos:', { petNome, adocaoId, dataEnvio, petImagem });
+                
+                if (petNome !== '--' && adocaoId !== '') {
+                    console.log('Abrindo modal de cancelamento...');
+                    abrirModalCancelar(adocaoId, petNome, dataEnvio, petImagem);
+                    fecharModalDetalhes(); // Fechar modal de detalhes
+                } else {
+                    console.error('Dados inválidos para cancelamento');
+                    alert('Erro: Dados inválidos para cancelamento. Tente reabrir o modal de detalhes.');
+                }
+            }, 100);
+        };
+
+        // Função para submeter cancelamento via MVC form
+        document.addEventListener('DOMContentLoaded', function() {
+            const cancelForm = document.getElementById('formCancelamento');
+            const cancelReason = document.getElementById('cancelReason');
+            const charCounter = document.getElementById('charCounter');
+            
+            if (cancelReason && charCounter) {
+                cancelReason.addEventListener('input', function() {
+                    const length = this.value.length;
+                    charCounter.textContent = `${length}/300 caracteres`;
+                });
+            }
+            
+            if (cancelForm) {
+                cancelForm.addEventListener('submit', function(e) {
+                    const motivo = document.getElementById('cancelReason').value;
+                    document.getElementById('cancelMotivo').value = motivo;
+                });
+            }
+        });
+        
+        window.abrirMaps = function() {
+            const endereco = "Rua dos Animais Felizes, 456 - Centro, Cidade";
+            const url = `https://www.google.com/maps/search/${encodeURIComponent(endereco)}`;
+            window.open(url, '_blank');
+        };
+        
+        window.copiarEndereco = function() {
+            const endereco = "Rua dos Animais Felizes, 456 - Centro\nCidade";
+            
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(endereco).then(function() {
+                    // Feedback visual simples
+                    const botao = event.target.closest('button');
+                    const textoOriginal = botao.innerHTML;
+                    botao.innerHTML = '<i class="fas fa-check"></i> Copiado!';
+                    botao.style.backgroundColor = '#10B981';
+                    botao.style.color = 'white';
+                    
+                    setTimeout(() => {
+                        botao.innerHTML = textoOriginal;
+                        botao.style.backgroundColor = '';
+                        botao.style.color = '';
+                    }, 2000);
+                }).catch(function() {
+                    alert('Não foi possível copiar o endereço');
+                });
+            } else {
+                // Fallback para browsers mais antigos
+                const textArea = document.createElement('textarea');
+                textArea.value = endereco;
+                document.body.appendChild(textArea);
+                textArea.select();
+                try {
+                    document.execCommand('copy');
+                    alert('Endereço copiado!');
+                } catch (err) {
+                    alert('Não foi possível copiar o endereço');
+                }
+                document.body.removeChild(textArea);
+            }
+        };
+        
+        
+        // Event listener para botões "Ver Detalhes"
+        document.addEventListener('click', function(e) {
+            if (e.target.closest('.btn-ver-detalhes')) {
+                const button = e.target.closest('.btn-ver-detalhes');
+                const adocaoId = button.getAttribute('data-adocao-id');
+                
+                // Fazer requisição AJAX para carregar detalhes
+                fetch(`/usuario/adocao/detalhes/${adocaoId}`)
+                    .then(response => response.text())
+                    .then(html => {
+                        document.getElementById('detalhesModalContent').innerHTML = html;
+                        abrirModalDetalhes(adocaoId);
+                    })
+                    .catch(error => {
+                        console.error('Erro ao carregar detalhes:', error);
+                        alert('Erro ao carregar os detalhes da adoção.');
+                    });
+            }
+        });
+
+        // Fechar modal clicando no overlay
+        document.getElementById('modalDetalhes').addEventListener('click', function(e) {
+            if (e.target === this) {
+                fecharModalDetalhes();
+            }
+        });
+    </script>
+}

@@ -1,0 +1,45 @@
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Cãotinho AuMiau</title>
+    
+    
+    <link rel="icon" type="image/png" href="~/imagens/paw-icon.png" />
+    
+    
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/shared/global.css" asp-append-version="true" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" />
+
+    
+    <link rel="stylesheet" href="~/css/admin/admin-sidebar.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/shared/paginacao.css" asp-append-version="true" />
+    
+    
+    @RenderSection("Styles", required: false)
+</head>
+<body>
+    
+    @await Html.PartialAsync("~/Views/Shared/_SlidebarAdmin.cshtml")
+    
+    <div class="conteudo-principal">
+        @RenderBody()
+    </div>
+    
+    
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+    <script src="~/js/shared/slidebar.js" asp-append-version="true"></script>
+    
+    
+    @RenderSection("Scripts", required: false)
+</body>
+</html> 

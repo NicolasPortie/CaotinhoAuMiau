@@ -1,0 +1,72 @@
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - CãotinhoAuMiau</title>
+    
+    <link rel="icon" type="image/png" href="~/imagens/paw-icon.png" />
+    
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/shared/variaveis-cores.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/shared/global.css" asp-append-version="true" />
+    
+    <link rel="stylesheet" href="~/css/shared/navbar.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/shared/slidebar.css" />
+    <link rel="stylesheet" href="~/css/shared/notificacoes.css" />
+    <link rel="stylesheet" href="~/css/shared/paginacao.css" asp-append-version="true" />
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;500;600;700&family=Montserrat:wght@400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" />
+    
+    @RenderSection("Styles", required: false)
+</head>
+<body data-logged="@(User.Identity.IsAuthenticated.ToString().ToLower())" 
+      data-controller="@(ViewContext.RouteData.Values["controller"]?.ToString())" 
+      data-action="@(ViewContext.RouteData.Values["action"]?.ToString())">
+    <input type="hidden" id="usuarioId" value="@User.ObterIdUsuario()" />
+    
+    <!-- Navbar Unificada -->
+    @await Html.PartialAsync("_Navbar")
+    
+    @if (User?.Identity?.IsAuthenticated == true)
+    {
+        @await Html.PartialAsync("_Slidebar")
+        @await Html.PartialAsync("_Notificacoes")
+    }
+    
+    @{
+        var currentController = ViewContext.RouteData.Values["controller"]?.ToString();
+        var currentAction = ViewContext.RouteData.Values["action"]?.ToString();
+        var paginaLarguraCompleta = (currentController == "Home" && currentAction == "Index") || 
+                             (currentController == "Usuario" && currentAction == "Perfil");
+    }
+    
+    @if (paginaLarguraCompleta)
+    {
+        @RenderBody()
+    }
+    else
+    {
+    <div class="container body-content">
+        @RenderBody()
+    </div>
+    }
+    
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+    <script src="https://unpkg.com/imask"></script>
+    
+    <!-- <script src="~/js/shared/navbar.js"></script> DESABILITADO - Controle movido para _Navbar.cshtml -->
+    <script src="~/js/shared/slidebar.js"></script>
+    <script src="~/js/shared/notificacoes.js"></script>
+    
+    <!-- <script src="~/js/shared/inicializar-layout.js"></script> DESABILITADO - Controle movido para _Navbar.cshtml -->
+    
+    @RenderSection("Scripts", required: false)
+</body>
+</html>

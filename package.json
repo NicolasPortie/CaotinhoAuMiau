@@ -1,0 +1,9 @@
+{
+  "scripts": {
+    "postinstall": "mkdir -p wwwroot/lib/chart.js && cp node_modules/chart.js/dist/chart.umd.min.js wwwroot/lib/chart.js/chart.umd.min.js"
+  },
+  "dependencies": {
+    "@popperjs/core": "^2.11.8",
+    "chart.js": "^4.4.1"
+  }
+}

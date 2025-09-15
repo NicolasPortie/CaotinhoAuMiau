@@ -1,0 +1,433 @@
+﻿/* ========================================
+   NAVBAR UNIFICADA - CÃ£otinhoAuMiau
+   ======================================== */
+/* === ESTILOS BASE === */
+.navbar {
+    background: transparent !important;
+    color: white;
+    padding: 0 20px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1001;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: none;
+    height: 70px;
+    transition: all 0.3s ease;
+}
+/* === NAVBAR PRIVADA (UsuÃ¡rios logados) === */
+.navbar.navbar-privada,
+body[data-logged="true"]:not([data-controller="Home"]):not([data-controller="Authentication"]) .navbar {
+    background: #E67E22 !important;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+}
+/* === NAVBAR PÃšBLICA (UsuÃ¡rios nÃ£o logados) === */
+.navbar.navbar-publica {
+    background: transparent !important;
+    box-shadow: none;
+}
+/* === NAVBAR PARA EXPLORARPETS (UsuÃ¡rios nÃ£o logados) === */
+body[data-controller="Pet"][data-action="ExplorarPets"] .navbar {
+    background: linear-gradient(135deg, #ff6b35 0%, #e55a2b 100%) !important;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+}
+/* ========================================
+   LOGO E MARCA
+   ======================================== */
+.navbar-logo {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    color: white;
+    transition: opacity 0.3s ease;
+}
+.navbar-logo:hover {
+    opacity: 0.9;
+    color: white;
+}
+.navbar-logo-icon {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 10px;
+    font-size: 24px;
+}
+.navbar-logo-text {
+    display: flex;
+    flex-direction: column;
+}
+.navbar-logo-principal {
+    font-weight: 700;
+    font-size: 1.4rem;
+    line-height: 1.2;
+    letter-spacing: 0.5px;
+    font-family: 'Baloo 2', cursive;
+}
+.navbar-logo-subtitulo {
+    font-size: 0.8rem;
+    opacity: 0.9;
+    letter-spacing: 0.5px;
+    font-family: 'Poppins', sans-serif;
+}
+/* ========================================
+   AÃ‡Ã•ES DA NAVBAR
+   ======================================== */
+.navbar-acoes {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+/* ========================================
+   BOTÃ•ES PÃšBLICOS (Login/Cadastro)
+   ======================================== */
+.navbar-botoes-publicos {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+.navbar-btn {
+    color: #fff !important;
+    text-decoration: none !important;
+    font-weight: 600 !important;
+    font-size: 1rem !important;
+    padding: 10px 16px !important;
+    border-radius: 6px !important;
+    transition: all 0.3s ease !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3) !important;
+    position: relative !important;
+}
+.navbar-btn::after {
+    content: '';
+    position: absolute;
+    bottom: -3px;
+    left: 50%;
+    width: 0;
+    height: 2px;
+    background-color: #E67E22;
+    transition: all 0.3s ease;
+    transform: translateX(-50%);
+}
+.navbar-btn:hover::after {
+    width: 80%;
+}
+/* ========================================
+   AÃ‡Ã•ES PRIVADAS (UsuÃ¡rios logados)
+   ======================================== */
+.navbar-acoes-privadas {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+/* ========================================
+   NOTIFICAÃ‡Ã•ES
+   ======================================== */
+.navbar-notificacoes {
+    position: relative;
+    cursor: pointer;
+    width: 45px;
+    height: 45px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+    background-color: rgba(255, 255, 255, 0.1);
+}
+.navbar-notificacoes i {
+    font-size: 1.4rem;
+    color: white;
+}
+.navbar-contador {
+    position: absolute;
+    top: 0;
+    right: 0;
+    background-color: #FF4136;
+    color: white;
+    border-radius: 50%;
+    min-width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    font-weight: bold;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+    border: 2px solid white;
+}
+/* ========================================
+   AVATAR E DROPDOWN
+   ======================================== */
+.navbar-avatar-container {
+    position: relative;
+    display: inline-block;
+}
+.navbar-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    cursor: pointer;
+    border: 3px solid white;
+    box-shadow: 0 0 0 2px #E67E22;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #E67E22;
+    color: white;
+    font-weight: 600;
+    font-size: 16px;
+}
+.navbar-dropdown {
+    position: absolute;
+    top: 50px;
+    right: 0;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    width: 220px;
+    display: none;
+    z-index: 99999;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    overflow: visible;
+}
+.navbar-dropdown.active {
+    display: block !important;
+}
+.navbar-dropdown-item {
+    display: block;
+    padding: 12px 16px;
+    color: #374151;
+    text-decoration: none;
+    border: none;
+    background: white;
+    width: 100%;
+    text-align: left;
+    font-size: 14px;
+    cursor: pointer;
+    border-bottom: 1px solid #f0f0f0;
+}
+.navbar-dropdown-item:hover {
+    background: #F3F4F6;
+    color: #374151;
+}
+.navbar-dropdown-item i {
+    margin-right: 10px;
+    width: 16px;
+    color: #6B7280;
+}
+.navbar-dropdown-logout {
+    color: #DC2626 !important;
+}
+.navbar-dropdown-logout:hover {
+    background: #FEF2F2 !important;
+    color: #DC2626 !important;
+}
+/* ========================================
+   MENU HAMBÃšRGUER
+   ======================================== */
+.navbar-hamburguer {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    border-radius: 50%;
+    transition: background-color 0.3s ease, transform 0.3s ease;
+}
+.hamburguer-icon {
+    width: 24px;
+    height: 20px;
+    position: relative;
+    transform: rotate(0deg);
+    transition: .5s ease-in-out;
+}
+.hamburguer-icon span {
+    display: block;
+    position: absolute;
+    height: 3px;
+    width: 100%;
+    background: white;
+    border-radius: 3px;
+    opacity: 1;
+    left: 0;
+    transform: rotate(0deg);
+    transition: .25s ease-in-out;
+}
+.hamburguer-icon span:nth-child(1) {
+    top: 0px;
+    transform-origin: left center;
+}
+.hamburguer-icon span:nth-child(2) {
+    top: 8px;
+    transform-origin: left center;
+}
+.hamburguer-icon span:nth-child(3) {
+    top: 16px;
+    transform-origin: left center;
+}
+.navbar-hamburguer.ativo .hamburguer-icon span:nth-child(1) {
+    transform: rotate(45deg);
+    top: 0px;
+    left: 5px;
+}
+.navbar-hamburguer.ativo .hamburguer-icon span:nth-child(2) {
+    width: 0%;
+    opacity: 0;
+}
+.navbar-hamburguer.ativo .hamburguer-icon span:nth-child(3) {
+    transform: rotate(-45deg);
+    top: 16px;
+    left: 5px;
+}
+/* ========================================
+   RESPONSIVIDADE
+   ======================================== */
+@media (max-width: 768px) {
+    .navbar {
+        padding: 0 15px;
+    }
+    .navbar-logo-principal {
+        font-size: 1.2rem;
+    }
+    .navbar-logo-subtitulo {
+        font-size: 0.7rem;
+    }
+    .navbar-btn {
+        padding: 8px 12px !important;
+        font-size: 0.9rem !important;
+    }
+}
+/* ========================================
+   NAVBAR PARA VISITANTES (NÃƒO LOGADOS)
+   ======================================== */
+.navbar-acoes-publicas {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+/* Menu dropdown para visitantes */
+.navbar-menu-visitante-dropdown {
+    position: relative;
+}
+.navbar-menu-visitante-trigger {
+    width: 40px;
+    height: 40px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    color: white;
+    font-size: 16px;
+}
+.navbar-dropdown-visitante {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+    min-width: 200px;
+    padding: 8px;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 1000;
+    margin-top: 10px;
+}
+.navbar-dropdown-visitante.active {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+.navbar-dropdown-visitante .navbar-dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    color: #4a5568;
+    text-decoration: none;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+    font-weight: 500;
+    font-size: 14px;
+}
+.navbar-dropdown-visitante 
+.navbar-dropdown-visitante .navbar-dropdown-item i {
+    width: 16px;
+    text-align: center;
+    color: #ff6b35;
+    font-size: 14px;
+}
+/* BotÃµes de autenticaÃ§Ã£o para visitantes - mesmo estilo da tela inicial */
+.navbar-botoes-auth {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+.navbar-btn-login,
+.navbar-btn-cadastro {
+    color: #fff !important;
+    text-decoration: none !important;
+    font-weight: 600 !important;
+    font-size: 1rem !important;
+    padding: 10px 16px !important;
+    border-radius: 6px !important;
+    transition: all 0.3s ease !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3) !important;
+    position: relative !important;
+}
+.navbar-btn-login:hover,
+.navbar-btn-login::after,
+.navbar-btn-cadastro::after {
+    content: '';
+    position: absolute;
+    bottom: -3px;
+    left: 50%;
+    width: 0;
+    height: 2px;
+    background-color: #E67E22;
+    transition: all 0.3s ease;
+    transform: translateX(-50%);
+}
+.navbar-btn-login:hover::after,
+.navbar-btn-cadastro:hover::after {
+    width: 80%;
+}
+/* Responsividade para navbar de visitantes */
+@media (max-width: 768px) {
+    .navbar-acoes-publicas {
+        gap: 10px;
+    }
+    .navbar-btn-login span,
+    .navbar-btn-cadastro span {
+        display: none;
+    }
+    .navbar-btn-login,
+    .navbar-btn-cadastro {
+        width: 40px;
+        height: 40px;
+        padding: 0;
+        justify-content: center;
+        border-radius: 50%;
+    }
+    .navbar-dropdown-visitante {
+        min-width: 180px;
+        right: -10px;
+    }
+}

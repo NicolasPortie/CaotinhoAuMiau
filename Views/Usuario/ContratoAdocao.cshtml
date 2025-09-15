@@ -1,0 +1,396 @@
+@model ContratoUsuarioViewModel
+@{
+    ViewData["Title"] = "Contrato de Adoção";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/usuario/usuario-contrato-adocao.css" asp-append-version="true" />
+}
+
+<div class="contrato-container">
+    <!-- Header da Página -->
+    <div class="contrato-header">
+        <div class="header-content">
+            <div class="header-left">
+                <div class="title-wrapper">
+                    <div class="title-icon">
+                        <i class="fas fa-file-contract"></i>
+                    </div>
+                    <div class="title-text">
+                        <h1 class="contrato-title">Contrato de Adoção</h1>
+                        <p class="contrato-subtitle">
+                            Revisão e assinatura digital do contrato de adoção
+                        </p>
+                        <div class="breadcrumb">
+                            <span><i class="fas fa-home"></i> Início</span>
+                            <i class="fas fa-chevron-right"></i>
+                            <span><i class="fas fa-heart"></i> Minhas Adoções</span>
+                            <i class="fas fa-chevron-right"></i>
+                            <span><i class="fas fa-file-contract"></i> Contrato</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="header-right">
+                <div class="pet-info-card">
+                    <div class="pet-avatar">
+                        <img src="@Model.Pet.ImagemUrl" alt="@Model.Pet.Nome" class="pet-image">
+                    </div>
+                    <div class="pet-details">
+                        <h3 class="pet-name">@Model.Pet.Nome</h3>
+                        <div class="pet-specs">
+                            <span class="spec-item">
+                                <i class="fas fa-paw"></i>
+                                @Model.Pet.Especie
+                            </span>
+                            <span class="spec-item">
+                                <i class="fas fa-birthday-cake"></i>
+                                @Model.Pet.IdadeFormatada
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Status do Contrato -->
+    <div class="status-container">
+        <div class="status-timeline">
+            <div class="timeline-item @(Model.EstaPendente || Model.EstaAssinado ? "completed" : "")">
+                <div class="timeline-icon">
+                    <i class="fas fa-file-contract"></i>
+                </div>
+                <div class="timeline-content">
+                    <h4>Contrato Gerado</h4>
+                    <p>@Model.DataCriacao.ToString("dd/MM/yyyy HH:mm")</p>
+                </div>
+            </div>
+            
+            <div class="timeline-item @(Model.EstaAssinado ? "completed" : Model.EstaPendente ? "current" : "")">
+                <div class="timeline-icon">
+                    <i class="fas fa-signature"></i>
+                </div>
+                <div class="timeline-content">
+                    <h4>Assinatura</h4>
+                    @if (Model.EstaAssinado)
+                    {
+                        <p>Assinado em @Model.DataAssinaturaFormatada</p>
+                    }
+                    else if (Model.EstaPendente)
+                    {
+                        <p>Aguardando sua assinatura</p>
+                        @if (Model.DiasRestantes > 0)
+                        {
+                            <small class="text-warning">@Model.DiasRestantes dia(s) restante(s)</small>
+                        }
+                    }
+                    else
+                    {
+                        <p class="text-danger">Contrato expirado</p>
+                    }
+                </div>
+            </div>
+            
+            <div class="timeline-item @(Model.EstaAssinado ? "current" : "")">
+                <div class="timeline-icon">
+                    <i class="fas fa-home"></i>
+                </div>
+                <div class="timeline-content">
+                    <h4>Retirada</h4>
+                    @if (Model.EstaAssinado)
+                    {
+                        <p>Pronto para retirada</p>
+                        <small class="text-info">5 dias úteis após assinatura</small>
+                    }
+                    else
+                    {
+                        <p>Pendente assinatura</p>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Alert de Status -->
+    @if (Model.VenceEm24Horas)
+    {
+        <div class="alert alert-warning">
+            <i class="fas fa-exclamation-triangle"></i>
+            <strong>Atenção!</strong> Seu contrato vence em menos de 24 horas. Assine o quanto antes para não perder a adoção.
+        </div>
+    }
+    
+    @if (Model.EstaExpirado)
+    {
+        <div class="alert alert-danger">
+            <i class="fas fa-times-circle"></i>
+            <strong>Contrato Expirado!</strong> O prazo para assinatura expirou. Entre em contato para renovar.
+        </div>
+    }
+
+    <!-- Conteúdo do Contrato -->
+    <div class="contrato-content">
+        <div class="contract-paper">
+            <div class="paper-header">
+                <div class="paper-title">
+                    <i class="fas fa-certificate"></i>
+                    <span>Contrato de Adoção</span>
+                </div>
+            </div>
+            
+            <div class="paper-body">
+                @Html.Raw(Model.ConteudoContrato)
+            </div>
+        </div>
+    </div>
+
+    <!-- Seção de Assinatura -->
+    @if (Model.PodeAssinar)
+    {
+        <div class="assinatura-section">
+            <div class="assinatura-header">
+                <h3><i class="fas fa-signature"></i> Assinatura Digital</h3>
+                <p>Desenhe sua assinatura no campo abaixo para formalizar a adoção</p>
+            </div>
+            
+            <form action="/usuario/adocao/contrato/@Model.AdocaoId/assinar" method="post" id="formAssinatura">
+                <div class="signature-container">
+                    <canvas id="canvasAssinatura" width="600" height="200"></canvas>
+                    <input type="hidden" name="assinatura" id="assinaturaInput" />
+                </div>
+                
+                <div class="signature-actions">
+                    <button type="button" onclick="limparAssinatura()" class="btn btn-secondary">
+                        <i class="fas fa-eraser"></i> Limpar
+                    </button>
+                    <button type="submit" class="btn btn-success" id="btnAssinar">
+                        <i class="fas fa-signature"></i> Assinar Contrato
+                    </button>
+                </div>
+            </form>
+        </div>
+    }
+    else if (Model.EstaAssinado)
+    {
+        <div class="assinatura-section signed">
+            <div class="success-message">
+                <h3>Contrato Assinado com Sucesso!</h3>
+                <p>Seu contrato foi assinado em @Model.DataAssinaturaFormatada</p>
+
+                @if (!string.IsNullOrEmpty(Model.AssinaturaUsuario))
+                {
+                    <div class="assinatura-exibida">
+                        <h4><i class="fas fa-signature"></i> Sua Assinatura:</h4>
+                        <div class="assinatura-container">
+                            <img src="@Model.AssinaturaUsuario" alt="Assinatura do usuário" class="assinatura-image" />
+                        </div>
+                    </div>
+                }
+
+                <p class="next-steps">
+                    <strong>Próximos passos:</strong> Você tem 5 dias úteis para buscar o @Model.Pet.Nome na nossa sede.
+                </p>
+            </div>
+        </div>
+    }
+    else if (!string.IsNullOrEmpty(Model.MotivoNaoPodeAssinar))
+    {
+        <div class="assinatura-section blocked">
+            <div class="blocked-message">
+                <i class="fas fa-ban"></i>
+                <h3>Assinatura Indisponível</h3>
+                <p>@Model.MotivoNaoPodeAssinar</p>
+            </div>
+        </div>
+    }
+
+    <!-- Ações -->
+    <div class="contract-actions">
+        <a href="/usuario/adocoes" class="btn btn-outline-primary">
+            <i class="fas fa-arrow-left"></i> Voltar para Adoções
+        </a>
+        
+        @if (Model.EstaAssinado)
+        {
+            <a href="/usuario/adocao/contrato/@Model.AdocaoId/pdf" class="btn btn-primary">
+                <i class="fas fa-download"></i> Baixar PDF
+            </a>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // JAVASCRIPT APENAS PARA UX - Canvas de assinatura
+        let canvas, ctx, desenhando = false;
+
+        // Função para limpar assinatura - disponível globalmente
+        window.limparAssinatura = function() {
+            if (canvas && ctx) {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                const assinaturaInput = document.getElementById('assinaturaInput');
+                if (assinaturaInput) {
+                    assinaturaInput.value = '';
+                }
+
+                // Redesenhar a borda para melhor experiência visual
+                canvas.style.border = '2px dashed #ccc';
+                canvas.style.borderRadius = '8px';
+            }
+        };
+
+        document.addEventListener('DOMContentLoaded', function() {
+            @if (Model.PodeAssinar)
+            {
+                <text>
+                canvas = document.getElementById('canvasAssinatura');
+                if (canvas) {
+                    ctx = canvas.getContext('2d');
+                    setupCanvas();
+                }
+                </text>
+            }
+        });
+        
+        function setupCanvas() {
+            canvas.style.border = '2px dashed #ccc';
+            canvas.style.borderRadius = '8px';
+            ctx.strokeStyle = '#2c3e50';
+            ctx.lineWidth = 2;
+            ctx.lineCap = 'round';
+            
+            // Mouse events
+            canvas.addEventListener('mousedown', startDrawing);
+            canvas.addEventListener('mousemove', draw);
+            canvas.addEventListener('mouseup', stopDrawing);
+            
+            // Touch events para mobile
+            canvas.addEventListener('touchstart', handleTouch);
+            canvas.addEventListener('touchmove', handleTouch);
+            canvas.addEventListener('touchend', stopDrawing);
+        }
+        
+        function startDrawing(e) {
+            desenhando = true;
+            const rect = canvas.getBoundingClientRect();
+            ctx.beginPath();
+            ctx.moveTo(e.clientX - rect.left, e.clientY - rect.top);
+        }
+        
+        function draw(e) {
+            if (!desenhando) return;
+            const rect = canvas.getBoundingClientRect();
+            ctx.lineTo(e.clientX - rect.left, e.clientY - rect.top);
+            ctx.stroke();
+        }
+        
+        function stopDrawing() {
+            if (desenhando) {
+                desenhando = false;
+                // Salvar assinatura como base64
+                document.getElementById('assinaturaInput').value = canvas.toDataURL();
+            }
+        }
+        
+        function handleTouch(e) {
+            e.preventDefault();
+            const touch = e.touches[0];
+            const mouseEvent = new MouseEvent(e.type === 'touchstart' ? 'mousedown' : 
+                                            e.type === 'touchmove' ? 'mousemove' : 'mouseup', {
+                clientX: touch.clientX,
+                clientY: touch.clientY
+            });
+            canvas.dispatchEvent(mouseEvent);
+        }
+        
+        
+        // Validação e envio via AJAX
+        document.getElementById('formAssinatura')?.addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const assinatura = document.getElementById('assinaturaInput').value;
+            if (!assinatura) {
+                alert('Por favor, desenhe sua assinatura antes de enviar.');
+                return;
+            }
+
+            const btnAssinar = document.getElementById('btnAssinar');
+            if (!btnAssinar) return;
+
+            // Desabilitar botão durante o envio
+            const textoOriginal = btnAssinar.innerHTML;
+            btnAssinar.disabled = true;
+            btnAssinar.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Assinando...';
+
+            try {
+                const response = await fetch(this.action, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: JSON.stringify({
+                        assinatura: assinatura
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.sucesso) {
+                    window.location.reload(); // Recarregar para mostrar o novo status
+                } else {
+                    alert('Erro: ' + data.mensagem);
+                }
+            } catch (error) {
+                console.error('Erro ao assinar contrato:', error);
+                alert('Erro ao assinar contrato. Tente novamente.');
+            } finally {
+                // Reabilitar botão
+                btnAssinar.disabled = false;
+                btnAssinar.innerHTML = textoOriginal;
+            }
+        });
+    </script>
+}
+
+<style>
+/* Media queries removidas para evitar conflitos de compilação */
+.contrato-header { margin-bottom: 1rem; }
+.status-container { padding: 1rem; }
+.assinatura-section { border-top: 1px solid #ddd; }
+.contract-actions { display: flex; gap: 1rem; }
+
+.assinatura-exibida {
+    margin: 1.5rem 0;
+    padding: 1rem;
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+}
+
+.assinatura-exibida h4 {
+    color: #28a745;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.assinatura-container {
+    background: white;
+    border: 2px solid #28a745;
+    border-radius: 8px;
+    padding: 1rem;
+    text-align: center;
+}
+
+.assinatura-image {
+    max-width: 100%;
+    height: auto;
+    max-height: 150px;
+    border: none;
+}
+</style>

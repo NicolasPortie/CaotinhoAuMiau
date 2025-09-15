@@ -1,0 +1,48 @@
+
+<div id="painel-notificacoes" class="painel-notificacoes">
+    <div class="notificacoes-cabecalho">
+        <h3 class="notificacoes-titulo">
+            <i class="fas fa-bell"></i>
+            Notificações
+        </h3>
+        <button id="fechar-notificacoes" class="botao-fechar-notificacoes">
+            <i class="fas fa-times"></i>
+        </button>
+    </div>
+    
+    
+    <div id="carregando-notificacoes" class="carregando-notificacoes">
+        <div class="carregando-spinner">
+            <i class="fas fa-circle-notch fa-spin"></i>
+            <i class="fas fa-bell"></i>
+        </div>
+        <span>Carregando notificações...</span>
+    </div>
+    
+    <div id="lista-notificacoes" class="lista-notificacoes"></div>
+    
+    <div id="sem-notificacoes" class="sem-notificacoes">
+        <div class="sem-notificacoes-conteudo">
+            <i class="fas fa-bell-slash"></i>
+            <span>Nenhuma notificação</span>
+        </div>
+    </div>
+    
+    <div class="notificacoes-rodape">
+        <button id="marcar-todas-lidas" class="botao-marcar-lidas">
+            <i class="fas fa-check"></i> 
+            Marcar todas como lidas
+        </button>
+    </div>
+</div>
+
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        if (typeof inicializarComponenteNotificacoes === 'function') {
+            inicializarComponenteNotificacoes();
+        } else {
+            console.error('Função inicializarComponenteNotificacoes não encontrada. Verifique se o arquivo notificacoes.js está carregado.');
+        }
+    });
+</script> 

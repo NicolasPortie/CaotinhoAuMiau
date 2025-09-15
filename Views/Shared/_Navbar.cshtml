@@ -1,0 +1,253 @@
+@using CaotinhoAuMiau.Data
+@using Microsoft.EntityFrameworkCore
+@inject ApplicationDbContext DbContext
+
+@{
+    var usuarioNome = User.ObterValorClaim(System.Security.Claims.ClaimTypes.Name);
+    var usuarioEmail = User.ObterValorClaim(System.Security.Claims.ClaimTypes.Email);
+    var usuarioId = User.ObterIdUsuario();
+    var paginaAtual = ViewContext.RouteData.Values["action"]?.ToString();
+    var controllerAtual = ViewContext.RouteData.Values["controller"]?.ToString();
+    
+    // Verificar se estamos em páginas públicas
+    var isPaginaPublica = (controllerAtual == "Home" && (paginaAtual == "Index" || paginaAtual == "Sobre")) || 
+                         (controllerAtual == "Authentication");
+    
+    // Verificar se estamos em páginas internas do usuário onde não deve mostrar avatar
+    var isPaginaInternaUsuario = (controllerAtual == "Pet" && paginaAtual == "ExplorarPets") ||
+                                (controllerAtual == "Adocao") ||
+                                (controllerAtual == "Perfil") ||
+                                (controllerAtual == "FormularioAdocao") ||
+                                (controllerAtual == "ContratoAdocao");
+
+    // Verificar se estamos especificamente na página ExplorarPets
+    var isExplorarPets = (controllerAtual == "Pet" && paginaAtual == "ExplorarPets");
+    
+    var inicial = !string.IsNullOrEmpty(usuarioNome) ? usuarioNome.Substring(0, 1).ToUpper() : "?";
+    var isLogado = User?.Identity?.IsAuthenticated == true;
+}
+
+
+<header class="navbar">
+    <!-- Logo -->
+    <a href="@(isLogado && isPaginaInternaUsuario ? "/usuario/pets/explorar" : Url.Action("Index", "Home"))" class="navbar-logo">
+        <div class="navbar-logo-icon">
+            <i class="fa-solid fa-paw"></i>
+        </div>
+        <div class="navbar-logo-text">
+            <div class="navbar-logo-principal">CãotinhoAuMiau</div>
+            <div class="navbar-logo-subtitulo">Adoção Responsável</div>
+        </div>
+    </a>
+
+    <!-- Ações -->
+    <div class="navbar-acoes">
+        @if (isLogado)
+        {
+            <!-- Ações para usuários logados -->
+            <div class="navbar-acoes-privadas">
+                <!-- Notificações -->
+                <div class="navbar-notificacoes" id="notificacoes-icone">
+                    <i class="fas fa-bell"></i>
+                    @if (ViewBag.NotificacoesNaoLidas != null && ViewBag.NotificacoesNaoLidas > 0)
+                    {
+                        <div class="navbar-contador" id="notificacoes-contador">@ViewBag.NotificacoesNaoLidas</div>
+                    }
+                </div>
+
+                <!-- Avatar com Dropdown -->
+                @if (!isPaginaInternaUsuario)
+                {
+                    <div class="navbar-avatar-container">
+                        <div class="navbar-avatar" id="userAvatar">
+                            @inicial
+                        </div>
+                        <div class="navbar-dropdown" id="userDropdown">
+                            <a href="/usuario/pets/explorar" class="navbar-dropdown-item">
+                                <i class="fas fa-search"></i>
+                                Explorar Pets
+                            </a>
+                            <a href="/usuario/adocoes" class="navbar-dropdown-item">
+                                <i class="fas fa-heart"></i>
+                                Minhas Adoções
+                            </a>
+                            <a href="/usuario/perfil" class="navbar-dropdown-item">
+                                <i class="fas fa-user"></i>
+                                Meu Perfil
+                            </a>
+                            <a href="@Url.Action("Index", "Home")" class="navbar-dropdown-item">
+                                <i class="fas fa-home"></i>
+                                Página Inicial
+                            </a>
+                            <a href="@Url.Action("Sobre", "Home")" class="navbar-dropdown-item">
+                                <i class="fas fa-info-circle"></i>
+                                Sobre
+                            </a>
+                            <form method="post" action="/autenticacao/logout" style="margin: 0;">
+                                <button type="submit" class="navbar-dropdown-item navbar-dropdown-logout">
+                                    <i class="fas fa-sign-out-alt"></i>
+                                    Sair
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                }
+
+                <!-- Menu Hambúrguer (apenas em páginas privadas) -->
+                @if (!isPaginaPublica)
+                {
+                    <div class="navbar-hamburguer" id="btnMenuHamburguer">
+                        <div class="hamburguer-icon">
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+        else
+        {
+            @if (isExplorarPets)
+            {
+                <!-- Navbar especial para ExplorarPets (visitantes) -->
+                <div class="navbar-acoes-publicas">
+                    <!-- Botões de Login e Cadastro -->
+                    <div class="navbar-botoes-auth">
+                        <a href="/autenticacao/login" class="navbar-btn navbar-btn-login">
+                            <i class="fas fa-sign-in-alt"></i>
+                            <span>Login</span>
+                        </a>
+                        <a href="/autenticacao/cadastro" class="navbar-btn navbar-btn-cadastro">
+                            <i class="fas fa-user-plus"></i>
+                            <span>Cadastro</span>
+                        </a>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <!-- Botões simples para outras páginas -->
+                <div class="navbar-botoes-publicos">
+                    <a href="/autenticacao/login" class="navbar-btn">
+                        <i class="fas fa-sign-in-alt"></i> Login
+                    </a>
+                    <a href="/autenticacao/cadastro" class="navbar-btn">
+                        <i class="fas fa-user-plus"></i> Cadastro
+                    </a>
+                </div>
+            }
+        }
+    </div>
+</header>
+
+<script>
+// Controle do dropdown do avatar do usuário e menu hamburger
+document.addEventListener('DOMContentLoaded', function() {
+    // Controle do menu hamburger
+    const menuHamburguer = document.getElementById('btnMenuHamburguer');
+    if (menuHamburguer) {
+        menuHamburguer.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            // Controle direto do menu
+            const menuLateral = document.querySelector('.menu-lateral');
+            const menuSobreposicao = document.querySelector('.menu-sobreposicao');
+            
+            if (menuLateral) {
+                const estaAtivo = menuLateral.classList.contains('ativo');
+                
+                if (estaAtivo) {
+                    // Fechar menu
+                    menuLateral.classList.remove('ativo');
+                    if (menuSobreposicao) menuSobreposicao.classList.remove('ativo');
+                    menuHamburguer.classList.remove('ativo');
+                } else {
+                    // Abrir menu
+                    menuLateral.classList.add('ativo');
+                    if (menuSobreposicao) menuSobreposicao.classList.add('ativo');
+                    menuHamburguer.classList.add('ativo');
+                    
+                    // Fechar painel de notificações se estiver aberto
+                    if (typeof window.ocultarPainelNotificacoes === 'function') {
+                        window.ocultarPainelNotificacoes();
+                    }
+                }
+            }
+        });
+        
+        // Adicionar listener para fechar menu ao clicar na sobreposição
+        const menuSobreposicao = document.querySelector('.menu-sobreposicao');
+        if (menuSobreposicao) {
+            menuSobreposicao.addEventListener('click', function() {
+                const menuLateral = document.querySelector('.menu-lateral');
+                if (menuLateral && menuLateral.classList.contains('ativo')) {
+                    menuLateral.classList.remove('ativo');
+                    menuSobreposicao.classList.remove('ativo');
+                    menuHamburguer.classList.remove('ativo');
+                }
+            });
+        }
+        
+        // Listener para fechar menu com Escape
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                const menuLateral = document.querySelector('.menu-lateral');
+                if (menuLateral && menuLateral.classList.contains('ativo')) {
+                    menuLateral.classList.remove('ativo');
+                    if (menuSobreposicao) menuSobreposicao.classList.remove('ativo');
+                    menuHamburguer.classList.remove('ativo');
+                }
+            }
+        });
+    }
+    
+    // Controle do ícone de notificação
+    const iconeNotificacao = document.getElementById('notificacoes-icone');
+    if (iconeNotificacao) {
+        iconeNotificacao.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            if (typeof window.togglePainelNotificacoes === 'function') {
+                window.togglePainelNotificacoes();
+            }
+        });
+    }
+
+
+    const userAvatar = document.getElementById('userAvatar');
+    const userDropdown = document.getElementById('userDropdown');
+    
+    if (userAvatar && userDropdown) {
+        // Abrir/fechar dropdown ao clicar no avatar
+        userAvatar.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            userDropdown.classList.toggle('active');
+        });
+        
+        // Fechar dropdown ao clicar fora
+        document.addEventListener('click', function(e) {
+            if (!userAvatar.contains(e.target) && !userDropdown.contains(e.target)) {
+                userDropdown.classList.remove('active');
+            }
+        });
+        
+        // Fechar dropdown ao pressionar Escape
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                userDropdown.classList.remove('active');
+            }
+        });
+        
+        // Fechar dropdown ao clicar em qualquer item do menu
+        const dropdownItems = userDropdown.querySelectorAll('.navbar-dropdown-item');
+        dropdownItems.forEach(item => {
+            item.addEventListener('click', function() {
+                userDropdown.classList.remove('active');
+            });
+        });
+    }
+});
+</script>

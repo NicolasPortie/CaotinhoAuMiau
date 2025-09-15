@@ -1,0 +1,463 @@
+@model AssinaturaContratoViewModel
+@{
+    ViewData["Title"] = "Assinatura de Contrato";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container-assinatura">
+    <div class="header-assinatura">
+        <a href="/usuario/adocao/contrato/@Model.AdocaoId" class="btn-voltar">
+            <i class="fas fa-arrow-left"></i>
+            Voltar ao Contrato
+        </a>
+        <h1 class="titulo-assinatura">
+            <i class="fas fa-file-signature"></i>
+            Assinatura de Contrato
+        </h1>
+    </div>
+
+    <!-- Alert de Prazo -->
+    <div class="alert alert-@Model.CorPrazo mb-4">
+        <i class="@Model.IconePrazo"></i>
+        <strong>Prazo:</strong> @Model.TempoRestanteTexto
+        @if (Model.UrgentePrazo && !Model.EstaExpirado)
+        {
+            <br><small>Assine o contrato o quanto antes para não perder a adoção!</small>
+        }
+    </div>
+
+    @if (Model.EstaExpirado)
+    {
+        <div class="card-expirado text-center">
+            <div class="icon-expirado">
+                <i class="fas fa-times-circle"></i>
+            </div>
+            <h2>Contrato Expirado</h2>
+            <p>O prazo para assinatura do contrato expirou em @Model.DataVencimento.ToString("dd/MM/yyyy HH:mm").</p>
+            <p>Entre em contato conosco para renovar o contrato de adoção.</p>
+            <div class="actions-expirado">
+                <a href="/usuario/adocoes" class="btn btn-primary">
+                    <i class="fas fa-list"></i> Ver Minhas Adoções
+                </a>
+                <a href="mailto:contato@caotinhoaumiau.com" class="btn btn-outline-primary">
+                    <i class="fas fa-envelope"></i> Entrar em Contato
+                </a>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="card-assinatura">
+            <!-- Informações do Pet e Usuário -->
+            <div class="info-pet-contrato">
+                <div class="pet-imagem">
+                    <img src="@Model.Pet.ImagemUrl" alt="@Model.Pet.Nome" />
+                </div>
+                <div class="pet-detalhes">
+                    <h2 class="pet-nome">@Model.Pet.Nome</h2>
+                    <div class="pet-info-grid">
+                        <div class="info-item">
+                            <i class="fas fa-paw"></i>
+                            <span>@Model.Pet.Especie</span>
+                        </div>
+                        <div class="info-item">
+                            <i class="fas fa-tag"></i>
+                            <span>@Model.Pet.Raca</span>
+                        </div>
+                        <div class="info-item">
+                            <i class="fas fa-birthday-cake"></i>
+                            <span>@Model.Pet.IdadeFormatada</span>
+                        </div>
+                        <div class="info-item">
+                            <i class="fas fa-venus-mars"></i>
+                            <span>@Model.Pet.Sexo</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="usuario-detalhes">
+                    <h3>Dados do Adotante</h3>
+                    <div class="usuario-info">
+                        <p><i class="fas fa-user"></i> @Model.Usuario.Nome</p>
+                        <p><i class="fas fa-envelope"></i> @Model.Usuario.Email</p>
+                        @if (!string.IsNullOrEmpty(Model.Usuario.Telefone))
+                        {
+                            <p><i class="fas fa-phone"></i> @Model.Usuario.Telefone</p>
+                        }
+                        @if (!string.IsNullOrEmpty(Model.Usuario.Cidade))
+                        {
+                            <p><i class="fas fa-map-marker-alt"></i> @Model.Usuario.Cidade, @Model.Usuario.Estado</p>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <!-- Prévia do Contrato -->
+            <div class="contrato-preview">
+                <h3>
+                    <i class="fas fa-file-contract"></i>
+                    Contrato de Adoção
+                </h3>
+                <div class="contrato-scroll">
+                    @Html.Raw(Model.ConteudoContrato)
+                </div>
+                <div class="contrato-footer">
+                    <small class="text-muted">
+                        <i class="fas fa-info-circle"></i>
+                        Leia atentamente todo o contrato antes de assinar
+                    </small>
+                </div>
+            </div>
+
+            <!-- Seção de Assinatura -->
+            <div class="assinatura-section">
+                <h3>
+                    <i class="fas fa-signature"></i>
+                    Assinatura Digital
+                </h3>
+                <p class="assinatura-instrucoes">
+                    Desenhe sua assinatura no campo abaixo. Use o mouse ou toque na tela se estiver em um dispositivo móvel.
+                </p>
+                
+                <form action="/usuario/adocao/contrato/@Model.AdocaoId/assinar" method="post" id="formAssinatura">
+                    @Html.AntiForgeryToken()
+                    <div class="signature-container">
+                        <div class="signature-label">
+                            <i class="fas fa-pen"></i>
+                            Assinatura do Adotante
+                        </div>
+                        <canvas id="canvasAssinatura" width="600" height="200"></canvas>
+                        <input type="hidden" name="assinatura" id="assinaturaInput" required />
+                        <div class="signature-hint">
+                            Dica: Desenhe sua assinatura de forma legível e clara
+                        </div>
+                    </div>
+                    
+                    <div class="signature-actions">
+                        <button type="button" onclick="limparAssinatura()" class="btn btn-outline-secondary">
+                            <i class="fas fa-eraser"></i> Limpar Assinatura
+                        </button>
+                        <button type="submit" class="btn btn-success btn-lg" id="btnAssinar">
+                            <i class="fas fa-file-signature"></i> Assinar e Finalizar Contrato
+                        </button>
+                    </div>
+
+                    <!-- Confirmação -->
+                    <div class="confirmacao-section">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="confirmaLeitura" required>
+                            <label class="form-check-label" for="confirmaLeitura">
+                                Confirmo que li e concordo com todos os termos do contrato de adoção
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="confirmaResponsabilidade" required>
+                            <label class="form-check-label" for="confirmaResponsabilidade">
+                                Assumo total responsabilidade pelo bem-estar e cuidado do animal
+                            </label>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        // JAVASCRIPT APENAS PARA UX - Canvas de assinatura (mesmo código da outra view)
+        let canvas, ctx, desenhando = false, hasSignature = false;
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            @if (!Model.EstaExpirado)
+            {
+                <text>
+                canvas = document.getElementById('canvasAssinatura');
+                if (canvas) {
+                    ctx = canvas.getContext('2d');
+                    setupCanvas();
+                }
+                </text>
+            }
+        });
+        
+        function setupCanvas() {
+            canvas.style.border = '2px dashed #dee2e6';
+            canvas.style.borderRadius = '12px';
+            canvas.style.background = '#fefefe';
+            canvas.style.cursor = 'crosshair';
+            
+            ctx.strokeStyle = '#2c3e50';
+            ctx.lineWidth = 3;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+            
+            // Mouse events
+            canvas.addEventListener('mousedown', startDrawing);
+            canvas.addEventListener('mousemove', draw);
+            canvas.addEventListener('mouseup', stopDrawing);
+            canvas.addEventListener('mouseout', stopDrawing);
+            
+            // Touch events para mobile
+            canvas.addEventListener('touchstart', handleTouch);
+            canvas.addEventListener('touchmove', handleTouch);
+            canvas.addEventListener('touchend', stopDrawing);
+        }
+        
+        function startDrawing(e) {
+            desenhando = true;
+            const rect = canvas.getBoundingClientRect();
+            ctx.beginPath();
+            ctx.moveTo(e.clientX - rect.left, e.clientY - rect.top);
+            canvas.style.border = '2px solid #E67E22';
+        }
+        
+        function draw(e) {
+            if (!desenhando) return;
+            const rect = canvas.getBoundingClientRect();
+            ctx.lineTo(e.clientX - rect.left, e.clientY - rect.top);
+            ctx.stroke();
+            hasSignature = true;
+        }
+        
+        function stopDrawing() {
+            if (desenhando) {
+                desenhando = false;
+                if (hasSignature) {
+                    document.getElementById('assinaturaInput').value = canvas.toDataURL();
+                    canvas.style.border = '2px solid #28a745';
+                }
+            }
+        }
+        
+        function handleTouch(e) {
+            e.preventDefault();
+            const touch = e.touches[0];
+            const mouseEvent = new MouseEvent(e.type === 'touchstart' ? 'mousedown' : 
+                                            e.type === 'touchmove' ? 'mousemove' : 'mouseup', {
+                clientX: touch.clientX,
+                clientY: touch.clientY
+            });
+            canvas.dispatchEvent(mouseEvent);
+        }
+        
+        function limparAssinatura() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            document.getElementById('assinaturaInput').value = '';
+            canvas.style.border = '2px dashed #dee2e6';
+            hasSignature = false;
+        }
+        
+        // Validação do formulário
+        document.getElementById('formAssinatura')?.addEventListener('submit', function(e) {
+            const assinatura = document.getElementById('assinaturaInput').value;
+            const confirmaLeitura = document.getElementById('confirmaLeitura').checked;
+            const confirmaResponsabilidade = document.getElementById('confirmaResponsabilidade').checked;
+            
+            if (!assinatura || !hasSignature) {
+                e.preventDefault();
+                alert('Por favor, desenhe sua assinatura antes de enviar.');
+                return;
+            }
+            
+            if (!confirmaLeitura || !confirmaResponsabilidade) {
+                e.preventDefault();
+                alert('Por favor, confirme que leu e concorda com os termos do contrato.');
+                return;
+            }
+            
+            // Confirmação final
+            if (!confirm('Tem certeza que deseja assinar este contrato? Esta ação não pode ser desfeita.')) {
+                e.preventDefault();
+                return;
+            }
+            
+            // Desabilitar botão para evitar duplo envio
+            document.getElementById('btnAssinar').disabled = true;
+            document.getElementById('btnAssinar').innerHTML = '<i class="fas fa-spinner fa-spin"></i> Assinando...';
+        });
+    </script>
+}
+
+<style>
+.container-assinatura {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+.header-assinatura {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid #E67E22;
+}
+
+.btn-voltar {
+    background: #6c757d;
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.3s ease;
+}
+
+.btn-voltar:hover {
+    background: #5a6268;
+    color: white;
+    text-decoration: none;
+}
+
+.titulo-assinatura {
+    color: #E67E22;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.card-assinatura {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+
+.info-pet-contrato {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 2rem;
+    padding: 2rem;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-bottom: 1px solid #dee2e6;
+}
+
+.pet-imagem img {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 4px solid #E67E22;
+}
+
+.pet-nome {
+    color: #E67E22;
+    margin-bottom: 1rem;
+}
+
+.pet-info-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+}
+
+.info-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #6c757d;
+}
+
+.usuario-detalhes h3 {
+    color: #495057;
+    margin-bottom: 1rem;
+}
+
+.usuario-info p {
+    margin: 0.5rem 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #6c757d;
+}
+
+.contrato-preview {
+    padding: 2rem;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.contrato-scroll {
+    max-height: 300px;
+    overflow-y: auto;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin: 1rem 0;
+    background: #fefefe;
+}
+
+.assinatura-section {
+    padding: 2rem;
+}
+
+.signature-container {
+    text-align: center;
+    margin: 2rem 0;
+}
+
+.signature-label {
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: #495057;
+}
+
+#canvasAssinatura {
+    display: block;
+    margin: 0 auto;
+    max-width: 100%;
+}
+
+.signature-hint {
+    margin-top: 1rem;
+    font-size: 0.9rem;
+    color: #6c757d;
+}
+
+.signature-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    margin: 2rem 0;
+}
+
+.confirmacao-section {
+    background: #f8f9fa;
+    padding: 1.5rem;
+    border-radius: 8px;
+    margin-top: 2rem;
+}
+
+.form-check {
+    margin-bottom: 1rem;
+}
+
+.card-expirado {
+    background: white;
+    border-radius: 16px;
+    padding: 3rem;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+}
+
+.icon-expirado {
+    font-size: 4rem;
+    color: #dc3545;
+    margin-bottom: 1rem;
+}
+
+.actions-expirado {
+    margin-top: 2rem;
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+}
+
+/* Media queries removidas para evitar conflitos de compilação */
+.info-pet-contrato { display: grid; gap: 2rem; }
+.pet-info-grid { display: grid; gap: 0.75rem; }
+.signature-actions { display: flex; gap: 1rem; justify-content: center; }
+</style>

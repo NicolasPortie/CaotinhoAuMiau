@@ -1,0 +1,820 @@
+@model IEnumerable<CaotinhoAuMiau.Models.FormularioAdocao>
+@using CaotinhoAuMiau.Models.Enums
+@{
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+    ViewData["Title"] = "Gerenciamento de Formulários";
+    
+    var totalFormularios = ViewBag.TotalItens;
+    var pendentes = Model.Where(f => f.StatusEnum == StatusFormulario.Pendente).Count();
+    var aprovados = Model.Where(f => f.StatusEnum == StatusFormulario.Aprovado).Count();
+    var rejeitados = Model.Where(f => f.StatusEnum == StatusFormulario.Negado).Count();
+    var cancelados = Model.Where(f => f.StatusEnum == StatusFormulario.CanceladoPeloUsuario || f.StatusEnum == StatusFormulario.CanceladoPorInatividade).Count();
+    
+
+    string GetStatusClass(StatusFormulario status)
+    {
+        return status switch
+        {
+            StatusFormulario.Pendente => "pendente",
+            StatusFormulario.EmAnalise => "em-analise",
+            StatusFormulario.Aprovado => "aprovado",
+            StatusFormulario.Negado => "rejeitado",
+            StatusFormulario.CanceladoPeloUsuario => "cancelado",
+            StatusFormulario.CanceladoPorInatividade => "cancelado",
+            _ => "pendente"
+        };
+    }
+
+    string GetStatusText(StatusFormulario status)
+    {
+        return status switch
+        {
+            StatusFormulario.Pendente => "Pendente",
+            StatusFormulario.EmAnalise => "Em Análise", 
+            StatusFormulario.Aprovado => "Aprovado",
+            StatusFormulario.Negado => "Negado",
+            StatusFormulario.CanceladoPeloUsuario => "Cancelado pelo Usuário",
+            StatusFormulario.CanceladoPorInatividade => "Cancelado por Inatividade",
+            0 => "Status Indefinido", // Para capturar valor padrão
+            _ => $"Status {(int)status}: {status.ToString()}"
+        };
+    }
+}
+
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/admin/admin-gerenciamento-formularios.css?v=2.1" asp-append-version="true" />
+    <style>
+        
+        .modal {
+            z-index: 1050 !important;
+        }
+        .modal-backdrop {
+            z-index: 1040 !important;
+        }
+        .barra-lateral {
+            z-index: 100 !important;
+        }
+        .modal-open {
+            overflow: auto !important;
+            padding-right: 0 !important;
+        }
+        body.modal-open .conteudo-principal {
+            filter: none !important;
+        }
+        
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+        }
+        
+        .cartao-status .numero {
+            font-family: 'Poppins', sans-serif;
+            font-weight: 700;
+        }
+        
+        .cartao-status .rotulo {
+            font-family: 'Poppins', sans-serif;
+            font-weight: 500;
+        }
+        
+        /* Modal melhorado */
+        .modal-xl {
+            max-width: 1200px;
+        }
+        
+        .modal-content {
+            border-radius: 12px;
+            border: none;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+        }
+        
+        .modal-header {
+            background: linear-gradient(135deg, var(--primary) 0%, #4f46e5 100%);
+            color: white;
+            border-radius: 12px 12px 0 0;
+            padding: 1.5rem 2rem;
+            border: none;
+        }
+        
+        .titulo-modal {
+            font-weight: 600;
+            font-size: 1.25rem;
+            font-family: 'Poppins', sans-serif;
+        }
+        
+        #modalDetalhesFormulario {
+            font-family: 'Poppins', sans-serif;
+        }
+        
+        #modalDetalhesFormulario .modal-title,
+        #modalDetalhesFormulario .nome-usuario,
+        #modalDetalhesFormulario h5,
+        #modalDetalhesFormulario h6,
+        #modalDetalhesFormulario .detalhes-usuario-modal {
+            font-family: 'Poppins', sans-serif;
+        }
+        
+        .modal-body {
+            padding: 2rem;
+            max-height: 70vh;
+            overflow-y: auto;
+        }
+        
+        .btn-close-white {
+            filter: brightness(0) invert(1);
+            opacity: 1 !important;
+        }
+
+        /* Novo botão X do modal */
+        .btn-fechar-modal {
+            background: none !important;
+            border: none !important;
+            color: white !important;
+            font-size: 1.2rem !important;
+            padding: 0.5rem !important;
+            border-radius: 0.375rem !important;
+            width: 2.5rem !important;
+            height: 2.5rem !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            cursor: pointer !important;
+            transition: all 0.2s ease !important;
+            opacity: 1 !important;
+        }
+
+        .btn-fechar-modal:hover {
+            background-color: rgba(255,255,255,0.2) !important;
+            transform: scale(1.1) !important;
+            color: white !important;
+        }
+
+        .btn-fechar-modal:focus {
+            outline: none !important;
+            box-shadow: 0 0 0 0.25rem rgba(255,255,255,0.25) !important;
+            color: white !important;
+        }
+
+        .btn-fechar-modal i {
+            font-size: 1.1rem !important;
+            color: white !important;
+        }
+        
+        /* Forçar aplicação dos novos estilos */
+        #modalDetalhesFormulario .detalhes-formulario-container {
+            font-family: 'Poppins', sans-serif !important;
+        }
+        
+        #modalDetalhesFormulario .cabecalho-formulario {
+            background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%) !important;
+            border-radius: 16px !important;
+            padding: 2rem !important;
+            border: 1px solid #e2e8f0 !important;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05) !important;
+        }
+        
+        #modalDetalhesFormulario .usuario-info {
+            display: flex !important;
+            align-items: center !important;
+            gap: 1.5rem !important;
+        }
+        
+        #modalDetalhesFormulario .detalhes-formulario-container .avatar-usuario {
+            width: 80px !important;
+            height: 80px !important;
+            border-radius: 50% !important;
+            overflow: hidden !important;
+            border: 4px solid #fff !important;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
+            flex-shrink: 0 !important;
+        }
+        
+        #modalDetalhesFormulario .card-pet-melhorado {
+            padding: 2rem !important;
+        }
+        
+        #modalDetalhesFormulario .pet-showcase {
+            display: flex !important;
+            gap: 2rem !important;
+            align-items: flex-start !important;
+        }
+        
+        #modalDetalhesFormulario .pet-imagem-melhorada {
+            width: 140px !important;
+            height: 140px !important;
+            border-radius: 20px !important;
+            object-fit: cover !important;
+            border: 4px solid #fff !important;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15) !important;
+        }
+        
+        #modalDetalhesFormulario .pet-nome-principal {
+            font-family: 'Poppins', sans-serif !important;
+            font-weight: 600 !important;
+            font-size: 1.5rem !important;
+        }
+
+        /* Estilos para seção de observações de cancelamento */
+        #modalDetalhesFormulario .secao-cancelamento {
+            border: 1px solid #fbbf24 !important;
+            border-radius: 12px !important;
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%) !important;
+            padding: 1.5rem !important;
+        }
+
+        #modalDetalhesFormulario .card-observacao-cancelamento {
+            background: white !important;
+            border-radius: 8px !important;
+            padding: 1.25rem !important;
+            border-left: 4px solid #ef4444 !important;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08) !important;
+        }
+
+        #modalDetalhesFormulario .observacao-content {
+            display: flex !important;
+            align-items: flex-start !important;
+            gap: 0.75rem !important;
+        }
+
+        #modalDetalhesFormulario .observacao-texto {
+            flex: 1 !important;
+            font-size: 0.95rem !important;
+            line-height: 1.5 !important;
+            color: #374151 !important;
+        }
+
+        #modalDetalhesFormulario .caracteristica-item {
+            display: flex !important;
+            align-items: center !important;
+            gap: 1rem !important;
+            background: #f8fafc !important;
+            padding: 1.25rem !important;
+            border-radius: 12px !important;
+            border: 1px solid #e2e8f0 !important;
+            transition: all 0.2s ease !important;
+        }
+        
+        
+        /* Garantir que avatars sem foto fiquem laranja - MESMA CONFIGURAÇÃO DA VIEW DE ADOÇÕES */
+        .avatar-sem-foto {
+            width: 100% !important;
+            height: 100% !important;
+            border-radius: 50% !important;
+            background-color: #F59E0B !important;
+            color: white !important;
+            font-weight: 600 !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            font-size: 1.2rem !important;
+        }
+        
+        /* Fallback para classes antigas */
+        .container-foto-usuario.sem-foto,
+        .inicial-usuario {
+            background-color: #F59E0B !important;
+            color: white !important;
+            font-weight: 600 !important;
+        }
+        
+        /* CORREÇÃO FONT AWESOME - Forçar carregamento dos ícones */
+        .indicador-status i,
+        .indicador-status .fas,
+        .indicador-status .far,
+        .indicador-status .fab {
+            font-family: "Font Awesome 6 Free" !important;
+            font-weight: 900 !important;
+            font-style: normal !important;
+            display: inline-block !important;
+            -webkit-font-smoothing: antialiased !important;
+            -moz-osx-font-smoothing: grayscale !important;
+        }
+        
+        /* Debug: Mostrar se os ícones estão carregando */
+        .indicador-status i::before {
+            font-family: "Font Awesome 6 Free" !important;
+            font-weight: 900 !important;
+        }
+        
+        /* Se Font Awesome não carregar, mostrar texto de fallback */
+        .indicador-status .fas.fa-hourglass-half::before { content: ""; }
+        .indicador-status .fas.fa-check-circle::before { content: ""; }  
+        .indicador-status .fas.fa-times-circle::before { content: ""; }
+        .indicador-status .fas.fa-paw::before { content: ""; }
+        
+    </style>
+}
+
+<div class="cabecalho-painel">
+    <h1 class="titulo-pagina">Gerenciamento de Formulários</h1>
+</div>
+
+        <div class="row mb-4">
+            <div class="col mb-4">
+                <div class="cartao-status total">
+                    <div class="conteudo-cartao-status">
+                        <div class="icone">
+                            <i class="fas fa-clipboard-list"></i>
+                        </div>
+                        <div class="d-flex flex-column">
+                            <span class="rotulo">Total de Formulários</span>
+                            <span class="numero">@totalFormularios</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col mb-4">
+                <div class="cartao-status pendentes">
+                    <div class="conteudo-cartao-status">
+                        <div class="icone">
+                            <i class="fas fa-hourglass-half"></i>
+                        </div>
+                        <div class="d-flex flex-column">
+                            <span class="rotulo">Pendentes</span>
+                            <span class="numero">@pendentes</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col mb-4">
+                <div class="cartao-status aprovados">
+                    <div class="conteudo-cartao-status">
+                        <div class="icone">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                        <div class="d-flex flex-column">
+                            <span class="rotulo">Aprovados</span>
+                            <span class="numero">@aprovados</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col mb-4">
+                <div class="cartao-status rejeitados">
+                    <div class="conteudo-cartao-status">
+                        <div class="icone">
+                            <i class="fas fa-times-circle"></i>
+                        </div>
+                        <div class="d-flex flex-column">
+                            <span class="rotulo">Rejeitados</span>
+                            <span class="numero">@rejeitados</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col mb-4">
+                <div class="cartao-status cancelados">
+                    <div class="conteudo-cartao-status">
+                        <div class="icone">
+                            <i class="fas fa-ban"></i>
+                        </div>
+                        <div class="d-flex flex-column">
+                            <span class="rotulo">Cancelados</span>
+                            <span class="numero">@cancelados</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="secao-filtros">
+            <div class="row align-items-center">
+                <div class="col-md-5 mb-2 mb-md-0">
+                    <div class="caixa-pesquisa">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="search-input" class="form-control" placeholder="Pesquisar por nome, email ou endereço..." style="height: 40px; padding-left: 35px;">
+                    </div>
+                </div>
+                <div class="col-md-3 mb-2 mb-md-0">
+                    <select id="filter-status" class="form-select" style="height: 40px; padding: 0.375rem 0.75rem; text-align: left;">
+                        <option value="">Todos os Status</option>
+                        <option value="pendente">Pendente</option>
+                        <option value="aprovado">Aprovado</option>
+                        <option value="aguardando buscar">Aguardando buscar</option>
+                        <option value="rejeitada">Rejeitado</option>
+                        <option value="cancelada">Cancelado</option>
+                        <option value="cancelado pelo usuario">Cancelado pelo Usuário</option>
+                        <option value="cancelado pelo admin">Cancelado pelo Admin</option>
+                    </select>
+                </div>
+                <div class="col-md-4 d-flex align-items-center">
+                    <div class="flex-grow-1 me-2">
+                        <select id="filter-date" class="form-select" style="height: 40px; padding: 0.375rem 0.75rem; text-align: left;">
+                            <option value="">Qualquer data</option>
+                            <option value="hoje">Hoje</option>
+                            <option value="7dias">Últimos 7 dias</option>
+                            <option value="30dias">Últimos 30 dias</option>
+                        </select>
+                    </div>
+                    <button id="btnFiltrar" class="botao-primario me-2">
+                        <i class="fas fa-filter me-1"></i> Filtrar
+                    </button>
+                    <button id="btnLimparFiltros" class="botao-secundario">
+                        <i class="fas fa-undo me-1"></i> Limpar Filtros
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="tabela-responsiva">
+            @if (Model.Any())
+            {
+                <table class="tabela tabela-formularios">
+                    <thead>
+                        <tr>
+                            <th>Usuário</th>
+                            <th>Data</th>
+                            <th>Status</th>
+                            <th>Pet de Interesse</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var form in Model)
+                        {
+                            var statusClass = GetStatusClass(form.StatusEnum);
+                            var statusText = form.StatusEnum.ObterValorMembroEnum(); // Usar diretamente o método de extensão
+
+                            <tr data-id="@form.Id" data-status="@form.StatusEnum">
+                                <td data-label="Usuário">
+                                    <div class="container-info-usuario">
+                                        <div class="container-foto-usuario">
+                                            @if (string.IsNullOrEmpty(form.Usuario?.FotoPerfil))
+                                            {
+                                                <div class="avatar-sem-foto">
+                                                    @(form.Usuario?.Nome?.Length > 0 ? form.Usuario.Nome.Substring(0, 1).ToUpper() : "?")
+                                                </div>
+                                            }
+                                            else
+                                            {
+                                                <img src="~/imagens/perfil/@form.Usuario.FotoPerfil" 
+                                                     alt="@form.Usuario.Nome"
+                                                     onerror="this.style.display='none'; this.parentElement.innerHTML='<div class=&quot;avatar-sem-foto&quot;>@(form.Usuario.Nome?.Length > 0 ? form.Usuario.Nome.Substring(0, 1).ToUpper() : "?")</div>';" >
+                                            }
+                                        </div>
+                                        <div class="detalhes-usuario">
+                                            <span class="nome-cliente">@form.Usuario?.Nome</span>
+                                            <div class="lista-contatos">
+                                                <small class="item-contato"><i class="fas fa-envelope"></i> @form.Usuario?.Email</small>
+                                                <small class="item-contato"><i class="fas fa-phone"></i> @form.Usuario?.Telefone</small>
+                                                <small class="item-contato"><i class="fas fa-map-marker-alt"></i> @form.Usuario?.Cidade - @form.Usuario?.Estado</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td data-label="Data" class="data">
+                                    @form.DataEnvio.ToString("dd/MM/yyyy HH:mm")
+                                </td>
+                                <td data-label="Status">
+                                    <span class="indicador-status @statusClass">
+                                        @statusText
+                                    </span>
+                                </td>
+                                <td data-label="Pet">
+                                    <div class="container-info-pet">
+                                        <div class="miniatura-pet">
+                                            <img src="~/imagens/pets/@(string.IsNullOrEmpty(form.Pet?.NomeArquivoImagem) ? "pet-placeholder.jpg" : form.Pet.NomeArquivoImagem)" 
+                                                 alt="@form.Pet?.Nome" class="miniatura-imagem-pet">
+                                        </div>
+                                        <div class="detalhes-pet ms-2">
+                                            <span class="nome-pet">@form.Pet?.Nome</span>
+                                            <small>
+                                                <i class="@(form.Pet?.Especie == Especie.Cao ? "fas fa-dog" : "fas fa-cat")"></i>
+                                                @form.Pet?.Especie, @form.Pet?.Porte
+                                            </small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td data-label="Ações">
+                                    <div class="botoes-acao">
+                                        <button type="button" class="botao-acao @(form.StatusEnum == StatusFormulario.Pendente ? "botao-visualizar" : "botao-contorno-primario")" 
+                                                onclick="visualizarFormulario(@form.Id)" 
+                                                data-status="@form.StatusEnum">
+                                            @if (form.StatusEnum == StatusFormulario.Pendente)
+                                            {
+                                                <i class="fas fa-clipboard-check me-1"></i> @("Avaliar")
+                                            }
+                                            else
+                                            {
+                                                <i class="fas fa-eye me-1"></i> @("Ver Formulário")
+                                            }
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+                
+                @if (ViewBag.TotalPaginas > 0)
+                {
+                    <div class="paginacao-container w-100">
+                        <div class="paginacao mt-4">
+                            <nav aria-label="Navegação de páginas">
+                                <ul class="pagination justify-content-center flex-wrap">
+                                    @if (ViewBag.PaginaAtual > 1)
+                                    {
+                                        <li class="page-item">
+                                            <a class="page-link" href="@Url.Action("Listar", "GerenciamentoFormularioAdocao", new { pagina = ViewBag.PaginaAtual - 1, itensPorPagina = ViewBag.ItensPorPagina })">
+                                                <i class="fas fa-chevron-left"></i>
+                                            </a>
+                                        </li>
+                                    }
+                                    else
+                                    {
+                                        <li class="page-item disabled">
+                                            <span class="page-link"><i class="fas fa-chevron-left"></i></span>
+                                        </li>
+                                    }
+
+                                    @{int inicio = Math.Max(1, ViewBag.PaginaAtual - 2);
+                                      int fim = Math.Min(ViewBag.TotalPaginas, ViewBag.PaginaAtual + 2);
+                                      if (fim - inicio + 1 < 5 && ViewBag.TotalPaginas >= 5)
+                                      {
+                                          if (ViewBag.PaginaAtual <= 3)
+                                          {
+                                              fim = Math.Min(5, ViewBag.TotalPaginas);
+                                          }
+                                          else
+                                          {
+                                              inicio = Math.Max(1, ViewBag.TotalPaginas - 4);
+                                          }
+                                      }}
+                                    @for (int i = inicio; i <= fim; i++)
+                                    {
+                                        <li class="page-item @(i == ViewBag.PaginaAtual ? "active" : "")">
+                                            <a class="page-link" href="@Url.Action("Listar", "GerenciamentoFormularioAdocao", new { pagina = i, itensPorPagina = ViewBag.ItensPorPagina })">@i</a>
+                                        </li>
+                                    }
+
+                                    @if (ViewBag.PaginaAtual < ViewBag.TotalPaginas)
+                                    {
+                                        <li class="page-item">
+                                            <a class="page-link" href="@Url.Action("Listar", "GerenciamentoFormularioAdocao", new { pagina = ViewBag.PaginaAtual + 1, itensPorPagina = ViewBag.ItensPorPagina })">
+                                                <i class="fas fa-chevron-right"></i>
+                                            </a>
+                                        </li>
+                                    }
+                                    else
+                                    {
+                                        <li class="page-item disabled">
+                                            <span class="page-link"><i class="fas fa-chevron-right"></i></span>
+                                        </li>
+                                    }
+                                </ul>
+                            </nav>
+                        </div>
+                        
+                        <div class="paginacao-info mt-3 d-flex justify-content-between align-items-center">
+                            <div class="info-paginacao">
+                                Exibindo <span>@Model.Count()</span> de <span>@ViewBag.TotalItens</span> formulários
+                            </div>
+                            <div class="itens-por-pagina">
+                                <label for="selectItensPorPagina">Itens por página:</label>
+                                <select id="selectItensPorPagina" class="form-select form-select-sm">
+                                    @foreach (var opcao in new[] { 10, 20, 50 })
+                                    {
+                                        if (ViewBag.ItensPorPagina == opcao)
+                                        {
+                                            <option value="@opcao" selected>@opcao</option>
+                                        }
+                                        else
+                                        {
+                                            <option value="@opcao">@opcao</option>
+                                        }
+                                    }
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="estado-vazio">
+                    <div class="icone-vazio">
+                        <i class="fas fa-file-alt"></i>
+                    </div>
+                    <h3>Não há formulários de adoção no momento.</h3>
+                    <p>Quando houver formulários de adoção, eles aparecerão aqui.</p>
+                </div>
+            }
+</div>
+
+
+<div class="modal fade" id="modalDetalhesFormulario" data-bs-backdrop="static" tabindex="-1" aria-labelledby="tituloModalDetalhesFormulario" aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title titulo-modal" id="tituloModalDetalhesFormulario">
+                        <i class="fas fa-file-alt me-2"></i>Detalhes do Formulário
+                    </h5>
+                    <button type="button" class="btn-fechar-modal" data-bs-dismiss="modal" aria-label="Fechar">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="corpo-modal modal-body">
+                    
+                    <div id="conteudoDetalhesFormulario">
+                        
+                    </div>
+                    
+                    <input type="hidden" id="formularioIdAtual" value="" />
+                    
+                    <div class="grupo-formulario mt-3">
+                        <label for="observacaoAdmin" class="rotulo-formulario fw-bold">Observações do Administrador</label>
+                        <textarea id="observacaoAdmin" class="controle-formulario" rows="3" placeholder="Adicione observações sobre este formulário..."></textarea>
+                        <small class="texto-auxiliar">Estas observações serão visíveis para o usuário na página de "Minhas Adoções".</small>
+                    </div>
+                    
+                    
+                    <div id="areaBotoesAcao">
+                        
+                        <div id="botoesAcaoPrimarios" class="d-flex justify-content-end gap-2 mt-4">
+                            <button type="button" class="botao-contorno-secundario" data-bs-dismiss="modal">
+                                <i class="fas fa-times me-2"></i>Fechar
+                            </button>
+                            <button type="button" class="botao-sucesso" id="botaoAprovarNoModal">
+                                <i class="fas fa-check me-2"></i>Aprovar
+                            </button>
+                            <button type="button" class="botao-perigo" id="botaoRejeitarNoModal">
+                                <i class="fas fa-times me-2"></i>Rejeitar
+                            </button>
+                        </div>
+
+                        
+                        <div id="confirmacaoAprovacao" class="d-none">
+                            <div class="alert alert-success mt-4">
+                                <i class="fas fa-check-circle me-2"></i>
+                                <strong>Confirmar Aprovação</strong>
+                                <p class="mb-0 mt-2">Você está prestes a aprovar este formulário de adoção. Esta ação iniciará o processo de adoção.</p>
+                            </div>
+                            <div class="d-flex justify-content-end gap-2">
+                                <button type="button" class="botao-contorno-secundario" id="botaoCancelarAprovacao">
+                                    <i class="fas fa-arrow-left me-2"></i>Voltar
+                                </button>
+                                <button type="button" class="botao-sucesso" id="botaoConfirmarAprovacao">
+                                    <i class="fas fa-check me-2"></i>Confirmar Aprovação
+                                </button>
+                            </div>
+                        </div>
+
+                        
+                        <div id="confirmacaoRejeicao" class="d-none">
+                            <div class="alert alert-danger mt-4">
+                                <i class="fas fa-exclamation-circle me-2"></i>
+                                <strong>Confirmar Rejeição</strong>
+                                <p class="mb-0 mt-2">Você está prestes a rejeitar este formulário de adoção. Esta ação não poderá ser desfeita.</p>
+                            </div>
+                            <div class="d-flex justify-content-end gap-2">
+                                <button type="button" class="botao-contorno-secundario" id="botaoCancelarRejeicao">
+                                    <i class="fas fa-arrow-left me-2"></i>Voltar
+                                </button>
+                                <button type="button" class="botao-perigo" id="botaoConfirmarRejeicao">
+                                    <i class="fas fa-times me-2"></i>Confirmar Rejeição
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+@Html.AntiForgeryToken()
+
+@section Scripts {
+    @await Html.PartialAsync("_ValidationScriptsPartial")
+    <script src="~/js/admin/gerenciamento-formularios.js?v=2.0.0"></script>
+    <script>
+        // DEBUG: Verificar status ao carregar a página
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('=== DEBUG STATUS FORMULÁRIOS ===');
+            
+            const statusElements = document.querySelectorAll('.indicador-status');
+            statusElements.forEach((el, index) => {
+                console.log(`Status ${index}:`, {
+                    element: el,
+                    classes: Array.from(el.classList),
+                    innerHTML: el.innerHTML,
+                    textContent: el.textContent
+                });
+                
+                // Se o ícone não está aparecendo, força a exibição
+                const icon = el.querySelector('i');
+                if (icon) {
+                    console.log(`Ícone ${index}:`, {
+                        classes: Array.from(icon.classList),
+                        computedStyle: window.getComputedStyle(icon, '::before').content
+                    });
+                }
+            });
+        });
+        
+        $(document).ready(function() {
+            
+
+            
+            function getUrlWithFilters(pagina, itensPorPagina) {
+                var filtroStatus = $('#filtroStatus').val();
+                var filtroData = $('#filtroData').val();
+                var pesquisa = $('#campoPesquisaForm').val();
+                
+                var url = '@Url.Action("Listar")' + '?pagina=' + pagina + '&itensPorPagina=' + itensPorPagina;
+                
+                if (filtroStatus) {
+                    url += '&filtroStatus=' + encodeURIComponent(filtroStatus);
+                }
+                
+                if (filtroData) {
+                    url += '&filtroData=' + encodeURIComponent(filtroData);
+                }
+                
+                if (pesquisa) {
+                    url += '&pesquisa=' + encodeURIComponent(pesquisa);
+                }
+                
+                return url;
+            }
+            
+            $('.pagination .page-link').each(function() {
+                var href = $(this).attr('href');
+                if (href) {
+                    var match = href.match(/pagina=(\d+)&itensPorPagina=(\d+)/);
+                    if (match) {
+                        var pagina = match[1];
+                        var itensPorPagina = match[2];
+                        $(this).attr('href', getUrlWithFilters(pagina, itensPorPagina));
+                    }
+                }
+            });
+            
+            function aplicarFiltros() {
+                var filtroStatus = $('#filtroStatus').val();
+                var filtroData = $('#filtroData').val();
+                var pesquisa = $('#campoPesquisaForm').val();
+                
+                var url = '@Url.Action("Listar")' + '?pagina=1&itensPorPagina=' + @ViewBag.ItensPorPagina;
+                
+                if (filtroStatus) {
+                    url += '&filtroStatus=' + encodeURIComponent(filtroStatus);
+                }
+                
+                if (filtroData) {
+                    url += '&filtroData=' + encodeURIComponent(filtroData);
+                }
+                
+                if (pesquisa) {
+                    url += '&pesquisa=' + encodeURIComponent(pesquisa);
+                }
+                
+                window.location.href = url;
+            }
+            
+            $('#campoPesquisaForm').keypress(function(e) {
+                if (e.which === 13) {
+                    aplicarFiltros();
+                    return false;
+                }
+            });
+            
+            $('#filtroStatus, #filtroData').change(function() {
+                aplicarFiltros();
+            });
+            
+            $('#btnLimparFiltros').click(function() {
+                window.location.href = '@Url.Action("Listar")';
+            });
+
+            // Adicionar manipulador para itens por página
+            $('#selectItensPorPagina').change(function() {
+                var itensPorPagina = $(this).val();
+                var filtroStatus = $('#filtroStatus').val() || '';
+                var filtroData = $('#filtroData').val() || '';
+                var pesquisa = $('#campoPesquisaForm').val() || '';
+                
+                var url = '@Url.Action("Listar", "GerenciamentoFormularioAdocao")' + 
+                    '?pagina=1&itensPorPagina=' + itensPorPagina;
+                
+                if (filtroStatus) {
+                    url += '&filtroStatus=' + encodeURIComponent(filtroStatus);
+                }
+                
+                if (filtroData) {
+                    url += '&filtroData=' + encodeURIComponent(filtroData);
+                }
+                
+                if (pesquisa) {
+                    url += '&pesquisa=' + encodeURIComponent(pesquisa);
+                }
+                
+                window.location.href = url;
+            });
+        });
+    </script>
+} 

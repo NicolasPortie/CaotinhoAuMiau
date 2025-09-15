@@ -1,0 +1,220 @@
+@model CaotinhoAuMiau.Models.ViewModels.Admin.LogsViewModel
+@{
+    ViewData["Title"] = "Logs do Sistema";
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+}
+
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="mb-4">
+                <h1 class="titulo-pagina">Logs do Sistema</h1>
+                <p class="subtitulo-pagina">Histórico de ações dos administradores no sistema</p>
+            </div>
+
+            <form method="get" asp-action="LogsAuditoria" class="secao-filtros">
+                <div class="row align-items-center">
+                    <div class="col-md-3 mb-2 mb-md-0">
+                        <input type="date" name="dataInicio" value="@(Model.DataInicio?.ToString("yyyy-MM-dd"))" class="form-control" placeholder="Data Início">
+                    </div>
+                    <div class="col-md-3 mb-2 mb-md-0">
+                        <input type="date" name="dataFim" value="@(Model.DataFim?.ToString("yyyy-MM-dd"))" class="form-control" placeholder="Data Fim">
+                    </div>
+                    <div class="col-md-4 mb-2 mb-md-0">
+                        <select name="tipoAcao" class="form-select">
+                            <option value="">Todas as ações</option>
+                            @foreach (var tipo in Model.TiposAcao)
+                            {
+                                <option value="@tipo" selected="@(Model.TipoAcaoSelecionado == tipo)">@tipo</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="col-md-2 d-flex align-items-center">
+                        <button type="submit" class="botao-primario me-2">
+                            <i class="fas fa-search me-1"></i> Filtrar
+                        </button>
+                        <a href="@Url.Action("LogsAuditoria")" class="botao-secundario">
+                            <i class="fas fa-undo me-1"></i> Limpar
+                        </a>
+                    </div>
+                </div>
+            </form>
+
+            <!-- Estatísticas -->
+            <div class="row mb-4">
+                <div class="col-md-12">
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i>
+                        Total de @Model.TotalLogs registro(s) encontrado(s)
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tabela de Logs -->
+            <div class="tabela-responsiva">
+                <table class="tabela logs-table">
+                    <thead>
+                        <tr>
+                            <th>Data/Hora</th>
+                            <th>Usuário</th>
+                            <th>Ação</th>
+                            <th>Descrição</th>
+                            <th>Entidade</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.Logs.Any())
+                        {
+                            @foreach (var log in Model.Logs)
+                                    {
+                                        <tr>
+                                            <td class="text-nowrap">
+                                                <small class="text-muted">@log.DataHora.ToString("dd/MM/yyyy")</small><br>
+                                                <strong>@log.DataHora.ToString("HH:mm:ss")</strong>
+                                            </td>
+                                            <td>
+                                                <strong>@log.UsuarioNome</strong><br>
+                                                <small class="text-muted">@log.UsuarioEmail</small>
+                                            </td>
+                                            <td>
+                                                <span class="badge @GetTipoAcaoCssClass(log.TipoAcao)">
+                                                    @log.TipoAcao
+                                                </span>
+                                            </td>
+                                            <td>@log.Descricao</td>
+                                            <td>
+                                                @if (!string.IsNullOrEmpty(log.EntidadeAfetada))
+                                                {
+                                                    <span class="badge bg-light text-dark">
+                                                        @log.EntidadeAfetada
+                                                        @if (log.EntidadeId.HasValue)
+                                                        {
+                                                            <span>#@log.EntidadeId</span>
+                                                        }
+                                                    </span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="text-muted">-</span>
+                                                }
+                                            </td>
+                                        </tr>
+                                        @if (!string.IsNullOrEmpty(log.DetalhesAdicionais))
+                                        {
+                                            <tr class="table-light">
+                                                <td colspan="5">
+                                                    <small class="text-muted">
+                                                        <strong>Detalhes:</strong> @log.DetalhesAdicionais
+                                                    </small>
+                                                </td>
+                                            </tr>
+                                        }
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="5" class="text-center py-4">
+                                    <div class="sem-registros">
+                                        <div class="icone-vazio">
+                                            <i class="fa-solid fa-clipboard-list"></i>
+                                        </div>
+                                        <h3>Nenhum log encontrado</h3>
+                                        <p>Não há registros de auditoria para os filtros selecionados.</p>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+                        <!-- Paginação Moderna -->
+                        @if (Model.TotalPaginas > 0)
+                        {
+                            <div class="paginacao-container w-100">
+                                <div class="paginacao mt-4">
+                                    <nav aria-label="Navegação de páginas">
+                                        <ul class="pagination justify-content-center flex-wrap">
+                                            @if (Model.PaginaAtual > 1)
+                                            {
+                                                <li class="page-item">
+                                                    <a class="page-link" href="?pagina=@(Model.PaginaAtual - 1)&dataInicio=@(Model.DataInicio?.ToString("yyyy-MM-dd"))&dataFim=@(Model.DataFim?.ToString("yyyy-MM-dd"))&tipoAcao=@Model.TipoAcaoSelecionado&itensPorPagina=@Model.ItensPorPagina">
+                                                        <i class="fas fa-chevron-left"></i>
+                                                    </a>
+                                                </li>
+                                            }
+                                            else
+                                            {
+                                                <li class="page-item disabled">
+                                                    <span class="page-link"><i class="fas fa-chevron-left"></i></span>
+                                                </li>
+                                            }
+
+                                            @for (int i = Math.Max(1, Model.PaginaAtual - 2); i <= Math.Min(Model.TotalPaginas, Model.PaginaAtual + 2); i++)
+                                            {
+                                                <li class="page-item @(i == Model.PaginaAtual ? "active" : "")">
+                                                    <a class="page-link" href="?pagina=@i&dataInicio=@(Model.DataInicio?.ToString("yyyy-MM-dd"))&dataFim=@(Model.DataFim?.ToString("yyyy-MM-dd"))&tipoAcao=@Model.TipoAcaoSelecionado&itensPorPagina=@Model.ItensPorPagina">@i</a>
+                                                </li>
+                                            }
+
+                                            @if (Model.PaginaAtual < Model.TotalPaginas)
+                                            {
+                                                <li class="page-item">
+                                                    <a class="page-link" href="?pagina=@(Model.PaginaAtual + 1)&dataInicio=@(Model.DataInicio?.ToString("yyyy-MM-dd"))&dataFim=@(Model.DataFim?.ToString("yyyy-MM-dd"))&tipoAcao=@Model.TipoAcaoSelecionado&itensPorPagina=@Model.ItensPorPagina">
+                                                        <i class="fas fa-chevron-right"></i>
+                                                    </a>
+                                                </li>
+                                            }
+                                            else
+                                            {
+                                                <li class="page-item disabled">
+                                                    <span class="page-link"><i class="fas fa-chevron-right"></i></span>
+                                                </li>
+                                            }
+                                        </ul>
+                                    </nav>
+                                </div>
+                                
+                                <div class="paginacao-info mt-3 d-flex justify-content-between align-items-center">
+                                    <div class="info-paginacao">
+                                        Exibindo <span>@Model.Logs.Count</span> de <span>@Model.TotalLogs</span> logs
+                                    </div>
+                                    <div class="itens-por-pagina">
+                                        <label for="selectItensPorPagina">Itens por página:</label>
+                                        <select id="selectItensPorPagina" class="form-select form-select-sm">
+                                            @foreach (var opcao in new[] { 10, 20, 50 })
+                                            {
+                                                <option value="@opcao" selected="@(Model.ItensPorPagina == opcao)">@opcao</option>
+                                            }
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+        </div>
+    </div>
+</div>
+
+@{
+    string GetTipoAcaoCssClass(string tipoAcao)
+    {
+        return tipoAcao.ToLower() switch
+        {
+            var t when t.Contains("aprovado") || t.Contains("criado") => "bg-success",
+            var t when t.Contains("rejeitado") || t.Contains("cancelado") || t.Contains("excluído") => "bg-danger",
+            var t when t.Contains("editado") || t.Contains("atualizado") => "bg-warning",
+            var t when t.Contains("finalizado") => "bg-info",
+            _ => "bg-secondary"
+        };
+    }
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/admin/admin-gerenciamento-logs.css" asp-append-version="true" />
+}
+
+@section Scripts {
+    <script src="~/js/admin/gerenciamento-logs.js" asp-append-version="true"></script>
+}

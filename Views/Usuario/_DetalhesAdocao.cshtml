@@ -1,0 +1,471 @@
+@model dynamic
+
+@if (Model?.success == false || Model?.pet == null || Model?.processo == null)
+{
+    <!-- ERRO OU DADOS INCOMPLETOS -->
+    <div class="modal-error-state">
+        <div class="error-icon">
+            <i class="fas fa-exclamation-triangle"></i>
+        </div>
+        <h4 class="error-title">Não foi possível carregar os detalhes</h4>
+        <p class="error-message">@(Model?.message ?? "Dados da adoção não disponíveis no momento.")</p>
+        
+    </div>
+}
+else
+{
+<!-- HEADER DO MODAL COM INFORMAÇÃO PRINCIPAL -->
+<div class="modal-header-info">
+    <div class="pet-header-card">
+        <div class="pet-avatar">
+            <img src="@(Model?.pet?.imagem?.StartsWith("/") == true ? Model.pet.imagem : $"/imagens/pets/{Model?.pet?.imagem ?? "pet-placeholder.jpg"}")" 
+                 alt="Foto de @(Model?.pet?.nome ?? "Pet")" 
+                 class="pet-avatar-image">
+            <div class="status-overlay">
+                <span class="status-badge status-@((Model?.processo?.status ?? "pendente").ToLower().Replace(" ", "-"))">
+                    @(Model?.processo?.status ?? "Pendente")
+                </span>
+            </div>
+        </div>
+        <div class="pet-header-info">
+            <h3 class="pet-name-header">@(Model?.pet?.nome ?? "Nome do Pet")</h3>
+            <div class="pet-basic-info">
+                <span class="info-item">
+                    <i class="fas fa-birthday-cake"></i>
+                    @if (Model?.pet?.anos > 0)
+                    {
+                        <span>@(Model.pet.anos) @(Model.pet.anos == 1 ? "ano" : "anos")</span>@if (Model?.pet?.meses > 0) {<text> e </text>}
+                    }
+                    @if (Model?.pet?.meses > 0)
+                    {
+                        <span>@(Model.pet.meses) @(Model.pet.meses == 1 ? "mês" : "meses")</span>
+                    }
+                </span>
+                <span class="info-item">
+                    <i class="fas @((Model?.pet?.sexo == "Macho") ? "fa-mars" : "fa-venus")"></i>
+                    @(Model?.pet?.sexo ?? "Não informado")
+                </span>
+                <span class="info-item">
+                    <i class="fas fa-paw"></i>
+                    @(Model?.pet?.raca ?? "SRD")
+                </span>
+            </div>
+            <div class="processo-header-info">
+                <span class="processo-id">#@(Model?.processo?.id ?? 0)</span>
+                <span class="processo-date">Solicitado em @(Model?.processo?.dataEnvio ?? "Data não disponível")</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- CONTEÚDO PRINCIPAL UNIFICADO -->
+<div class="modal-content-unified">
+    
+    <!-- PROCESSO DE ADOÇÃO COMPLETO -->
+    <div class="processo-section-unified">
+            <!-- Status e Resumo -->
+            <div class="status-resumo">
+                <div class="status-principal">
+                    <div class="status-badge-grande status-@((Model?.processo?.status ?? "pendente").ToLower().Replace(" ", "-"))">
+                        <i class="fas fa-clipboard-check"></i>
+                        <div class="status-info">
+                            <h4>@(Model?.processo?.status ?? "Pendente")</h4>
+                            <p>Status atual do processo</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="resumo-grid">
+                    <div class="resumo-item">
+                        <i class="fas fa-calendar"></i>
+                        <div class="resumo-info">
+                            <span class="resumo-label">Solicitado em</span>
+                            <span class="resumo-value">@(Model?.processo?.dataEnvio ?? "--")</span>
+                        </div>
+                    </div>
+                    <div class="resumo-item">
+                        <i class="fas fa-clock"></i>
+                        <div class="resumo-info">
+                            <span class="resumo-label">Tempo decorrido</span>
+                            <span class="resumo-value">@(Model?.processo?.tempoProcesso ?? "--")</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Timeline Completa -->
+            <div class="timeline-completa">
+                <h5 class="section-subtitle">
+                    <i class="fas fa-route"></i>
+                    Acompanhamento do Processo
+                </h5>
+                
+                <div class="timeline-steps">
+                    <!-- Etapa 1: Formulário Enviado -->
+                    <div class="timeline-step completed">
+                        <div class="step-marker">
+                            <i class="fas fa-paper-plane"></i>
+                            <span class="step-number">1</span>
+                        </div>
+                        <div class="step-content">
+                            <h6 class="step-title">Formulário de Adoção Enviado</h6>
+                            <p class="step-description">Sua solicitação foi recebida com sucesso</p>
+                            <div class="step-meta">
+                                <span class="step-date">@(Model?.processo?.dataEnvio ?? "--")</span>
+                                <span class="step-status completed">Concluído</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Etapa 2: Análise -->
+                    @if (!string.IsNullOrEmpty(Model?.processo?.dataResposta) || Model?.processo?.status?.Contains("Cancelado") == true)
+                    {
+                    <div class="timeline-step @(Model?.processo?.status?.Contains("Cancelado") == true ? "cancelled" : "completed")">
+                        <div class="step-marker">
+                            <i class="fas @(Model?.processo?.status?.Contains("Cancelado") == true ? "fa-times-circle" : "fa-search")"></i>
+                            <span class="step-number">2</span>
+                        </div>
+                        <div class="step-content">
+                            @if (Model?.processo?.status?.Contains("Cancelado") == true)
+                            {
+                                <h6 class="step-title">Processo Cancelado</h6>
+                                <p class="step-description">@(Model.processo.status)</p>
+                            }
+                            else
+                            {
+                                <h6 class="step-title">Análise do Perfil</h6>
+                                <p class="step-description">Nossa equipe avaliou seu formulário e perfil de adotante</p>
+                            }
+                            <div class="step-meta">
+                                <span class="step-date">@(Model?.processo?.dataResposta ?? "--")</span>
+                                <span class="step-status @(Model?.processo?.status?.Contains("Cancelado") == true ? "cancelled" : "completed")">
+                                    @(Model?.processo?.status?.Contains("Cancelado") == true ? "Cancelado" : "Concluído")
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    }
+                    else
+                    {
+                    <div class="timeline-step current">
+                        <div class="step-marker">
+                            <i class="fas fa-search"></i>
+                            <span class="step-number">2</span>
+                        </div>
+                        <div class="step-content">
+                            <h6 class="step-title">Análise em Andamento</h6>
+                            <p class="step-description">Nossa equipe está avaliando seu perfil de adotante</p>
+                            <div class="step-meta">
+                                <span class="step-date">Em análise...</span>
+                                <span class="step-status processing">Processando</span>
+                            </div>
+                        </div>
+                    </div>
+                    }
+                    
+                    <!-- Etapa 3: Aprovação / Contrato -->
+                    @if (Model?.processo?.temContrato == true)
+                    {
+                    <div class="timeline-step @(Model?.processo?.contratoAssinado == true ? "completed" : "current")">
+                        <div class="step-marker">
+                            <i class="fas fa-file-signature"></i>
+                            <span class="step-number">3</span>
+                        </div>
+                        <div class="step-content">
+                            <h6 class="step-title">Assinatura do Contrato</h6>
+                            <p class="step-description">
+                                @if (Model?.processo?.contratoAssinado == true)
+                                {
+                                    <span>Contrato de adoção assinado digitalmente</span>
+                                }
+                                else
+                                {
+                                    <span>Aguardando sua assinatura digital do contrato</span>
+                                }
+                            </p>
+                            <div class="step-meta">
+                                <span class="step-date">@(Model?.processo?.dataAssinatura ?? "Pendente")</span>
+                                <span class="step-status @(Model?.processo?.contratoAssinado == true ? "completed" : "waiting")">
+                                    @(Model?.processo?.contratoAssinado == true ? "Concluído" : "Aguardando")
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    }
+                    
+                    <!-- Etapa 4: Retirada -->
+                    @if (Model?.processo?.contratoAssinado == true)
+                    {
+                    <div class="timeline-step @(Model?.processo?.finalizada == true ? "completed" : "current")">
+                        <div class="step-marker">
+                            <i class="fas fa-home"></i>
+                            <span class="step-number">4</span>
+                        </div>
+                        <div class="step-content">
+                            <h6 class="step-title">Buscar o Pet</h6>
+                            <p class="step-description">
+                                @if (Model?.processo?.finalizada == true)
+                                {
+                                    <span>Pet buscado com sucesso! Adoção finalizada</span>
+                                }
+                                else
+                                {
+                                    <span>Você tem 5 dias úteis para buscar o pet em nosso centro</span>
+                                }
+                            </p>
+                            <div class="step-meta">
+                                <span class="step-date">@(Model?.processo?.dataFinalizacao ?? "Aguardando data limite")</span>
+                                <span class="step-status @(Model?.processo?.finalizada == true ? "completed" : "waiting")">
+                                    @(Model?.processo?.finalizada == true ? "Finalizado" : "Aguardando")
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    }
+                    else if (Model?.processo?.status == "Aprovado")
+                    {
+                    <div class="timeline-step waiting">
+                        <div class="step-marker">
+                            <i class="fas fa-home"></i>
+                            <span class="step-number">4</span>
+                        </div>
+                        <div class="step-content">
+                            <h6 class="step-title">Buscar o Pet</h6>
+                            <p class="step-description">Após assinar o contrato, você poderá buscar o pet</p>
+                            <div class="step-meta">
+                                <span class="step-date">Aguardando contrato</span>
+                                <span class="step-status waiting">Aguardando</span>
+                            </div>
+                        </div>
+                    </div>
+                    }
+                </div>
+            </div>
+            
+            <!-- Próximos Passos -->
+            @if (Model?.processo?.status == "Pendente")
+            {
+            <div class="proximos-passos">
+                <h5 class="section-subtitle">
+                    <i class="fas fa-arrow-right"></i>
+                    O que acontece agora?
+                </h5>
+                <div class="passos-lista">
+                    <div class="passo-item">
+                        <i class="fas fa-clock text-warning"></i>
+                        <div class="passo-content">
+                            <h6>Análise em andamento</h6>
+                            <p>Nossa equipe está avaliando seu formulário. Isso pode levar até 3 dias úteis.</p>
+                        </div>
+                    </div>
+                    <div class="passo-item">
+                        <i class="fas fa-envelope text-info"></i>
+                        <div class="passo-content">
+                            <h6>Notificação por e-mail</h6>
+                            <p>Você será notificado sobre a decisão por e-mail e poderá acompanhar aqui.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            }
+            else if (Model?.processo?.temContrato == true && Model?.processo?.contratoAssinado != true)
+            {
+            <div class="proximos-passos">
+                <h5 class="section-subtitle">
+                    <i class="fas fa-arrow-right"></i>
+                    Próximos Passos
+                </h5>
+                <div class="passos-lista">
+                    <div class="passo-item urgent">
+                        <i class="fas fa-file-signature text-primary"></i>
+                        <div class="passo-content">
+                            <h6>Assine o contrato digital</h6>
+                            <p>Sua solicitação foi aprovada! Agora você precisa assinar o contrato de adoção.</p>
+                            <div class="passo-action">
+                                <a href="/usuario/adocao/contrato/@(Model?.processo?.id ?? 0)" class="btn btn-primary">
+                                    <i class="fas fa-file-signature"></i>
+                                    Assinar Contrato
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            }
+            else if (Model?.processo?.contratoAssinado == true && Model?.processo?.finalizada != true)
+            {
+            <div class="proximos-passos">
+                <h5 class="section-subtitle">
+                    <i class="fas fa-arrow-right"></i>
+                    Próximos Passos
+                </h5>
+                <div class="passos-lista">
+                    <div class="passo-item urgent">
+                        <i class="fas fa-home text-success"></i>
+                        <div class="passo-content">
+                            <h6>Busque seu novo amigo!</h6>
+                            <p>Contrato assinado! Você tem 5 dias úteis para buscar o pet em nosso centro de adoção.</p>
+                            <div class="passo-detalhes">
+                                <p><strong>Endereço:</strong> Rua dos Animais Felizes, 456 - Centro, Cidade</p>
+                                <p><strong>Horário de funcionamento:</strong> Segunda a sexta das 8h às 17h, sábados das 8h às 12h</p>
+                                <p><strong>Documentos necessários:</strong> RG, CPF, comprovante de residência</p>
+                                <p><strong>Itens recomendados:</strong> Coleira, guia, caixa de transporte</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            }
+            
+            <!-- SEÇÃO DE CONTRATO (INTEGRADA) -->
+            @if ((Model?.processo?.temContrato == true || Model?.processo?.contratoAssinado == true) && Model?.processo?.temAdocaoCriada == true)
+            {
+            <div class="contrato-section-unified">
+                <h5 class="section-subtitle">
+                    <i class="fas fa-file-contract"></i>
+                    Informações do Contrato de Adoção
+                </h5>
+                
+                <div class="contrato-status">
+                <div class="status-contrato @(Model?.processo?.contratoAssinado == true ? "assinado" : "pendente")">
+                    <div class="status-icon">
+                        <i class="fas @(Model?.processo?.contratoAssinado == true ? "fa-check-circle" : "fa-file-signature")"></i>
+                    </div>
+                    <div class="status-info">
+                        <h4>
+                            @if (Model?.processo?.contratoAssinado == true)
+                            {
+                                <span>Contrato Assinado</span>
+                            }
+                            else
+                            {
+                                <span>Contrato Disponível</span>
+                            }
+                        </h4>
+                        <p>
+                            @if (Model?.processo?.contratoAssinado == true)
+                            {
+                                <span>Assinado digitalmente em @(Model?.processo?.dataAssinatura ?? "--")</span>
+                            }
+                            else
+                            {
+                                <span>Aguardando sua assinatura digital</span>
+                            }
+                        </p>
+                    </div>
+                </div>
+            </div>
+                
+                @if (Model?.processo?.contratoAssinado != true)
+                {
+                <div class="contrato-actions">
+                    <div class="action-alert">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <div class="alert-content">
+                            <h6>Ação Necessária</h6>
+                            <p>Você precisa assinar o contrato digital para prosseguir com a adoção.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="action-buttons">
+                        <a href="/usuario/adocao/contrato/@(Model?.processo?.adocaoId ?? Model?.processo?.id ?? 0)" class="btn btn-primary btn-lg">
+                            <i class="fas fa-file-signature"></i>
+                            Assinar Contrato Digital
+                        </a>
+                    </div>
+                </div>
+                }
+                else
+                {
+                <div class="contrato-actions-stylized">
+                    <div class="stylized-buttons">
+                        <a href="/usuario/adocao/contrato/@(Model?.processo?.adocaoId ?? Model?.processo?.id ?? 0)/pdf" class="btn-stylized btn-download">
+                            <i class="fas fa-download"></i>
+                            <span>Baixar PDF</span>
+                        </a>
+                    </div>
+                </div>
+                }
+            </div>
+            }
+            
+            <!-- SEÇÃO DE OBSERVAÇÕES (INTEGRADA) -->
+            @if (!string.IsNullOrEmpty(Model?.processo?.observacaoFormulario) || !string.IsNullOrEmpty(Model?.processo?.observacoesCancelamento))
+            {
+            <div class="observacoes-section-unified">
+                <h5 class="section-subtitle">
+                <i class="fas fa-comment-alt"></i>
+                Observações e Comentários
+            </h5>
+            
+            @if (!string.IsNullOrEmpty(Model?.processo?.observacaoFormulario))
+            {
+            <div class="observacao-card observacao-equipe">
+                <div class="observacao-header">
+                    <div class="observacao-icon">
+                        <i class="fas fa-building"></i>
+                    </div>
+                    <div class="observacao-info">
+                        <h6 class="observacao-titulo">Observação da Equipe</h6>
+                        <span class="observacao-tipo">Análise do formulário de adoção</span>
+                    </div>
+                    <div class="observacao-timestamp">
+                        @(Model?.processo?.dataResposta ?? "--")
+                    </div>
+                </div>
+                <div class="observacao-content">
+                    <p>@(Model?.processo?.observacaoFormulario ?? "--")</p>
+                </div>
+            </div>
+            }
+            
+            @if (!string.IsNullOrEmpty(Model?.processo?.observacoesCancelamento))
+            {
+            <div class="observacao-card observacao-cancelamento">
+                <div class="observacao-header">
+                    <div class="observacao-icon">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <div class="observacao-info">
+                        <h6 class="observacao-titulo">Motivo do Cancelamento</h6>
+                        <span class="observacao-tipo">Informado pelo adotante</span>
+                    </div>
+                </div>
+                <div class="observacao-content">
+                    <p>@(Model?.processo?.observacoesCancelamento ?? "--")</p>
+                </div>
+            </div>
+            }
+            </div>
+            }
+    </div>
+</div>
+
+<!-- AÇÕES DO MODAL -->
+<div class="modal-actions-professional">
+    <div class="actions-left">
+    </div>
+    
+    <div class="actions-right">
+        @if (Model?.processo?.status == "Pendente")
+        {
+        <button class="btn-stylized btn-cancel" onclick="abrirModalCancelarDireto(@Model.processo.id, '@Model.pet.nome', '@Model.processo.dataEnvio', '@(Model?.pet?.imagem?.StartsWith("/") == true ? Model.pet.imagem : $"/imagens/pets/{Model?.pet?.imagem ?? "pet-placeholder.jpg"}")')">
+            <i class="fas fa-times-circle"></i>
+            <span>Cancelar Solicitação</span>
+        </button>
+        }
+        
+        @if (Model?.processo?.temContrato == true && Model?.processo?.contratoAssinado != true && Model?.processo?.temAdocaoCriada == true)
+        {
+        <a href="/usuario/adocao/contrato/@(Model?.processo?.adocaoId ?? Model?.processo?.id ?? 0)" class="btn btn-primary">
+            <i class="fas fa-file-signature"></i>
+            Assinar Contrato
+        </a>
+        }
+        
+        
+    </div>
+</div>
+
+
+}

@@ -1,0 +1,63 @@
+﻿/* Site-wide base styles */
+html {
+    font-size: 14px;
+}
+@media (min-width: 768px) {
+    html {
+        font-size: 16px;
+    }
+}
+/* Base body styles */
+body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+/* Basic utility classes */
+.btn-primary {
+    color: #fff;
+    background-color: #1b6ec2;
+    border-color: #1861ac;
+}
+.btn-primary:hover {
+    color: #fff;
+    background-color: #1861ac;
+    border-color: #1861ac;
+}
+/* Form validation styles */
+.validation-summary-errors {
+    color: #dc3545;
+    font-size: 0.875em;
+}
+.field-validation-error {
+    color: #dc3545;
+    font-size: 0.875em;
+}
+.input-validation-error {
+    border-color: #dc3545;
+}
+/* Base layout fixes */
+.container-fluid {
+    padding-left: 15px;
+    padding-right: 15px;
+}
+/* Basic responsive utilities */
+.text-center {
+    text-align: center !important;
+}
+.text-left {
+    text-align: left !important;
+}
+.text-right {
+    text-align: right !important;
+}
+.d-none {
+    display: none !important;
+}
+.d-block {
+    display: block !important;
+}
+/* Loading states */
+.loading {
+    opacity: 0.6;
+    pointer-events: none;
+}

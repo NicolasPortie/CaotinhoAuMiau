@@ -1,0 +1,180 @@
+@model CaotinhoAuMiau.Models.ViewModels.Admin.DashboardViewModel
+@using CaotinhoAuMiau.Models.ViewModels
+@using System.Linq
+
+@{
+    ViewData["Title"] = "Painel de Controle";
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/admin/admin-dashboard.css" asp-append-version="true" />
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .cartao-status .numero {
+            font-family: 'Poppins', sans-serif;
+            font-weight: 700;
+        }
+
+        .cartao-status .rotulo {
+            font-family: 'Poppins', sans-serif;
+            font-weight: 500;
+        }
+
+        .cartoes-status .conteudo-cartao-status {
+            gap: 8px !important;
+            align-items: flex-start !important;
+        }
+
+        .cartoes-status .d-flex.flex-column {
+            align-items: flex-start !important;
+            flex: 0 0 auto !important;
+        }
+    </style>
+}
+
+<div class="container-admin">
+    <div class="cabecalho-painel">
+        <h1 class="titulo-pagina">Painel de Controle</h1>
+    </div>
+
+        
+        <div class="cartoes-status">
+            <div class="cartao-status aguardando-retirada">
+                <div class="conteudo-cartao-status" style="display: flex; align-items: flex-start; gap: 16px; justify-content: flex-start;">
+                    <div class="icone">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div style="display: flex; flex-direction: column; align-items: flex-start; margin-left: 0; gap: 4px;">
+                        <span class="rotulo">Pets Aguardando Retirada</span>
+                        <span class="numero" id="pets-aguardando-retirada">@Model.Estatisticas.PetsAguardandoRetirada</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="cartao-status pendentes-hoje">
+                <div class="conteudo-cartao-status" style="display: flex; align-items: flex-start; gap: 8px; justify-content: flex-start;">
+                    <div class="icone">
+                        <i class="fas fa-clipboard-list"></i>
+                    </div>
+                    <div style="display: flex; flex-direction: column; align-items: flex-start; margin-left: 0; gap: 4px;">
+                        <span class="rotulo">Formulários Pendentes Hoje</span>
+                        <span class="numero" id="formularios-pendentes-hoje">@Model.Estatisticas.FormulariosPendentesHoje</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="cartao-status disponiveis">
+                <div class="conteudo-cartao-status" style="display: flex; align-items: flex-start; gap: 8px; justify-content: flex-start;">
+                    <div class="icone">
+                        <i class="fas fa-paw"></i>
+                    </div>
+                    <div style="display: flex; flex-direction: column; align-items: flex-start; margin-left: 0; gap: 4px;">
+                        <span class="rotulo">Pets Disponíveis</span>
+                        <span class="numero" id="pets-disponiveis">@Model.Estatisticas.PetsDisponiveis</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="cartao-status finalizadas">
+                <div class="conteudo-cartao-status" style="display: flex; align-items: flex-start; gap: 8px; justify-content: flex-start;">
+                    <div class="icone">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <div style="display: flex; flex-direction: column; align-items: flex-start; margin-left: 0; gap: 4px;">
+                        <span class="rotulo">Adoções Finalizadas</span>
+                        <span class="numero" id="adocoes-finalizadas">@Model.Estatisticas.AdocoesFinalizadas</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Gráficos do Dashboard -->
+        <div class="container-graficos">
+            <!-- Primeira Linha - Status Pets e Taxa Conversão -->
+            <div class="graficos-secundarios">
+                <div class="grafico-status-pets">
+                    <div class="titulo-grafico">
+                        <div class="texto-titulo-grafico">
+                            <i class="fa-solid fa-chart-pie"></i>
+                            Status dos Pets
+                        </div>
+                    </div>
+                    <div class="area-grafico">
+                        <canvas id="graficoStatusPets"></canvas>
+                    </div>
+                </div>
+
+                <div class="grafico-conversao-especies">
+                    <div class="titulo-grafico">
+                        <div class="texto-titulo-grafico">
+                            <i class="fa-solid fa-chart-bar"></i>
+                            Taxa de Conversão por Espécie
+                        </div>
+                    </div>
+                    <div class="area-grafico">
+                        <canvas id="graficoConversaoEspecies"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Segunda Linha - Processo de Adoção (Funil) -->
+            <div class="grafico-principal">
+                <div class="titulo-grafico">
+                    <div class="texto-titulo-grafico">
+                        <i class="fa-solid fa-funnel-dollar"></i>
+                        Processo de Adoção
+                    </div>
+                </div>
+                <div class="area-grafico">
+                    <canvas id="graficoProcessoAdocao"></canvas>
+                </div>
+            </div>
+
+            <!-- Terceira Linha - Tendência de Formulários -->
+            <div class="grafico-tendencia">
+                <div class="titulo-grafico">
+                    <div class="texto-titulo-grafico">
+                        <i class="fa-solid fa-chart-line"></i>
+                        Formulários por Período
+                    </div>
+                    <div class="filtros-periodo">
+                        <button class="filtro-periodo ativo" data-periodo="12">12 meses</button>
+                        <button class="filtro-periodo" data-periodo="6">6 meses</button>
+                        <button class="filtro-periodo" data-periodo="3">3 meses</button>
+                    </div>
+                </div>
+                <div class="area-grafico">
+                    <canvas id="graficoTendenciaFormularios"></canvas>
+                </div>
+            </div>
+        </div>
+
+
+        <div class="atividades-recentes">
+            <div class="titulo-atividade">
+                <i class="fa-solid fa-history"></i>
+                Atividades Recentes (Últimas 5)
+            </div>
+            <div class="lista-atividade">
+                <div class="atividade-item">
+                    <div class="atividade-icone">
+                        <i class="fa-solid fa-spinner fa-spin"></i>
+                    </div>
+                    <div class="atividade-conteudo">
+                        <div class="atividade-titulo">Carregando atividades...</div>
+                        <div class="atividade-data">Aguarde um momento</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/admin/gerenciamento-dashboard.js"></script>
+} 
